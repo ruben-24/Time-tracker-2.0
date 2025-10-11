@@ -35,14 +35,14 @@ const stateLabel = computed(() =>
 </script>
 
 <template>
-  <div class="min-h-dvh bg-gradient-to-b from-white to-gray-50">
+  <div class="min-h-dvh bg-gradient-to-b from-white to-sky-50">
     <div class="mx-auto max-w-3xl px-4 pb-28 pt-6">
       <header class="mb-6">
         <h1 class="text-2xl font-bold tracking-tight">Time Tracker 2.0</h1>
         <p class="text-sm text-gray-600">Contorizează lucru și pauze cu un singur tap</p>
       </header>
 
-      <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+      <section class="card-glass p-6">
         <div class="mb-6 flex items-center justify-between">
           <div>
             <div class="text-sm text-gray-500">Stare</div>
@@ -73,11 +73,11 @@ const stateLabel = computed(() =>
       </section>
 
       <section class="mt-8 grid gap-6 md:grid-cols-2">
-        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+        <div class="card-glass p-6">
           <h2 class="mb-2 text-lg font-semibold">Adrese</h2>
           <AddressSettings />
         </div>
-        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+        <div class="card-glass p-6">
           <div class="mb-2 flex items-center justify-between">
             <h2 class="text-lg font-semibold">Import/Export</h2>
             <button class="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50" @click="manualOpen = true">Adaugă manual</button>
@@ -89,8 +89,8 @@ const stateLabel = computed(() =>
       <ManualEntryDialog v-model="manualOpen" />
 
       <!-- Bottom control bar -->
-      <div class="fixed inset-x-0 bottom-0 z-50 border-t bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-        <div class="mx-auto max-w-3xl px-4 py-3">
+      <div class="fixed inset-x-0 bottom-0 z-50 border-t border-white/40 bg-white/70 backdrop-blur safe-bottom supports-[backdrop-filter]:bg-white/50">
+        <div class="mx-auto max-w-3xl px-3">
           <TimerControls />
         </div>
       </div>

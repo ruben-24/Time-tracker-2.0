@@ -13,9 +13,9 @@ const canEnd = computed(() => true)
 </script>
 
 <template>
-  <div class="grid grid-cols-4 gap-3 px-4 py-3">
+  <div class="grid grid-cols-4 gap-2">
     <button
-      class="flex items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-3 text-white shadow hover:bg-primary-700 disabled:opacity-40"
+      class="btn btn-primary"
       :disabled="!canStart"
       @click="timer.startWork()"
     >
@@ -24,7 +24,7 @@ const canEnd = computed(() => true)
     </button>
 
     <button
-      class="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-white shadow hover:bg-amber-600 disabled:opacity-40"
+      class="btn btn-amber"
       :disabled="!canPause"
       @click="timer.startBreak()"
     >
@@ -33,7 +33,7 @@ const canEnd = computed(() => true)
     </button>
 
     <button
-      class="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-white shadow hover:bg-emerald-700 disabled:opacity-40"
+      class="btn btn-emerald"
       :disabled="!canResume"
       @click="timer.resumeWork()"
     >
@@ -42,7 +42,7 @@ const canEnd = computed(() => true)
     </button>
 
     <button
-      class="flex items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 py-3 text-white shadow hover:bg-rose-700 disabled:opacity-40"
+      class="btn btn-rose"
       :disabled="!canEnd"
       @click="timer.endCurrent()"
     >

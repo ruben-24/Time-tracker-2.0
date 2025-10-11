@@ -1,3 +1,36 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global app background gradient and typography tweaks */
+:root {
+  --bg-start: 255 255 255;
+  --bg-end: 240 249 255; /* sky-50 */
+}
+
+body {
+  @apply antialiased text-gray-800;
+  background: linear-gradient(180deg, rgb(var(--bg-start)) 0%, rgb(var(--bg-end)) 100%);
+  min-height: 100dvh;
+}
+
+/* Glass card utility */
+.card-glass {
+  @apply rounded-3xl bg-white/70 shadow-lg ring-1 ring-black/5 backdrop-blur-md;
+}
+
+/* Pill primary buttons */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold shadow-md transition-colors;
+}
+.btn-primary {
+  @apply bg-primary-600 text-white hover:bg-primary-700;
+}
+.btn-amber { @apply bg-amber-500 text-white hover:bg-amber-600; }
+.btn-emerald { @apply bg-emerald-600 text-white hover:bg-emerald-700; }
+.btn-rose { @apply bg-rose-600 text-white hover:bg-rose-700; }
+
+/* Safe area padding for bottom bar */
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 16px);
+}
