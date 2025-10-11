@@ -34,3 +34,19 @@ body {
 .safe-bottom {
   padding-bottom: max(env(safe-area-inset-bottom), 16px);
 }
+
+/* Safe area top padding */
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 18px);
+}
+
+/* Hero decorative gradient background */
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1200px 600px at 100% -10%, rgba(59,130,246,0.18), rgba(59,130,246,0) 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(168,85,247,0.18), rgba(168,85,247,0) 60%);
+  filter: blur(20px);
+  pointer-events: none;
+}

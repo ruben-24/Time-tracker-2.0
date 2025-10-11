@@ -35,52 +35,50 @@ const stateLabel = computed(() =>
 </script>
 
 <template>
-  <div class="min-h-dvh bg-gradient-to-b from-white to-sky-50">
-    <div class="mx-auto max-w-3xl px-4 pb-28 pt-6">
-      <header class="mb-6">
-        <h1 class="text-2xl font-bold tracking-tight">Time Tracker 2.0</h1>
-        <p class="text-sm text-gray-600">Contorizează lucru și pauze cu un singur tap</p>
+  <div class="relative min-h-dvh bg-gradient-to-b from-white to-sky-50">
+    <div class="hero-gradient" />
+    <div class="mx-auto max-w-[430px] px-4 pb-36 safe-top">
+      <header class="mb-4">
+        <h1 class="text-xl font-semibold tracking-tight text-gray-900">Time Tracker</h1>
+        <p class="text-xs text-gray-500">Simplu. Rapid. Precis.</p>
       </header>
 
-      <section class="card-glass p-6">
-        <div class="mb-6 flex items-center justify-between">
+      <section class="card-glass p-5">
+        <div class="mb-5 flex items-center justify-between">
           <div>
-            <div class="text-sm text-gray-500">Stare</div>
-            <div class="text-lg font-semibold">{{ stateLabel }}</div>
+            <div class="text-xs text-gray-500">Stare</div>
+            <div class="text-base font-semibold">{{ stateLabel }}</div>
           </div>
           <div class="text-right">
-            <div class="text-sm text-gray-500">Cronometru</div>
-            <div class="text-3xl font-bold tabular-nums">{{ formatDuration(elapsed) }}</div>
+            <div class="text-xs text-gray-500">Cronometru</div>
+            <div class="text-4xl font-bold tabular-nums tracking-tight">{{ formatDuration(elapsed) }}</div>
           </div>
         </div>
-
-        <TimerControls />
-
-        <div class="mt-6 grid gap-3 sm:grid-cols-2">
-          <div class="rounded-xl bg-gray-50 p-4">
-            <div class="text-sm text-gray-500">Total lucru</div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-2xl bg-gray-50 p-4">
+            <div class="text-xs text-gray-500">Total lucru</div>
             <div class="text-xl font-semibold">{{ formatDuration(timer.totalWorkMs) }}</div>
           </div>
-          <div class="rounded-xl bg-gray-50 p-4">
-            <div class="text-sm text-gray-500">Total pauză</div>
+          <div class="rounded-2xl bg-gray-50 p-4">
+            <div class="text-xs text-gray-500">Total pauză</div>
             <div class="text-xl font-semibold">{{ formatDuration(timer.totalBreakMs) }}</div>
           </div>
         </div>
       </section>
 
-      <section class="mt-8">
+      <section class="mt-6">
         <SessionList />
       </section>
 
-      <section class="mt-8 grid gap-6 md:grid-cols-2">
-        <div class="card-glass p-6">
-          <h2 class="mb-2 text-lg font-semibold">Adrese</h2>
+      <section class="mt-6 grid gap-4 md:grid-cols-2">
+        <div class="card-glass p-5">
+          <h2 class="mb-2 text-base font-semibold">Adrese</h2>
           <AddressSettings />
         </div>
-        <div class="card-glass p-6">
+        <div class="card-glass p-5">
           <div class="mb-2 flex items-center justify-between">
-            <h2 class="text-lg font-semibold">Import/Export</h2>
-            <button class="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50" @click="manualOpen = true">Adaugă manual</button>
+            <h2 class="text-base font-semibold">Import/Export</h2>
+            <button class="rounded-full border px-4 py-2 text-xs hover:bg-gray-50" @click="manualOpen = true">Adaugă manual</button>
           </div>
           <ImportExport />
         </div>
@@ -89,11 +87,11 @@ const stateLabel = computed(() =>
       <ManualEntryDialog v-model="manualOpen" />
 
       <!-- Bottom control bar -->
-      <div class="fixed inset-x-0 bottom-0 z-50 border-t border-white/40 bg-white/70 backdrop-blur safe-bottom supports-[backdrop-filter]:bg-white/50">
-        <div class="mx-auto max-w-3xl px-3">
+      <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-white/40 bg-white/75 backdrop-blur safe-bottom supports-[backdrop-filter]:bg-white/50">
+        <div class="mx-auto max-w-[430px] px-4 py-3">
           <TimerControls />
         </div>
-      </div>
+      </nav>
     </div>
   </div>
 </template>
