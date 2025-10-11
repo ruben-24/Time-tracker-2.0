@@ -13,7 +13,7 @@ const canEnd = computed(() => true)
 </script>
 
 <template>
-  <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+  <div class="grid grid-cols-4 gap-3 px-4 py-3">
     <button
       class="flex items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-3 text-white shadow hover:bg-primary-700 disabled:opacity-40"
       :disabled="!canStart"
