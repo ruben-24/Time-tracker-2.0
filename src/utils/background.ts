@@ -1,5 +1,6 @@
 import { App } from '@capacitor/app'
 import { LocalNotifications } from '@capacitor/local-notifications'
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
 
 export async function setupBackgroundHandlers() {
   try {
@@ -21,6 +22,7 @@ export async function setupBackgroundHandlers() {
           ],
         })
       } catch {}
+      try { await Haptics.impact({ style: ImpactStyle.Light }) } catch {}
     }
   })
 }
