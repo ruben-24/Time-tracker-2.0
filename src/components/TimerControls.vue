@@ -5,10 +5,11 @@ import { Play, Pause, RotateCcw, Square } from 'lucide-vue-next'
 
 const timer = useTimerStore()
 
-const canStart = computed(() => !timer.isRunning)
-const canPause = computed(() => !timer.isRunning) // start a break when idle
-const canResume = computed(() => !timer.isRunning)
-const canEnd = computed(() => timer.isRunning)
+// All controls remain active; actions will end current session if needed
+const canStart = computed(() => true)
+const canPause = computed(() => true)
+const canResume = computed(() => true)
+const canEnd = computed(() => true)
 </script>
 
 <template>

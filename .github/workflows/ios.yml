@@ -77,29 +77,4 @@ jobs:
           path: TimeTracker2-unsigned.ipa
           if-no-files-found: error
 
-      - name: Build iOS Simulator .app
-        run: |
-          xcodebuild \
-            -workspace ios/App/App.xcworkspace \
-            -scheme App \
-            -configuration Release \
-            -sdk iphonesimulator \
-            -derivedDataPath build-sim \
-            clean build \
-            -destination 'generic/platform=iOS Simulator'
-
-      - name: Zip Simulator .app for Appetize
-        run: |
-          SIM_APP="build-sim/Build/Products/Release-iphonesimulator/App.app"
-          if [ ! -d "$SIM_APP" ]; then
-            echo "Simulator .app not found at $SIM_APP" >&2
-            exit 1
-          fi
-          /usr/bin/zip -r TimeTracker2-simulator-app.zip "$SIM_APP"
-
-      - name: Upload Simulator app artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: TimeTracker2-simulator-app
-          path: TimeTracker2-simulator-app.zip
-          if-no-files-found: error
+      # Appetize artifacts removed per request

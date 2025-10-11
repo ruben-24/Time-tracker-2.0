@@ -65,19 +65,25 @@ export const useTimerStore = defineStore('timer', {
       return this.customAddress ?? this.defaultAddress
     },
     startWork() {
-      if (this.activeType) return
+      // Always allow switching to work; if there is an active session, end it before starting work
+      if (this.activeType && this.activeStartedAt) {
+        this.endCurrent()
+      }
       this.activeType = 'work'
       this.activeStartedAt = Date.now()
       void this.persist()
     },
     startBreak() {
-      if (this.activeType) return
+      // Always allow switching to break; if there is an active session, end it before starting break
+      if (this.activeType && this.activeStartedAt) {
+        this.endCurrent()
+      }
       this.activeType = 'break'
       this.activeStartedAt = Date.now()
       void this.persist()
     },
     resumeWork() {
-      if (this.activeType) return
+      // Resume is equivalent to starting work now
       this.startWork()
     },
     endCurrent(note?: string) {
