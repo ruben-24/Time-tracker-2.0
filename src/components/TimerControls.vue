@@ -13,41 +13,41 @@ const canEnd = computed(() => true)
 </script>
 
 <template>
-  <div class="grid grid-cols-4 gap-2">
+  <div class="grid grid-cols-4 gap-3">
     <button
-      class="btn btn-primary"
+      class="btn btn-primary flex-col w-full"
       :disabled="!canStart"
       @click="timer.startWork()"
     >
-      <Play class="h-5 w-5" />
-      <span>Începe programul</span>
+      <Play class="h-6 w-6" />
+      <span class="text-xs">Lucru</span>
     </button>
 
     <button
-      class="btn btn-amber"
+      class="btn btn-amber flex-col w-full"
       :disabled="!canPause"
       @click="timer.startBreak()"
     >
-      <Pause class="h-5 w-5" />
-      <span>Pauză</span>
+      <Pause class="h-6 w-6" />
+      <span class="text-xs">Pauză</span>
     </button>
 
     <button
-      class="btn btn-emerald"
+      class="btn btn-emerald flex-col w-full"
       :disabled="!canResume"
       @click="timer.resumeWork()"
     >
-      <RotateCcw class="h-5 w-5" />
-      <span>Reia lucru</span>
+      <RotateCcw class="h-6 w-6" />
+      <span class="text-xs">Reia</span>
     </button>
 
     <button
-      class="btn btn-rose"
+      class="btn btn-rose flex-col w-full"
       :disabled="!canEnd"
       @click="timer.endCurrent()"
     >
-      <Square class="h-5 w-5" />
-      <span>Încheie programul</span>
+      <Square class="h-6 w-6" />
+      <span class="text-xs">Stop</span>
     </button>
   </div>
 </template>
