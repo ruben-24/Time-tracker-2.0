@@ -99,14 +99,33 @@ export const useFinancialStore = defineStore('financial', {
     
     // Calculate net income
     netIncome: (state) => {
-      const gross = this.grossIncome!
-      const taxes = this.calculateTaxes!
+      // Calculate gross income directly
+      const hourly = state.hourlyRate
+      const daily = hourly * 8
+      const weekly = hourly * state.weeklyHours
+      const monthly = weekly * 4.33
+      const yearly = weekly * 52
       
-      const netHourly = state.hourlyRate - (taxes.totalTaxes / (state.weeklyHours * 52))
-      const netDaily = gross.daily - (taxes.totalTaxes / (state.weeklyHours * 52)) * 8
-      const netWeekly = gross.weekly - (taxes.totalTaxes / 52)
-      const netMonthly = gross.monthly - (taxes.totalTaxes / 12)
-      const netYearly = gross.yearly - taxes.totalTaxes
+      // Calculate taxes directly
+      let incomeTax = 0
+      if (yearly > 10908) {
+        if (yearly <= 62810) {
+          const taxableIncome = yearly - 10908
+          incomeTax = taxableIncome * 0.14 + (taxableIncome - 10908) * 0.2397
+        } else {
+          incomeTax = yearly * 0.42
+        }
+      }
+      
+      const socialContributions = yearly * 0.20
+      const solidaritySurcharge = incomeTax * 0.00825
+      const totalTaxes = incomeTax + socialContributions + solidaritySurcharge
+      
+      const netHourly = hourly - (totalTaxes / (state.weeklyHours * 52))
+      const netDaily = daily - (totalTaxes / (state.weeklyHours * 52)) * 8
+      const netWeekly = weekly - (totalTaxes / 52)
+      const netMonthly = monthly - (totalTaxes / 12)
+      const netYearly = yearly - totalTaxes
       
       return {
         hourly: Math.max(0, netHourly),
@@ -118,38 +137,63 @@ export const useFinancialStore = defineStore('financial', {
     },
     
     // Detailed financial breakdown
-    financialBreakdown: (): FinancialCalculation => {
-      const gross = this.grossIncome!
-      const net = this.netIncome!
-      const taxes = this.calculateTaxes!
+    financialBreakdown: (state): FinancialCalculation => {
+      // Calculate everything directly to avoid circular dependencies
+      const hourly = state.hourlyRate
+      const daily = hourly * 8
+      const weekly = hourly * state.weeklyHours
+      const monthly = weekly * 4.33
+      const yearly = weekly * 52
+      
+      // Calculate taxes
+      let incomeTax = 0
+      if (yearly > 10908) {
+        if (yearly <= 62810) {
+          const taxableIncome = yearly - 10908
+          incomeTax = taxableIncome * 0.14 + (taxableIncome - 10908) * 0.2397
+        } else {
+          incomeTax = yearly * 0.42
+        }
+      }
+      
+      const socialContributions = yearly * 0.20
+      const solidaritySurcharge = incomeTax * 0.00825
+      const totalTaxes = incomeTax + socialContributions + solidaritySurcharge
+      
+      // Calculate net
+      const netHourly = hourly - (totalTaxes / (state.weeklyHours * 52))
+      const netDaily = daily - (totalTaxes / (state.weeklyHours * 52)) * 8
+      const netWeekly = weekly - (totalTaxes / 52)
+      const netMonthly = monthly - (totalTaxes / 12)
+      const netYearly = yearly - totalTaxes
       
       // Social contributions breakdown
-      const socialContributions = {
-        healthInsurance: gross.yearly * 0.146, // 14.6%
-        pensionInsurance: gross.yearly * 0.186, // 18.6%
-        unemploymentInsurance: gross.yearly * 0.024, // 2.4%
-        careInsurance: gross.yearly * 0.031, // 3.1%
-        totalSocial: gross.yearly * 0.20
+      const socialContributionsBreakdown = {
+        healthInsurance: yearly * 0.146, // 14.6%
+        pensionInsurance: yearly * 0.186, // 18.6%
+        unemploymentInsurance: yearly * 0.024, // 2.4%
+        careInsurance: yearly * 0.031, // 3.1%
+        totalSocial: yearly * 0.20
       }
       
       return {
-        grossHourly: gross.hourly,
-        grossDaily: gross.daily,
-        grossWeekly: gross.weekly,
-        grossMonthly: gross.monthly,
-        grossYearly: gross.yearly,
-        netHourly: net.hourly,
-        netDaily: net.daily,
-        netWeekly: net.weekly,
-        netMonthly: net.monthly,
-        netYearly: net.yearly,
+        grossHourly: hourly,
+        grossDaily: daily,
+        grossWeekly: weekly,
+        grossMonthly: monthly,
+        grossYearly: yearly,
+        netHourly: Math.max(0, netHourly),
+        netDaily: Math.max(0, netDaily),
+        netWeekly: Math.max(0, netWeekly),
+        netMonthly: Math.max(0, netMonthly),
+        netYearly: Math.max(0, netYearly),
         taxes: {
-          incomeTax: taxes.incomeTax,
-          socialContributions: taxes.socialContributions,
-          solidaritySurcharge: taxes.solidaritySurcharge,
-          totalTaxes: taxes.totalTaxes
+          incomeTax,
+          socialContributions,
+          solidaritySurcharge,
+          totalTaxes
         },
-        socialContributions
+        socialContributions: socialContributionsBreakdown
       }
     }
   },
