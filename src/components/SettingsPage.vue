@@ -41,7 +41,6 @@ const taxClass = ref(financial.taxClass)
 const defaultAddress = ref(timer.defaultAddress)
 
 // Theme settings
-const showThemeCustomizer = ref(false)
 const customBackgroundColor = ref(theme.settings.backgroundColors.primary)
 const customButtonColor = ref(theme.settings.buttonColors.primary)
 

@@ -146,7 +146,7 @@ const forceUpdateTotals = () => {
           <div class="rounded-2xl glass-enhanced p-6 card-hover" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
             <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Sesiune medie</div>
             <div class="text-3xl font-bold text-blue-400">
-              {{ formatDuration(timer.sessions.length > 0 ? timer.sessions.reduce((acc, s) => acc + s.duration, 0) / timer.sessions.length : 0) }}
+              {{ formatDuration(timer.sessions.length > 0 ? timer.sessions.reduce((acc, s) => acc + (s.endedAt ? s.endedAt - s.startedAt : 0), 0) / timer.sessions.length : 0) }}
             </div>
             <div class="text-xs text-white/50 mt-1">Durată medie</div>
           </div>
