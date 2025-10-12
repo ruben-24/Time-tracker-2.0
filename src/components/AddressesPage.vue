@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useTimerStore } from '../stores/timerStore'
+import { ref } from 'vue'
 import { ArrowLeft, Plus, Trash2, Edit3 } from 'lucide-vue-next'
-
-const timer = useTimerStore()
 const showAddForm = ref(false)
 const newAddress = ref('')
 const editingAddress = ref<string | null>(null)

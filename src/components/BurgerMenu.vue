@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { Menu, X, Clock, MapPin, History, Download, Upload, Settings } from 'lucide-vue-next'
+import { Menu, X, MapPin, History, Download, Settings } from 'lucide-vue-next'
 
 const isOpen = ref(false)
-const router = useRouter()
 
 const toggleMenu = () => {
   isOpen.value = !isOpen.value
