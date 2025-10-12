@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
-import { ArrowLeft, Trash2, Filter, Calendar } from 'lucide-vue-next'
+import { ArrowLeft, Trash2, Filter, Calendar, ChevronDown, ChevronUp, Clock, MapPin } from 'lucide-vue-next'
 import { formatDuration } from '../utils/format'
 
 const emit = defineEmits<{
