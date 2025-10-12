@@ -73,8 +73,14 @@ const elapsed = computed(() => {
 
 const stateLabel = computed(() => {
   if (!timer.activeType) return 'Inactiv'
+  if (timer.isOnBreak) return 'Pauză'
   if (timer.isPaused) return 'Pauză'
   return timer.activeType === 'work' ? 'Lucru' : 'Pauză'
+})
+
+const breakElapsed = computed(() => {
+  if (!timer.breakStartedAt) return 0
+  return now.value - timer.breakStartedAt
 })
 
 const navigateTo = (page: string) => {
@@ -117,9 +123,16 @@ const forceUpdateTotals = () => {
       <section class="card-glass card-hover p-8 mb-8" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
         <div class="mb-8">
           <div class="text-center mb-6">
-            <div class="text-xs text-white/70 font-medium uppercase tracking-wide mb-2">Cronometru Principal</div>
-            <div class="text-7xl font-bold tabular-nums tracking-tight timer-display text-white neon-glow-blue">{{ formatDuration(elapsed) }}</div>
-            <div class="text-sm text-white/60 mt-2">Timpul curent de lucru</div>
+            <div class="text-xs text-white/70 font-medium uppercase tracking-wide mb-2">
+              {{ timer.isOnBreak ? 'Cronometru Pauză' : 'Cronometru Principal' }}
+            </div>
+            <div class="text-7xl font-bold tabular-nums tracking-tight timer-display text-white" 
+                 :class="timer.isOnBreak ? 'neon-glow-green' : 'neon-glow-blue'">
+              {{ formatDuration(timer.isOnBreak ? breakElapsed : elapsed) }}
+            </div>
+            <div class="text-sm text-white/60 mt-2">
+              {{ timer.isOnBreak ? 'Timpul curent de pauză' : 'Timpul curent de lucru' }}
+            </div>
           </div>
           
           <div class="flex items-center justify-center gap-4">

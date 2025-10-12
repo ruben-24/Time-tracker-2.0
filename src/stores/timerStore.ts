@@ -30,6 +30,9 @@ export interface TimerState {
   currentSessionId: string | null
   pausedAt: number | null
   totalPausedMs: number
+  // Break timer (independent from work)
+  breakStartedAt: number | null
+  breakSessionId: string | null
   // Session-specific totals (reset with each new session)
   sessionWorkMs: number
   sessionBreakMs: number
@@ -50,6 +53,8 @@ export const useTimerStore = defineStore('timer', {
     currentSessionId: null,
     pausedAt: null,
     totalPausedMs: 0,
+    breakStartedAt: null,
+    breakSessionId: null,
     sessionWorkMs: 0,
     sessionBreakMs: 0,
     sessionCigaretteMs: 0,
@@ -57,6 +62,7 @@ export const useTimerStore = defineStore('timer', {
   getters: {
     isRunning: (s): boolean => s.activeType !== null && s.pausedAt === null,
     isPaused: (s): boolean => s.activeType !== null && s.pausedAt !== null,
+    isOnBreak: (s): boolean => s.pausedAt !== null && s.breakStartedAt !== null,
     totalWorkMs: (s): number => {
       // Use session-specific work time
       if (s.activeType === 'work' && s.activeStartedAt) {
@@ -111,6 +117,8 @@ export const useTimerStore = defineStore('timer', {
         currentSessionId: this.currentSessionId,
         pausedAt: this.pausedAt,
         totalPausedMs: this.totalPausedMs,
+        breakStartedAt: this.breakStartedAt,
+        breakSessionId: this.breakSessionId,
         sessionWorkMs: this.sessionWorkMs,
         sessionBreakMs: this.sessionBreakMs,
         sessionCigaretteMs: this.sessionCigaretteMs,
@@ -136,34 +144,28 @@ export const useTimerStore = defineStore('timer', {
     startBreak() {
       // If there's an active work session, pause it and start break timer
       if (this.activeType === 'work' && this.activeStartedAt && !this.pausedAt) {
-        // Pause the work session and switch to break mode
+        // Pause the work session
         this.pausedAt = Date.now()
-        this.activeType = 'break'
-        this.activeStartedAt = Date.now()
-        this.currentSessionId = crypto.randomUUID()
+        // Start break timer (independent)
+        this.breakStartedAt = Date.now()
+        this.breakSessionId = crypto.randomUUID()
         void this.persist()
         return
       }
       // If we're already in break mode, do nothing
-      if (this.activeType === 'break') {
+      if (this.pausedAt && this.breakStartedAt) {
         return
       }
-      // If no active session, start a new break session
-      if (this.activeType && this.activeStartedAt) {
-        this.endCurrent()
+      // If no active work session, can't start break
+      if (!this.activeType || this.activeType !== 'work') {
+        return
       }
-      this.activeType = 'break'
-      this.activeStartedAt = Date.now()
-      this.currentSessionId = crypto.randomUUID()
-      this.pausedAt = null
-      this.totalPausedMs = 0
-      void this.persist()
     },
-    endBreak() {
-      if (this.activeType !== 'break' || !this.activeStartedAt) return
+    endBreakSession() {
+      if (!this.breakStartedAt) return
       
       const now = Date.now()
-      const breakDuration = now - this.activeStartedAt
+      const breakDuration = now - this.breakStartedAt
       const breakDurationMinutes = breakDuration / (1000 * 60)
       
       // If break is under 5 minutes, save as cigarette break
@@ -179,9 +181,9 @@ export const useTimerStore = defineStore('timer', {
       // Only save to sessions if it's a regular break (not cigarette)
       if (sessionType === 'break') {
         const session: Session = {
-          id: this.currentSessionId || crypto.randomUUID(),
+          id: this.breakSessionId || crypto.randomUUID(),
           type: sessionType,
-          startedAt: this.activeStartedAt,
+          startedAt: this.breakStartedAt,
           endedAt: now,
           manual: false,
           note: undefined,
@@ -190,22 +192,17 @@ export const useTimerStore = defineStore('timer', {
         this.sessions.unshift(session)
       }
       
-      // Reset state
-      this.activeType = null
-      this.activeStartedAt = null
-      this.currentSessionId = null
-      this.pausedAt = null
-      this.totalPausedMs = 0
+      // Reset break state
+      this.breakStartedAt = null
+      this.breakSessionId = null
       void this.persist()
     },
     resumeWork() {
-      // If we're in break mode, end the break and switch back to work
-      if (this.activeType === 'break' && this.activeStartedAt) {
-        this.endBreak()
-        // Continue work from where we left off (resume the paused work session)
-        this.activeType = 'work'
-        // Don't change activeStartedAt - keep the original work start time
-        // Just clear the pause
+      // If we're in break mode, end the break and resume work
+      if (this.pausedAt && this.breakStartedAt) {
+        // End the break session
+        this.endBreakSession()
+        // Resume work from where we left off
         this.pausedAt = null
         void this.persist()
         return
@@ -240,30 +237,36 @@ export const useTimerStore = defineStore('timer', {
         
         actualDuration = Math.max(0, totalTime - pausedTime)
         this.sessionWorkMs += actualDuration
-      } else {
-        // For break sessions, use total time
-        actualDuration = now - this.activeStartedAt
-        this.sessionBreakMs += actualDuration
+        
+        // Create work session
+        const session: Session = {
+          id: this.currentSessionId || crypto.randomUUID(),
+          type: 'work',
+          startedAt: this.activeStartedAt,
+          endedAt: this.activeStartedAt + actualDuration,
+          manual: false,
+          note,
+          address: this.currentAddress,
+        }
+        this.sessions.unshift(session)
       }
       
-      // Create session with actual duration
-      const session: Session = {
-        id: this.currentSessionId || crypto.randomUUID(),
-        type: this.activeType,
-        startedAt: this.activeStartedAt,
-        endedAt: this.activeStartedAt + actualDuration,
-        manual: false,
-        note,
-        address: this.currentAddress,
+      // End any active break session
+      if (this.breakStartedAt) {
+        this.endBreakSession()
       }
-      this.sessions.unshift(session)
       
-      // Reset state
+      // Reset all state
       this.activeType = null
       this.activeStartedAt = null
       this.currentSessionId = null
       this.pausedAt = null
       this.totalPausedMs = 0
+      this.breakStartedAt = null
+      this.breakSessionId = null
+      this.sessionWorkMs = 0
+      this.sessionBreakMs = 0
+      this.sessionCigaretteMs = 0
       void this.persist()
     },
     addManualSession(type: SessionType, startedAt: number, endedAt: number, note?: string) {
