@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { Preferences } from '@capacitor/preferences'
 
-export type SessionType = 'work' | 'break'
+export type SessionType = 'work' | 'break' | 'cigarette'
 
 export interface Session {
   id: string
@@ -52,7 +52,12 @@ export const useTimerStore = defineStore('timer', {
     isPaused: (s): boolean => s.activeType !== null && s.pausedAt !== null,
     totalWorkMs: (s): number => {
       const workSessions = s.sessions.filter(x => x.type === 'work')
-      const workTime = workSessions.reduce((acc, x) => acc + ((x.endedAt ?? Date.now()) - x.startedAt), 0)
+      const workTime = workSessions.reduce((acc, x) => {
+        if (x.endedAt) {
+          return acc + (x.endedAt - x.startedAt)
+        }
+        return acc
+      }, 0)
       // Add current work time if we're in work mode (running or paused)
       if (s.activeType === 'work' && s.activeStartedAt) {
         const currentTime = Date.now() - s.activeStartedAt
@@ -62,7 +67,12 @@ export const useTimerStore = defineStore('timer', {
     },
     totalBreakMs: (s): number => {
       const breakSessions = s.sessions.filter(x => x.type === 'break')
-      const breakTime = breakSessions.reduce((acc, x) => acc + ((x.endedAt ?? Date.now()) - x.startedAt), 0)
+      const breakTime = breakSessions.reduce((acc, x) => {
+        if (x.endedAt) {
+          return acc + (x.endedAt - x.startedAt)
+        }
+        return acc
+      }, 0)
       // Add current break time if we're in break mode
       if (s.activeType === 'break' && s.activeStartedAt) {
         return breakTime + (Date.now() - s.activeStartedAt)
@@ -72,6 +82,16 @@ export const useTimerStore = defineStore('timer', {
         return breakTime + (Date.now() - s.pausedAt)
       }
       return breakTime
+    },
+    totalCigaretteMs: (s): number => {
+      const cigaretteSessions = s.sessions.filter(x => x.type === 'cigarette')
+      const cigaretteTime = cigaretteSessions.reduce((acc, x) => {
+        if (x.endedAt) {
+          return acc + (x.endedAt - x.startedAt)
+        }
+        return acc
+      }, 0)
+      return cigaretteTime
     },
     currentAddress(): string {
       if (this.selectedAddressId) {
@@ -142,15 +162,40 @@ export const useTimerStore = defineStore('timer', {
       this.totalPausedMs = 0
       void this.persist()
     },
+    endBreak() {
+      if (this.activeType !== 'break' || !this.activeStartedAt) return
+      
+      const now = Date.now()
+      const breakDuration = now - this.activeStartedAt
+      const breakDurationMinutes = breakDuration / (1000 * 60)
+      
+      // If break is under 5 minutes, save as cigarette break
+      const sessionType: SessionType = breakDurationMinutes < 5 ? 'cigarette' : 'break'
+      
+      const session: Session = {
+        id: this.currentSessionId || crypto.randomUUID(),
+        type: sessionType,
+        startedAt: this.activeStartedAt,
+        endedAt: now,
+        manual: false,
+        note: sessionType === 'cigarette' ? 'Pauză țigară' : undefined,
+        address: this.currentAddress,
+      }
+      this.sessions.unshift(session)
+      
+      // Reset state
+      this.activeType = null
+      this.activeStartedAt = null
+      this.currentSessionId = null
+      this.pausedAt = null
+      this.totalPausedMs = 0
+      void this.persist()
+    },
     resumeWork() {
-      // If we're in break mode, switch back to work
+      // If we're in break mode, end the break and switch back to work
       if (this.activeType === 'break' && this.activeStartedAt) {
-        // Save break time and switch to work
-        this.totalPausedMs += Date.now() - this.activeStartedAt
-        this.activeType = 'work'
-        this.activeStartedAt = Date.now()
-        this.pausedAt = null
-        void this.persist()
+        this.endBreak()
+        this.startWork()
         return
       }
       // If we're paused (work), resume
@@ -168,23 +213,31 @@ export const useTimerStore = defineStore('timer', {
     endCurrent(note?: string) {
       if (!this.activeType || !this.activeStartedAt) return
       
-      // Calculate actual work time (excluding pauses)
       const now = Date.now()
-      let totalTime = now - this.activeStartedAt
+      let actualDuration = 0
       
-      // If we're paused, add the pause time to totalPausedMs
-      if (this.isPaused && this.pausedAt) {
-        this.totalPausedMs += now - this.pausedAt
+      if (this.activeType === 'work') {
+        // For work sessions, calculate actual work time (excluding pauses)
+        const totalTime = now - this.activeStartedAt
+        let pausedTime = this.totalPausedMs
+        
+        // If we're currently paused, add current pause time
+        if (this.isPaused && this.pausedAt) {
+          pausedTime += now - this.pausedAt
+        }
+        
+        actualDuration = Math.max(0, totalTime - pausedTime)
+      } else {
+        // For break sessions, use total time
+        actualDuration = now - this.activeStartedAt
       }
       
-      const actualWorkTime = Math.max(0, totalTime - this.totalPausedMs)
-      
-      // Create session with actual work time
+      // Create session with actual duration
       const session: Session = {
         id: this.currentSessionId || crypto.randomUUID(),
         type: this.activeType,
         startedAt: this.activeStartedAt,
-        endedAt: this.activeStartedAt + actualWorkTime, // Use actual work time
+        endedAt: this.activeStartedAt + actualDuration,
         manual: false,
         note,
         address: this.currentAddress,

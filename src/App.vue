@@ -86,14 +86,18 @@ const forceUpdateTotals = () => {
         </div>
 
         <!-- Stats Grid -->
-        <div class="grid gap-4 sm:grid-cols-2">
+        <div class="grid gap-4 sm:grid-cols-3">
           <div class="rounded-2xl glass-enhanced p-6 card-hover">
             <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Total lucru</div>
-            <div class="text-3xl font-bold text-white">{{ formatDuration(timer.totalWorkMs) }}</div>
+            <div class="text-2xl font-bold text-white">{{ formatDuration(timer.totalWorkMs) }}</div>
           </div>
           <div class="rounded-2xl glass-enhanced p-6 card-hover">
             <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Total pauză</div>
-            <div class="text-3xl font-bold text-white">{{ formatDuration(timer.totalBreakMs) }}</div>
+            <div class="text-2xl font-bold text-white">{{ formatDuration(timer.totalBreakMs) }}</div>
+          </div>
+          <div class="rounded-2xl glass-enhanced p-6 card-hover">
+            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Pauze țigară</div>
+            <div class="text-2xl font-bold text-orange-400">{{ formatDuration(timer.totalCigaretteMs) }}</div>
           </div>
         </div>
 

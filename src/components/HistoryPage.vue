@@ -9,7 +9,7 @@ const emit = defineEmits<{
 }>()
 
 const timer = useTimerStore()
-const filterType = ref<'all' | 'work' | 'break'>('all')
+const filterType = ref<'all' | 'work' | 'break' | 'cigarette'>('all')
 const showFilters = ref(false)
 
 const filteredSessions = computed(() => {
@@ -39,11 +39,13 @@ const getSessionDuration = (session: any) => {
   return formatDuration(session.endedAt - session.startedAt)
 }
 
-const getTotalTime = (type: 'work' | 'break') => {
+const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
   const sessions = timer.sessions.filter(s => s.type === type)
   const total = sessions.reduce((acc, session) => {
-    const endTime = session.endedAt || Date.now()
-    return acc + (endTime - session.startedAt)
+    if (session.endedAt) {
+      return acc + (session.endedAt - session.startedAt)
+    }
+    return acc
   }, 0)
   return formatDuration(total)
 }
@@ -66,14 +68,18 @@ const getTotalTime = (type: 'work' | 'break') => {
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-2 gap-4 mb-6">
+    <div class="grid grid-cols-3 gap-4 mb-6">
       <div class="card-glass p-4 text-center">
-        <div class="text-2xl font-bold text-white">{{ getTotalTime('work') }}</div>
+        <div class="text-xl font-bold text-white">{{ getTotalTime('work') }}</div>
         <div class="text-sm text-white/70">Total Lucru</div>
       </div>
       <div class="card-glass p-4 text-center">
-        <div class="text-2xl font-bold text-white">{{ getTotalTime('break') }}</div>
+        <div class="text-xl font-bold text-white">{{ getTotalTime('break') }}</div>
         <div class="text-sm text-white/70">Total Pauză</div>
+      </div>
+      <div class="card-glass p-4 text-center">
+        <div class="text-xl font-bold text-orange-400">{{ getTotalTime('cigarette') }}</div>
+        <div class="text-sm text-white/70">Pauze Țigară</div>
       </div>
     </div>
 
@@ -99,6 +105,12 @@ const getTotalTime = (type: 'work' | 'break') => {
         >
           Pauză
         </button>
+        <button 
+          @click="filterType = 'cigarette'"
+          :class="['btn', filterType === 'cigarette' ? 'btn-primary' : 'btn-secondary']"
+        >
+          Țigară
+        </button>
       </div>
     </div>
 
@@ -115,11 +127,13 @@ const getTotalTime = (type: 'work' | 'break') => {
               <div 
                 :class="[
                   'w-3 h-3 rounded-full',
-                  session.type === 'work' ? 'bg-blue-500' : 'bg-orange-500'
+                  session.type === 'work' ? 'bg-blue-500' : 
+                  session.type === 'break' ? 'bg-orange-500' : 'bg-red-500'
                 ]"
               ></div>
               <span class="font-semibold text-white">
-                {{ session.type === 'work' ? 'Lucru' : 'Pauză' }}
+                {{ session.type === 'work' ? 'Lucru' : 
+                   session.type === 'break' ? 'Pauză' : 'Pauză țigară' }}
               </span>
               <span class="text-white/60 text-sm">
                 {{ session.manual ? '(Manual)' : '' }}
