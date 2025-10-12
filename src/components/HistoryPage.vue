@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
-import { ArrowLeft, Trash2, Filter, Calendar, ChevronDown, ChevronUp, Clock, MapPin } from 'lucide-vue-next'
+import { ArrowLeft, Trash2, Filter, Calendar, ChevronDown, ChevronUp, Clock } from 'lucide-vue-next'
 import { formatDuration } from '../utils/format'
 
 const emit = defineEmits<{
@@ -11,6 +11,7 @@ const emit = defineEmits<{
 const timer = useTimerStore()
 const filterType = ref<'all' | 'work' | 'break' | 'cigarette'>('all')
 const showFilters = ref(false)
+const expandedSessions = ref<Set<string>>(new Set())
 
 const filteredSessions = computed(() => {
   if (filterType.value === 'all') return timer.sessions
@@ -48,6 +49,91 @@ const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
     return acc
   }, 0)
   return formatDuration(total)
+}
+
+const toggleSessionDetails = (sessionId: string) => {
+  if (expandedSessions.value.has(sessionId)) {
+    expandedSessions.value.delete(sessionId)
+  } else {
+    expandedSessions.value.add(sessionId)
+  }
+}
+
+const getSessionDetails = (session: any) => {
+  const sessionDate = new Date(session.startedAt)
+  const dayStart = new Date(sessionDate)
+  dayStart.setHours(0, 0, 0, 0)
+  const dayEnd = new Date(sessionDate)
+  dayEnd.setHours(23, 59, 59, 999)
+  
+  // Get all sessions from the same day
+  const daySessions = timer.sessions.filter(s => {
+    const sDate = new Date(s.startedAt)
+    return sDate >= dayStart && sDate <= dayEnd
+  }).sort((a, b) => a.startedAt - b.startedAt)
+  
+  const timeline = []
+  
+  for (const s of daySessions) {
+    const startTime = new Date(s.startedAt)
+    const endTime = s.endedAt ? new Date(s.endedAt) : null
+    
+    if (s.type === 'work') {
+      // Add work start
+      timeline.push({
+        type: 'work_start',
+        time: startTime,
+        note: 'Lucru început'
+      })
+      
+      // Add work end if exists
+      if (endTime) {
+        timeline.push({
+          type: 'work_end',
+          time: endTime,
+          duration: endTime.getTime() - startTime.getTime(),
+          note: 'Program încheiat'
+        })
+      }
+    } else if (s.type === 'break' || s.type === 'cigarette') {
+      const breakType = s.type === 'cigarette' ? 'Pauză țigară' : 'Pauză'
+      
+      // Add break start
+      timeline.push({
+        type: 'break_start',
+        time: startTime,
+        note: breakType + ' la ' + formatTime(startTime),
+        breakType: s.type
+      })
+      
+      // Add break end if exists
+      if (endTime) {
+        timeline.push({
+          type: 'break_end',
+          time: endTime,
+          duration: endTime.getTime() - startTime.getTime(),
+          note: breakType + ' încheiată',
+          breakType: s.type
+        })
+      }
+    }
+  }
+  
+  return {
+    date: sessionDate.toLocaleDateString('ro-RO', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }),
+    timeline: timeline.sort((a, b) => a.time.getTime() - b.time.getTime())
+  }
+}
+
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString('ro-RO', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 </script>
 
@@ -154,16 +240,62 @@ const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
             </div>
           </div>
           
-          <div class="text-right ml-4">
-            <div class="text-lg font-bold text-white">
-              {{ getSessionDuration(session) }}
+          <div class="text-right ml-4 flex items-center gap-3">
+            <div>
+              <div class="text-lg font-bold text-white">
+                {{ getSessionDuration(session) }}
+              </div>
+              <button 
+                @click="deleteSession(session.id)"
+                class="text-red-400 hover:text-red-300 text-sm mt-1"
+              >
+                <Trash2 class="h-4 w-4" />
+              </button>
             </div>
             <button 
-              @click="deleteSession(session.id)"
-              class="text-red-400 hover:text-red-300 text-sm mt-2"
+              @click="toggleSessionDetails(session.id)"
+              class="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
             >
-              <Trash2 class="h-4 w-4" />
+              <ChevronDown v-if="!expandedSessions.has(session.id)" class="h-5 w-5" />
+              <ChevronUp v-else class="h-5 w-5" />
             </button>
+          </div>
+        </div>
+
+        <!-- Session Details Dropdown -->
+        <div v-if="expandedSessions.has(session.id)" class="mt-4 pt-4 border-t border-white/20">
+          <div class="space-y-3">
+            <div class="flex items-center gap-2 mb-3">
+              <Clock class="h-4 w-4 text-blue-400" />
+              <span class="font-semibold text-white">Cronologia zilei {{ getSessionDetails(session).date }}</span>
+            </div>
+            
+            <div class="space-y-2">
+              <div 
+                v-for="(event, index) in getSessionDetails(session).timeline" 
+                :key="index"
+                class="flex items-center gap-3 p-2 rounded-lg"
+                :class="{
+                  'bg-blue-500/10 border border-blue-400/30': event.type === 'work_start' || event.type === 'work_end',
+                  'bg-orange-500/10 border border-orange-400/30': event.type === 'break_start' && event.breakType === 'break' || event.type === 'break_end' && event.breakType === 'break',
+                  'bg-red-500/10 border border-red-400/30': event.type === 'break_start' && event.breakType === 'cigarette' || event.type === 'break_end' && event.breakType === 'cigarette'
+                }"
+              >
+                <div class="text-sm font-mono text-white/80 min-w-[60px]">
+                  {{ formatTime(event.time) }}
+                </div>
+                <div class="flex-1">
+                  <div class="text-sm text-white font-medium">{{ event.note }}</div>
+                  <div v-if="event.duration" class="text-xs text-white/60">
+                    Durată: {{ formatDuration(event.duration) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div v-if="getSessionDetails(session).timeline.length === 0" class="text-center py-4">
+              <div class="text-white/50 text-sm">Nu există evenimente pentru această zi</div>
+            </div>
           </div>
         </div>
       </div>
