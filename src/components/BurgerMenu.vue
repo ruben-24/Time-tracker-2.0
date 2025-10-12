@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Menu, X, MapPin, History, Download, Settings } from 'lucide-vue-next'
+import { Menu, X, MapPin, History, Download, Settings, DollarSign } from 'lucide-vue-next'
 
 const emit = defineEmits<{
   navigate: [page: string]
@@ -24,6 +24,7 @@ const navigateTo = (page: string) => {
 const menuItems = [
   { icon: History, label: 'Istoric Sesiuni', page: 'history' },
   { icon: MapPin, label: 'Adrese Extra', page: 'addresses' },
+  { icon: DollarSign, label: 'Rapoarte Financiare', page: 'financial' },
   { icon: Download, label: 'Import/Export', page: 'import-export' },
   { icon: Settings, label: 'Setări', page: 'settings' },
 ]

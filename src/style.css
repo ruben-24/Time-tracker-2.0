@@ -10,9 +10,9 @@
 
 body {
   @apply antialiased text-gray-800;
-  background: linear-gradient(135deg, #1e293b 0%, #334155 25%, #475569 50%, #64748b 75%, #94a3b8 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
   background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  animation: gradientShift 20s ease infinite;
   min-height: 100dvh;
 }
 
@@ -24,23 +24,25 @@ body {
 
 /* Glass card utility */
 .card-glass {
-  @apply rounded-3xl bg-white/20 shadow-2xl ring-1 ring-white/30 backdrop-blur-xl;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  @apply rounded-2xl bg-white/15 shadow-xl ring-1 ring-white/20 backdrop-blur-xl;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-glass:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Pill primary buttons */
+/* Professional buttons */
 .btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-4 text-base font-semibold shadow-lg transition-all duration-300;
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold shadow-md transition-all duration-200;
   position: relative;
   overflow: hidden;
+  border: 1px solid transparent;
 }
 
 .btn::before {
@@ -63,43 +65,55 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 12px 25px rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+  transform: translateY(-1px);
 }
 
 .btn-amber { 
-  background: linear-gradient(45deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #f59e0b, #d97706);
   color: white;
-  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+  border-color: rgba(245, 158, 11, 0.3);
 }
 
 .btn-amber:hover {
-  box-shadow: 0 12px 25px rgba(245, 158, 11, 0.4);
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+  transform: translateY(-1px);
 }
 
 .btn-emerald { 
-  background: linear-gradient(45deg, #10b981, #059669);
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .btn-emerald:hover {
-  box-shadow: 0 12px 25px rgba(16, 185, 129, 0.4);
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+  transform: translateY(-1px);
 }
 
 .btn-rose { 
-  background: linear-gradient(45deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .btn-rose:hover {
-  box-shadow: 0 12px 25px rgba(239, 68, 68, 0.4);
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+  transform: translateY(-1px);
 }
 
 /* Safe area padding for bottom bar */
