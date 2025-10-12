@@ -121,8 +121,8 @@ export const useTimerStore = defineStore('timer', {
       
       // Calculate actual work time (excluding pauses)
       const now = Date.now()
-      const totalTime = now - this.activeStartedAt
-      const actualWorkTime = totalTime - this.totalPausedMs
+      // const totalTime = now - this.activeStartedAt
+      // const actualWorkTime = totalTime - this.totalPausedMs
       
       const session: Session = {
         id: this.currentSessionId || crypto.randomUUID(),

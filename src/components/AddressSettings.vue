@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
 
 const timer = useTimerStore()
 const custom = ref<string>(timer.customAddress ?? '')
 const showCustomSection = ref<boolean>(!!timer.customAddress)
 
-const hasCustomAddress = computed(() => !!timer.customAddress)
+// const hasCustomAddress = computed(() => !!timer.customAddress)
 
 watch(custom, (v) => {
   timer.setCustomAddress(v)
