@@ -1,54 +1,46 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ArrowLeft, Plus, Trash2, Edit3 } from 'lucide-vue-next'
+import { useTimerStore } from '../stores/timerStore'
+import { ArrowLeft, Plus, Trash2, Edit3, MapPin } from 'lucide-vue-next'
 
 const emit = defineEmits<{
   navigate: [page: string]
 }>()
+
+const timer = useTimerStore()
 const showAddForm = ref(false)
 const newAddress = ref('')
+const newAddressName = ref('')
 const editingAddress = ref<string | null>(null)
 
-// Mock data for extra addresses - in real app this would come from store
-const extraAddresses = ref([
-  { id: '1', name: 'Client A - Birou', address: 'Strada Mihai Viteazu 15, București' },
-  { id: '2', name: 'Client B - Depozit', address: 'Calea Victoriei 100, București' },
-  { id: '3', name: 'Test Location', address: 'Adresă de test pentru dezvoltare' }
-])
-
 const addAddress = () => {
-  if (newAddress.value.trim()) {
-    const addressName = prompt('Numele adresei:') || 'Adresă nouă'
-    extraAddresses.value.push({
-      id: crypto.randomUUID(),
-      name: addressName,
-      address: newAddress.value.trim()
-    })
+  if (newAddress.value.trim() && newAddressName.value.trim()) {
+    timer.addExtraAddress(newAddressName.value, newAddress.value)
     newAddress.value = ''
+    newAddressName.value = ''
     showAddForm.value = false
   }
 }
 
 const deleteAddress = (id: string) => {
   if (confirm('Sigur vrei să ștergi această adresă?')) {
-    extraAddresses.value = extraAddresses.value.filter(addr => addr.id !== id)
+    timer.deleteExtraAddress(id)
   }
 }
 
 const editAddress = (address: any) => {
   editingAddress.value = address.id
   newAddress.value = address.address
+  newAddressName.value = address.name
   showAddForm.value = true
 }
 
 const saveEdit = () => {
-  if (editingAddress.value && newAddress.value.trim()) {
-    const address = extraAddresses.value.find(addr => addr.id === editingAddress.value)
-    if (address) {
-      address.address = newAddress.value.trim()
-    }
+  if (editingAddress.value && newAddress.value.trim() && newAddressName.value.trim()) {
+    timer.updateExtraAddress(editingAddress.value, newAddressName.value, newAddress.value)
     editingAddress.value = null
     newAddress.value = ''
+    newAddressName.value = ''
     showAddForm.value = false
   }
 }
@@ -56,6 +48,7 @@ const saveEdit = () => {
 const cancelEdit = () => {
   editingAddress.value = null
   newAddress.value = ''
+  newAddressName.value = ''
   showAddForm.value = false
 }
 </script>
@@ -83,6 +76,16 @@ const cancelEdit = () => {
       </h3>
       
       <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-white/80 mb-2">
+            Numele adresei
+          </label>
+          <input
+            v-model="newAddressName"
+            placeholder="ex: Client A - Birou"
+            class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-blue-400 focus:outline-none"
+          />
+        </div>
         <div>
           <label class="block text-sm font-medium text-white/80 mb-2">
             Adresa
@@ -115,7 +118,7 @@ const cancelEdit = () => {
     <!-- Addresses List -->
     <div class="space-y-4">
       <div 
-        v-for="address in extraAddresses" 
+        v-for="address in timer.extraAddresses" 
         :key="address.id"
         class="card-glass p-5"
       >
@@ -144,7 +147,7 @@ const cancelEdit = () => {
     </div>
 
     <!-- Empty State -->
-    <div v-if="extraAddresses.length === 0" class="text-center py-12">
+    <div v-if="timer.extraAddresses.length === 0" class="text-center py-12">
       <div class="text-white/50 mb-4">
         <MapPin class="h-16 w-16 mx-auto mb-4" />
         <p class="text-lg">Nu ai adrese extra</p>

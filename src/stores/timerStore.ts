@@ -13,12 +13,20 @@ export interface Session {
   address?: string
 }
 
+export interface ExtraAddress {
+  id: string
+  name: string
+  address: string
+}
+
 export interface TimerState {
   activeType: SessionType | null
   activeStartedAt: number | null
   sessions: Session[]
   defaultAddress: string
   customAddress: string | null
+  extraAddresses: ExtraAddress[]
+  selectedAddressId: string | null
   currentSessionId: string | null
   pausedAt: number | null
   totalPausedMs: number
@@ -33,6 +41,8 @@ export const useTimerStore = defineStore('timer', {
     sessions: [],
     defaultAddress: 'Wasserburger str 15a,83119,Obing',
     customAddress: null,
+    extraAddresses: [],
+    selectedAddressId: null,
     currentSessionId: null,
     pausedAt: null,
     totalPausedMs: 0,
@@ -63,6 +73,13 @@ export const useTimerStore = defineStore('timer', {
       }
       return breakTime
     },
+    currentAddress(): string {
+      if (this.selectedAddressId) {
+        const extraAddress = this.extraAddresses.find(addr => addr.id === this.selectedAddressId)
+        if (extraAddress) return extraAddress.address
+      }
+      return this.customAddress ?? this.defaultAddress
+    },
   },
   actions: {
     async load() {
@@ -82,14 +99,13 @@ export const useTimerStore = defineStore('timer', {
         sessions: this.sessions,
         defaultAddress: this.defaultAddress,
         customAddress: this.customAddress,
+        extraAddresses: this.extraAddresses,
+        selectedAddressId: this.selectedAddressId,
         currentSessionId: this.currentSessionId,
         pausedAt: this.pausedAt,
         totalPausedMs: this.totalPausedMs,
       }
       await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(copy) })
-    },
-    currentAddress(): string {
-      return this.customAddress ?? this.defaultAddress
     },
     startWork() {
       // If there's an active session, end it first
@@ -107,8 +123,11 @@ export const useTimerStore = defineStore('timer', {
     startBreak() {
       // If there's an active work session, pause it and start break timer
       if (this.activeType === 'work' && this.activeStartedAt && !this.pausedAt) {
-        // Pause the work session
+        // Pause the work session and switch to break mode
         this.pausedAt = Date.now()
+        this.activeType = 'break'
+        this.activeStartedAt = Date.now()
+        this.currentSessionId = crypto.randomUUID()
         void this.persist()
         return
       }
@@ -124,21 +143,21 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     resumeWork() {
-      // If we're paused (work or break), resume
-      if (this.isPaused) {
-        if (this.pausedAt) {
-          this.totalPausedMs += Date.now() - this.pausedAt
-        }
-        this.pausedAt = null
-        void this.persist()
-        return
-      }
       // If we're in break mode, switch back to work
       if (this.activeType === 'break' && this.activeStartedAt) {
         // Save break time and switch to work
         this.totalPausedMs += Date.now() - this.activeStartedAt
         this.activeType = 'work'
         this.activeStartedAt = Date.now()
+        this.pausedAt = null
+        void this.persist()
+        return
+      }
+      // If we're paused (work), resume
+      if (this.isPaused && this.activeType === 'work') {
+        if (this.pausedAt) {
+          this.totalPausedMs += Date.now() - this.pausedAt
+        }
         this.pausedAt = null
         void this.persist()
         return
@@ -168,7 +187,7 @@ export const useTimerStore = defineStore('timer', {
         endedAt: this.activeStartedAt + actualWorkTime, // Use actual work time
         manual: false,
         note,
-        address: this.currentAddress(),
+        address: this.currentAddress,
       }
       this.sessions.unshift(session)
       
@@ -189,13 +208,44 @@ export const useTimerStore = defineStore('timer', {
         endedAt,
         manual: true,
         note,
-        address: this.currentAddress(),
+        address: this.currentAddress,
       }
       this.sessions.unshift(session)
       void this.persist()
     },
     setCustomAddress(addr: string | null) {
       this.customAddress = addr && addr.trim().length > 0 ? addr : null
+      void this.persist()
+    },
+    addExtraAddress(name: string, address: string) {
+      const newAddress: ExtraAddress = {
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        address: address.trim()
+      }
+      this.extraAddresses.push(newAddress)
+      void this.persist()
+    },
+    updateExtraAddress(id: string, name: string, address: string) {
+      const index = this.extraAddresses.findIndex(addr => addr.id === id)
+      if (index !== -1) {
+        this.extraAddresses[index] = {
+          id,
+          name: name.trim(),
+          address: address.trim()
+        }
+        void this.persist()
+      }
+    },
+    deleteExtraAddress(id: string) {
+      this.extraAddresses = this.extraAddresses.filter(addr => addr.id !== id)
+      if (this.selectedAddressId === id) {
+        this.selectedAddressId = null
+      }
+      void this.persist()
+    },
+    selectAddress(addressId: string | null) {
+      this.selectedAddressId = addressId
       void this.persist()
     },
     exportData(): string {
@@ -205,6 +255,8 @@ export const useTimerStore = defineStore('timer', {
           sessions: this.sessions,
           defaultAddress: this.defaultAddress,
           customAddress: this.customAddress,
+          extraAddresses: this.extraAddresses,
+          selectedAddressId: this.selectedAddressId,
         }
       }
       return JSON.stringify(payload, null, 2)
@@ -214,6 +266,8 @@ export const useTimerStore = defineStore('timer', {
       if (parsed?.state?.sessions) this.sessions = parsed.state.sessions
       if (parsed?.state?.defaultAddress) this.defaultAddress = parsed.state.defaultAddress
       this.customAddress = parsed?.state?.customAddress ?? null
+      this.extraAddresses = parsed?.state?.extraAddresses ?? []
+      this.selectedAddressId = parsed?.state?.selectedAddressId ?? null
       void this.persist()
     }
   }

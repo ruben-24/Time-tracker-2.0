@@ -6,6 +6,7 @@ import BurgerMenu from './components/BurgerMenu.vue'
 import HistoryPage from './components/HistoryPage.vue'
 import AddressesPage from './components/AddressesPage.vue'
 import FinancialInfo from './components/FinancialInfo.vue'
+import AddressSelector from './components/AddressSelector.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
 import { ArrowLeft, DollarSign } from 'lucide-vue-next'
@@ -78,6 +79,11 @@ const forceUpdateTotals = () => {
           </div>
         </div>
         
+        <!-- Address Selector -->
+        <div class="mb-6">
+          <AddressSelector />
+        </div>
+
         <!-- Stats Grid -->
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="rounded-2xl glass-enhanced p-6 card-hover">
