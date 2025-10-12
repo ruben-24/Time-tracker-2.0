@@ -37,13 +37,38 @@ watch(() => theme.cssVariables, (newVars) => {
   })
 }, { immediate: true })
 
+// Watch for background color changes
+watch(() => theme.settings.backgroundColors, (newColors) => {
+  const root = document.documentElement
+  root.style.setProperty('--bg-primary', newColors.primary)
+  root.style.setProperty('--bg-secondary', newColors.secondary)
+  root.style.setProperty('--bg-accent', newColors.accent)
+}, { deep: true, immediate: true })
+
+// Watch for button color changes
+watch(() => theme.settings.buttonColors, (newColors) => {
+  const root = document.documentElement
+  root.style.setProperty('--btn-primary', newColors.primary)
+  root.style.setProperty('--btn-secondary', newColors.secondary)
+  root.style.setProperty('--btn-accent', newColors.accent)
+}, { deep: true, immediate: true })
+
 onBeforeUnmount(() => {
   if (ticker) window.clearInterval(ticker)
 })
 
 const elapsed = computed(() => {
   if (!timer.activeStartedAt) return 0
-  return now.value - timer.activeStartedAt
+  
+  const totalTime = now.value - timer.activeStartedAt
+  let pausedTime = timer.totalPausedMs
+  
+  // If we're currently paused, add current pause time
+  if (timer.isPaused && timer.pausedAt) {
+    pausedTime += now.value - timer.pausedAt
+  }
+  
+  return Math.max(0, totalTime - pausedTime)
 })
 
 const stateLabel = computed(() => {
@@ -165,12 +190,14 @@ const forceUpdateTotals = () => {
         </div>
       </section>
 
-      <!-- Bottom control bar -->
-      <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-white/30 glass-enhanced safe-bottom" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
-        <div class="mx-auto max-w-[430px] px-4 py-4">
-          <TimerControls />
+      <!-- Floating Timer Controls - Always visible on main page -->
+      <div class="fixed inset-x-0 bottom-0 z-50 safe-bottom">
+        <div class="mx-auto max-w-[430px] px-4 pb-4">
+          <div class="glass-enhanced rounded-2xl p-4 shadow-2xl border border-white/20" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
+            <TimerControls />
+          </div>
         </div>
-      </nav>
+      </div>
     </div>
 
     <!-- History Page -->

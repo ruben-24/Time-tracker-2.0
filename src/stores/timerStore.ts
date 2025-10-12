@@ -144,6 +144,10 @@ export const useTimerStore = defineStore('timer', {
         void this.persist()
         return
       }
+      // If we're already in break mode, do nothing
+      if (this.activeType === 'break') {
+        return
+      }
       // If no active session, start a new break session
       if (this.activeType && this.activeStartedAt) {
         this.endCurrent()
@@ -198,9 +202,10 @@ export const useTimerStore = defineStore('timer', {
       // If we're in break mode, end the break and switch back to work
       if (this.activeType === 'break' && this.activeStartedAt) {
         this.endBreak()
-        // Continue work from where we left off
+        // Continue work from where we left off (resume the paused work session)
         this.activeType = 'work'
-        this.activeStartedAt = Date.now() - this.totalPausedMs
+        // Don't change activeStartedAt - keep the original work start time
+        // Just clear the pause
         this.pausedAt = null
         void this.persist()
         return
