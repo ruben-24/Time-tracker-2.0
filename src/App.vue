@@ -35,33 +35,33 @@ const stateLabel = computed(() =>
 </script>
 
 <template>
-  <div class="relative min-h-dvh bg-gradient-to-b from-white to-sky-50">
+  <div class="relative min-h-dvh">
     <div class="hero-gradient" />
     <div class="mx-auto max-w-[430px] px-4 pb-36 safe-top">
-      <header class="mb-4">
-        <h1 class="text-xl font-semibold tracking-tight text-gray-900">Time Tracker</h1>
-        <p class="text-xs text-gray-500">Simplu. Rapid. Precis.</p>
+      <header class="mb-6">
+        <h1 class="text-2xl font-bold tracking-tight text-gradient">Time Tracker Pro</h1>
+        <p class="text-sm text-white/80 font-medium">Simplu. Rapid. Precis.</p>
       </header>
 
-      <section class="card-glass p-5">
-        <div class="mb-5 flex items-center justify-between">
+      <section class="card-glass card-hover p-6 mb-6">
+        <div class="mb-6 flex items-center justify-between">
           <div>
-            <div class="text-xs text-gray-500">Stare</div>
-            <div class="text-base font-semibold">{{ stateLabel }}</div>
+            <div class="text-xs text-white/70 font-medium">Stare</div>
+            <div class="text-lg font-bold text-white">{{ stateLabel }}</div>
           </div>
           <div class="text-right">
-            <div class="text-xs text-gray-500">Cronometru</div>
-            <div class="text-4xl font-bold tabular-nums tracking-tight">{{ formatDuration(elapsed) }}</div>
+            <div class="text-xs text-white/70 font-medium">Cronometru</div>
+            <div class="text-5xl font-bold tabular-nums tracking-tight timer-display text-white">{{ formatDuration(elapsed) }}</div>
           </div>
         </div>
-        <div class="grid gap-3 sm:grid-cols-2">
-          <div class="rounded-2xl bg-gray-50 p-4">
-            <div class="text-xs text-gray-500">Total lucru</div>
-            <div class="text-xl font-semibold">{{ formatDuration(timer.totalWorkMs) }}</div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="rounded-2xl glass-enhanced p-5 card-hover">
+            <div class="text-xs text-white/70 font-medium">Total lucru</div>
+            <div class="text-2xl font-bold text-white">{{ formatDuration(timer.totalWorkMs) }}</div>
           </div>
-          <div class="rounded-2xl bg-gray-50 p-4">
-            <div class="text-xs text-gray-500">Total pauză</div>
-            <div class="text-xl font-semibold">{{ formatDuration(timer.totalBreakMs) }}</div>
+          <div class="rounded-2xl glass-enhanced p-5 card-hover">
+            <div class="text-xs text-white/70 font-medium">Total pauză</div>
+            <div class="text-2xl font-bold text-white">{{ formatDuration(timer.totalBreakMs) }}</div>
           </div>
         </div>
       </section>
@@ -71,14 +71,14 @@ const stateLabel = computed(() =>
       </section>
 
       <section class="mt-6 grid gap-4 md:grid-cols-2">
-        <div class="card-glass p-5">
-          <h2 class="mb-2 text-base font-semibold">Adrese</h2>
+        <div class="card-glass card-hover p-6">
+          <h2 class="mb-4 text-lg font-bold text-white">Adrese</h2>
           <AddressSettings />
         </div>
-        <div class="card-glass p-5">
-          <div class="mb-2 flex items-center justify-between">
-            <h2 class="text-base font-semibold">Import/Export</h2>
-            <button class="rounded-full border px-4 py-2 text-xs hover:bg-gray-50" @click="manualOpen = true">Adaugă manual</button>
+        <div class="card-glass card-hover p-6">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-lg font-bold text-white">Import/Export</h2>
+            <button class="btn btn-emerald text-sm px-4 py-2" @click="manualOpen = true">Adaugă manual</button>
           </div>
           <ImportExport />
         </div>
@@ -87,8 +87,8 @@ const stateLabel = computed(() =>
       <ManualEntryDialog v-model="manualOpen" />
 
       <!-- Bottom control bar -->
-      <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-white/40 bg-white/75 backdrop-blur safe-bottom supports-[backdrop-filter]:bg-white/50">
-        <div class="mx-auto max-w-[430px] px-4 py-3">
+      <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-white/30 glass-enhanced safe-bottom">
+        <div class="mx-auto max-w-[430px] px-4 py-4">
           <TimerControls />
         </div>
       </nav>

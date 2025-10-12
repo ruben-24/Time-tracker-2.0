@@ -10,25 +10,97 @@
 
 body {
   @apply antialiased text-gray-800;
-  background: linear-gradient(180deg, rgb(var(--bg-start)) 0%, rgb(var(--bg-end)) 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
   min-height: 100dvh;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* Glass card utility */
 .card-glass {
-  @apply rounded-3xl bg-white/70 shadow-lg ring-1 ring-black/5 backdrop-blur-md;
+  @apply rounded-3xl bg-white/20 shadow-2xl ring-1 ring-white/30 backdrop-blur-xl;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card-glass:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Pill primary buttons */
 .btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-base font-semibold shadow-md transition-colors;
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-4 text-base font-semibold shadow-lg transition-all duration-300;
+  position: relative;
+  overflow: hidden;
 }
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+}
+
 .btn-primary {
-  @apply bg-primary-600 text-white hover:bg-primary-700;
+  background: linear-gradient(45deg, #4facfe, #00f2fe);
+  color: white;
+  box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
 }
-.btn-amber { @apply bg-amber-500 text-white hover:bg-amber-600; }
-.btn-emerald { @apply bg-emerald-600 text-white hover:bg-emerald-700; }
-.btn-rose { @apply bg-rose-600 text-white hover:bg-rose-700; }
+
+.btn-primary:hover {
+  box-shadow: 0 12px 25px rgba(79, 172, 254, 0.4);
+}
+
+.btn-amber { 
+  background: linear-gradient(45deg, #feca57, #ff9ff3);
+  color: white;
+  box-shadow: 0 8px 20px rgba(254, 202, 87, 0.3);
+}
+
+.btn-amber:hover {
+  box-shadow: 0 12px 25px rgba(254, 202, 87, 0.4);
+}
+
+.btn-emerald { 
+  background: linear-gradient(45deg, #48dbfb, #0abde3);
+  color: white;
+  box-shadow: 0 8px 20px rgba(72, 219, 251, 0.3);
+}
+
+.btn-emerald:hover {
+  box-shadow: 0 12px 25px rgba(72, 219, 251, 0.4);
+}
+
+.btn-rose { 
+  background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+  color: white;
+  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+}
+
+.btn-rose:hover {
+  box-shadow: 0 12px 25px rgba(255, 107, 107, 0.4);
+}
 
 /* Safe area padding for bottom bar */
 .safe-bottom {
@@ -45,8 +117,59 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(1200px 600px at 100% -10%, rgba(59,130,246,0.18), rgba(59,130,246,0) 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(168,85,247,0.18), rgba(168,85,247,0) 60%);
-  filter: blur(20px);
+    radial-gradient(1200px 600px at 100% -10%, rgba(79,172,254,0.25), rgba(79,172,254,0) 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(255,107,107,0.25), rgba(255,107,107,0) 60%),
+    radial-gradient(800px 400px at 50% 50%, rgba(168,85,247,0.2), rgba(168,85,247,0) 70%);
+  filter: blur(30px);
   pointer-events: none;
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-20px) rotate(1deg); }
+  66% { transform: translateY(10px) rotate(-1deg); }
+}
+
+/* Text styling for better contrast on gradient background */
+.text-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced glass effect for better visibility */
+.glass-enhanced {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Animated elements */
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Timer display styling */
+.timer-display {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
 }
