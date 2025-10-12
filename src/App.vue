@@ -17,7 +17,10 @@ let ticker: number | undefined
 onMounted(() => {
   void timer.load()
   void setupBackgroundHandlers()
-  ticker = window.setInterval(() => (now.value = Date.now()), 1000)
+  ticker = window.setInterval(() => {
+    now.value = Date.now()
+    forceUpdateTotals()
+  }, 1000)
 })
 
 onBeforeUnmount(() => {
@@ -37,6 +40,12 @@ const stateLabel = computed(() => {
 
 const navigateTo = (page: string) => {
   currentPage.value = page
+}
+
+// Force update totals every second
+const forceUpdateTotals = () => {
+  // This will trigger reactivity for computed properties
+  timer.$patch({})
 }
 </script>
 

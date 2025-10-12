@@ -40,9 +40,16 @@ export const useTimerStore = defineStore('timer', {
   getters: {
     isRunning: (s): boolean => s.activeType !== null && s.pausedAt === null,
     isPaused: (s): boolean => s.activeType !== null && s.pausedAt !== null,
-    totalWorkMs: (s): number => s.sessions
-      .filter(x => x.type === 'work')
-      .reduce((acc, x) => acc + ((x.endedAt ?? Date.now()) - x.startedAt), 0),
+    totalWorkMs: (s): number => {
+      const workSessions = s.sessions.filter(x => x.type === 'work')
+      const workTime = workSessions.reduce((acc, x) => acc + ((x.endedAt ?? Date.now()) - x.startedAt), 0)
+      // Add current work time if we're in work mode
+      if (s.activeType === 'work' && s.activeStartedAt) {
+        const currentTime = Date.now() - s.activeStartedAt
+        return workTime + currentTime - s.totalPausedMs
+      }
+      return workTime
+    },
     totalBreakMs: (s): number => {
       const breakSessions = s.sessions.filter(x => x.type === 'break')
       const breakTime = breakSessions.reduce((acc, x) => acc + ((x.endedAt ?? Date.now()) - x.startedAt), 0)
@@ -96,10 +103,11 @@ export const useTimerStore = defineStore('timer', {
     startBreak() {
       // If there's an active work session, pause it and start break timer
       if (this.activeType === 'work' && this.activeStartedAt && !this.pausedAt) {
-        // Save the pause time
+        // Save the work time so far
         this.totalPausedMs += Date.now() - this.activeStartedAt
         this.activeType = 'break'
         this.activeStartedAt = Date.now()
+        this.currentSessionId = crypto.randomUUID()
         void this.persist()
         return
       }
@@ -140,14 +148,15 @@ export const useTimerStore = defineStore('timer', {
       
       // Calculate actual work time (excluding pauses)
       const now = Date.now()
-      // const totalTime = now - this.activeStartedAt
-      // const actualWorkTime = totalTime - this.totalPausedMs
+      const totalTime = now - this.activeStartedAt
+      const actualWorkTime = totalTime - this.totalPausedMs
       
+      // Create session with actual work time
       const session: Session = {
         id: this.currentSessionId || crypto.randomUUID(),
         type: this.activeType,
         startedAt: this.activeStartedAt,
-        endedAt: now,
+        endedAt: this.activeStartedAt + actualWorkTime, // Use actual work time
         manual: false,
         note,
         address: this.currentAddress(),
