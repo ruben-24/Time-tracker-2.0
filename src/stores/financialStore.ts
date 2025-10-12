@@ -36,7 +36,7 @@ export interface FinancialCalculation {
   }
 }
 
-const STORAGE_KEY = 'tt2_financial_v1'
+// const STORAGE_KEY = 'tt2_financial_v1'
 
 export const useFinancialStore = defineStore('financial', {
   state: (): FinancialSettings => ({
@@ -99,8 +99,8 @@ export const useFinancialStore = defineStore('financial', {
     
     // Calculate net income
     netIncome: (state) => {
-      const gross = this.grossIncome
-      const taxes = this.calculateTaxes
+      const gross = this.grossIncome!
+      const taxes = this.calculateTaxes!
       
       const netHourly = state.hourlyRate - (taxes.totalTaxes / (state.weeklyHours * 52))
       const netDaily = gross.daily - (taxes.totalTaxes / (state.weeklyHours * 52)) * 8
@@ -118,10 +118,10 @@ export const useFinancialStore = defineStore('financial', {
     },
     
     // Detailed financial breakdown
-    financialBreakdown: (state): FinancialCalculation => {
-      const gross = this.grossIncome
-      const net = this.netIncome
-      const taxes = this.calculateTaxes
+    financialBreakdown: (): FinancialCalculation => {
+      const gross = this.grossIncome!
+      const net = this.netIncome!
+      const taxes = this.calculateTaxes!
       
       // Social contributions breakdown
       const socialContributions = {
@@ -138,20 +138,17 @@ export const useFinancialStore = defineStore('financial', {
         grossWeekly: gross.weekly,
         grossMonthly: gross.monthly,
         grossYearly: gross.yearly,
-        
         netHourly: net.hourly,
         netDaily: net.daily,
         netWeekly: net.weekly,
         netMonthly: net.monthly,
         netYearly: net.yearly,
-        
         taxes: {
           incomeTax: taxes.incomeTax,
           socialContributions: taxes.socialContributions,
           solidaritySurcharge: taxes.solidaritySurcharge,
           totalTaxes: taxes.totalTaxes
         },
-        
         socialContributions
       }
     }

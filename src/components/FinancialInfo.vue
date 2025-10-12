@@ -2,11 +2,17 @@
 import { computed } from 'vue'
 import { useFinancialStore } from '../stores/financialStore'
 import { useTimerStore } from '../stores/timerStore'
-import { Euro, TrendingUp, Calendar, Clock } from 'lucide-vue-next'
+import { TrendingUp, Calendar, Clock } from 'lucide-vue-next'
 
 const financial = useFinancialStore()
 const timer = useTimerStore()
 const breakdown = computed(() => financial.financialBreakdown)
+
+// Calculate elapsed time for current session
+const elapsed = computed(() => {
+  if (!timer.activeStartedAt) return 0
+  return Date.now() - timer.activeStartedAt
+})
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('de-DE', {
@@ -17,9 +23,9 @@ const formatCurrency = (amount: number) => {
   }).format(amount)
 }
 
-const formatPercentage = (value: number, total: number) => {
-  return ((value / total) * 100).toFixed(1)
-}
+// const formatPercentage = (value: number, total: number) => {
+//   return ((value / total) * 100).toFixed(1)
+// }
 </script>
 
 <template>
@@ -31,10 +37,10 @@ const formatPercentage = (value: number, total: number) => {
         <Clock class="h-5 w-5 text-blue-400" />
       </div>
       <div class="text-2xl font-bold text-white">
-        {{ formatCurrency(breakdown.grossHourly * (timer.elapsed / 3600000)) }}
+        {{ formatCurrency(breakdown.grossHourly * (elapsed / 3600000)) }}
       </div>
       <div class="text-sm text-white/70">
-        Net: {{ formatCurrency(breakdown.netHourly * (timer.elapsed / 3600000)) }}
+        Net: {{ formatCurrency(breakdown.netHourly * (elapsed / 3600000)) }}
       </div>
     </div>
 
