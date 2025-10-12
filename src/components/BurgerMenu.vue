@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Menu, X, MapPin, History, Download, Settings, DollarSign } from 'lucide-vue-next'
+import { Menu, X, MapPin, History, Download, Settings, DollarSign, Power } from 'lucide-vue-next'
 
 const emit = defineEmits<{
   navigate: [page: string]
@@ -18,6 +18,14 @@ const closeMenu = () => {
 
 const navigateTo = (page: string) => {
   emit('navigate', page)
+  closeMenu()
+}
+
+const closeApp = () => {
+  if (confirm('Sigur vrei să închizi aplicația?')) {
+    // In a real app, this would close the app
+    window.close()
+  }
   closeMenu()
 }
 
@@ -75,10 +83,18 @@ const menuItems = [
           </button>
         </nav>
 
-        <!-- Footer -->
+        <!-- Close App Button -->
         <div class="mt-8 pt-6 border-t border-white/20">
-          <p class="text-white/60 text-sm text-center">
-            Time Tracker Pro v2.0
+          <button
+            @click="closeApp"
+            class="w-full flex items-center gap-4 p-4 rounded-xl bg-red-500/20 hover:bg-red-500/30 transition-all duration-200 text-red-400 border border-red-400/50"
+          >
+            <Power class="h-6 w-6" />
+            <span class="font-medium">Închide Aplicația</span>
+          </button>
+          
+          <p class="text-white/60 text-sm text-center mt-4">
+            Time Tracker Pro v2.0.0
           </p>
         </div>
       </div>

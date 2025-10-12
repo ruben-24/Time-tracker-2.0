@@ -7,6 +7,7 @@ import HistoryPage from './components/HistoryPage.vue'
 import AddressesPage from './components/AddressesPage.vue'
 import FinancialInfo from './components/FinancialInfo.vue'
 import AddressSelector from './components/AddressSelector.vue'
+import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
 import { ArrowLeft, DollarSign } from 'lucide-vue-next'
@@ -61,7 +62,7 @@ const forceUpdateTotals = () => {
       <header class="mb-6 flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold tracking-tight text-gradient">Time Tracker Pro</h1>
-          <p class="text-sm text-white/80 font-medium">Simplu. Rapid. Precis.</p>
+          <p class="text-sm text-white/80 font-medium">Simplu. Rapid. Precis. v2.0.0</p>
         </div>
         <BurgerMenu @navigate="navigateTo" />
       </header>
@@ -148,19 +149,7 @@ const forceUpdateTotals = () => {
     </div>
 
     <!-- Settings Page -->
-    <div v-else-if="currentPage === 'settings'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
-      <div class="flex items-center justify-between mb-6 pt-4">
-        <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
-          <ArrowLeft class="h-5 w-5" />
-        </button>
-        <h1 class="text-2xl font-bold text-white">Setări</h1>
-        <div></div>
-      </div>
-      <div class="card-glass p-6">
-        <h2 class="text-lg font-semibold text-white mb-4">Funcționalitate în dezvoltare</h2>
-        <p class="text-white/70">Această funcționalitate va fi disponibilă în versiunea următoare.</p>
-      </div>
-    </div>
+    <SettingsPage v-else-if="currentPage === 'settings'" @navigate="navigateTo" />
   </div>
 </template>
 

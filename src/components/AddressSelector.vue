@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
 import { MapPin, ChevronDown } from 'lucide-vue-next'
 
 const timer = useTimerStore()
+const isOpen = ref(false)
+const dropdownRef = ref<HTMLElement>()
 
 const allAddresses = computed(() => {
   const addresses = [
@@ -28,23 +30,50 @@ const selectedAddress = computed(() => {
 
 const selectAddress = (addressId: string | null) => {
   timer.selectAddress(addressId)
+  isOpen.value = false
 }
+
+const toggleDropdown = () => {
+  isOpen.value = !isOpen.value
+}
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+    isOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
-  <div class="relative">
-    <div class="flex items-center gap-2 p-3 rounded-lg bg-white/10 border border-white/20">
+  <div class="relative" ref="dropdownRef">
+    <div 
+      @click="toggleDropdown"
+      class="flex items-center gap-2 p-3 rounded-lg bg-white/10 border border-white/20 cursor-pointer hover:bg-white/15 transition-colors"
+    >
       <MapPin class="h-4 w-4 text-blue-400 flex-shrink-0" />
       <div class="flex-1 min-w-0">
         <div class="text-xs text-white/70 font-medium">Adresa curentă</div>
         <div class="text-sm text-white truncate">{{ selectedAddress?.name || 'Adresa Default' }}</div>
         <div class="text-xs text-white/60 truncate">{{ selectedAddress?.address }}</div>
       </div>
-      <ChevronDown class="h-4 w-4 text-white/60 flex-shrink-0" />
+      <ChevronDown 
+        :class="['h-4 w-4 text-white/60 flex-shrink-0 transition-transform', isOpen ? 'rotate-180' : '']" 
+      />
     </div>
     
     <!-- Dropdown -->
-    <div class="absolute top-full left-0 right-0 mt-1 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-white/20 z-50 max-h-60 overflow-y-auto">
+    <div 
+      v-if="isOpen"
+      class="absolute top-full left-0 right-0 mt-1 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-white/20 z-50 max-h-60 overflow-y-auto"
+    >
       <div class="p-2">
         <div 
           v-for="address in allAddresses" 
