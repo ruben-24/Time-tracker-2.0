@@ -3,11 +3,15 @@ import { onMounted, ref, computed, onBeforeUnmount } from 'vue'
 import { useTimerStore } from './stores/timerStore'
 import TimerControls from './components/TimerControls.vue'
 import BurgerMenu from './components/BurgerMenu.vue'
+import HistoryPage from './components/HistoryPage.vue'
+import AddressesPage from './components/AddressesPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
+import { ArrowLeft } from 'lucide-vue-next'
 
 const timer = useTimerStore()
 const now = ref(Date.now())
+const currentPage = ref('main')
 let ticker: number | undefined
 
 onMounted(() => {
@@ -30,19 +34,25 @@ const stateLabel = computed(() => {
   if (timer.isPaused) return 'Pauză'
   return timer.activeType === 'work' ? 'Lucru' : 'Pauză'
 })
+
+const navigateTo = (page: string) => {
+  currentPage.value = page
+}
 </script>
 
 <template>
   <div class="relative min-h-dvh">
     <div class="hero-gradient" />
-    <div class="mx-auto max-w-[430px] px-4 pb-36 safe-top">
+    
+    <!-- Main Page -->
+    <div v-if="currentPage === 'main'" class="mx-auto max-w-[430px] px-4 pb-36 safe-top">
       <!-- Header with Burger Menu -->
       <header class="mb-6 flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold tracking-tight text-gradient">Time Tracker Pro</h1>
           <p class="text-sm text-white/80 font-medium">Simplu. Rapid. Precis.</p>
         </div>
-        <BurgerMenu />
+        <BurgerMenu @navigate="navigateTo" />
       </header>
 
       <!-- Main Timer Section -->
@@ -77,6 +87,42 @@ const stateLabel = computed(() => {
           <TimerControls />
         </div>
       </nav>
+    </div>
+
+    <!-- History Page -->
+    <HistoryPage v-else-if="currentPage === 'history'" @navigate="navigateTo" />
+
+    <!-- Addresses Page -->
+    <AddressesPage v-else-if="currentPage === 'addresses'" @navigate="navigateTo" />
+
+    <!-- Import/Export Page -->
+    <div v-else-if="currentPage === 'import-export'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4">
+      <div class="flex items-center justify-between mb-6">
+        <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
+          <ArrowLeft class="h-5 w-5" />
+        </button>
+        <h1 class="text-2xl font-bold text-white">Import/Export</h1>
+        <div></div>
+      </div>
+      <div class="card-glass p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Funcționalitate în dezvoltare</h2>
+        <p class="text-white/70">Această funcționalitate va fi disponibilă în versiunea următoare.</p>
+      </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div v-else-if="currentPage === 'settings'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4">
+      <div class="flex items-center justify-between mb-6">
+        <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
+          <ArrowLeft class="h-5 w-5" />
+        </button>
+        <h1 class="text-2xl font-bold text-white">Setări</h1>
+        <div></div>
+      </div>
+      <div class="card-glass p-6">
+        <h2 class="text-lg font-semibold text-white mb-4">Funcționalitate în dezvoltare</h2>
+        <p class="text-white/70">Această funcționalitate va fi disponibilă în versiunea următoare.</p>
+      </div>
     </div>
   </div>
 </template>

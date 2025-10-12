@@ -2,6 +2,10 @@
 import { ref } from 'vue'
 import { Menu, X, MapPin, History, Download, Settings } from 'lucide-vue-next'
 
+const emit = defineEmits<{
+  navigate: [page: string]
+}>()
+
 const isOpen = ref(false)
 
 const toggleMenu = () => {
@@ -12,11 +16,16 @@ const closeMenu = () => {
   isOpen.value = false
 }
 
+const navigateTo = (page: string) => {
+  emit('navigate', page)
+  closeMenu()
+}
+
 const menuItems = [
-  { icon: History, label: 'Istoric Sesiuni', route: '/history' },
-  { icon: MapPin, label: 'Adrese Extra', route: '/addresses' },
-  { icon: Download, label: 'Import/Export', route: '/import-export' },
-  { icon: Settings, label: 'Setări', route: '/settings' },
+  { icon: History, label: 'Istoric Sesiuni', page: 'history' },
+  { icon: MapPin, label: 'Adrese Extra', page: 'addresses' },
+  { icon: Download, label: 'Import/Export', page: 'import-export' },
+  { icon: Settings, label: 'Setări', page: 'settings' },
 ]
 </script>
 
@@ -56,8 +65,8 @@ const menuItems = [
         <nav class="space-y-4">
           <button
             v-for="item in menuItems"
-            :key="item.route"
-            @click="closeMenu"
+            :key="item.page"
+            @click="navigateTo(item.page)"
             class="w-full flex items-center gap-4 p-4 rounded-xl bg-white/10 hover:bg-white/20 transition-all duration-200 text-white"
           >
             <component :is="item.icon" class="h-6 w-6" />

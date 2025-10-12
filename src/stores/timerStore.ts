@@ -43,9 +43,15 @@ export const useTimerStore = defineStore('timer', {
     totalWorkMs: (s): number => s.sessions
       .filter(x => x.type === 'work')
       .reduce((acc, x) => acc + ((x.endedAt ?? Date.now()) - x.startedAt), 0),
-    totalBreakMs: (s): number => s.sessions
-      .filter(x => x.type === 'break')
-      .reduce((acc, x) => acc + ((x.endedAt ?? Date.now()) - x.startedAt), 0),
+    totalBreakMs: (s): number => {
+      const breakSessions = s.sessions.filter(x => x.type === 'break')
+      const breakTime = breakSessions.reduce((acc, x) => acc + ((x.endedAt ?? Date.now()) - x.startedAt), 0)
+      // Add current break time if we're in break mode
+      if (s.activeType === 'break' && s.activeStartedAt) {
+        return breakTime + (Date.now() - s.activeStartedAt)
+      }
+      return breakTime
+    },
   },
   actions: {
     async load() {
@@ -90,7 +96,8 @@ export const useTimerStore = defineStore('timer', {
     startBreak() {
       // If there's an active work session, pause it and start break timer
       if (this.activeType === 'work' && this.activeStartedAt && !this.pausedAt) {
-        this.pausedAt = Date.now()
+        // Save the pause time
+        this.totalPausedMs += Date.now() - this.activeStartedAt
         this.activeType = 'break'
         this.activeStartedAt = Date.now()
         void this.persist()
@@ -110,7 +117,10 @@ export const useTimerStore = defineStore('timer', {
     resumeWork() {
       // If we're in break mode, switch back to work
       if (this.activeType === 'break' && this.activeStartedAt) {
+        // Save break time and switch to work
+        this.totalPausedMs += Date.now() - this.activeStartedAt
         this.activeType = 'work'
+        this.activeStartedAt = Date.now()
         this.pausedAt = null
         void this.persist()
         return

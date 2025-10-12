@@ -4,6 +4,10 @@ import { useTimerStore } from '../stores/timerStore'
 import { ArrowLeft, Trash2, Filter, Calendar } from 'lucide-vue-next'
 import { formatDuration } from '../utils/format'
 
+const emit = defineEmits<{
+  navigate: [page: string]
+}>()
+
 const timer = useTimerStore()
 const filterType = ref<'all' | 'work' | 'break'>('all')
 const showFilters = ref(false)
@@ -49,7 +53,7 @@ const getTotalTime = (type: 'work' | 'break') => {
   <div class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
-      <button class="btn btn-primary p-3 rounded-full">
+      <button @click="emit('navigate', 'main')" class="btn btn-primary p-3 rounded-full">
         <ArrowLeft class="h-5 w-5" />
       </button>
       <h1 class="text-2xl font-bold text-white">Istoric Sesiuni</h1>

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ArrowLeft, Plus, Trash2, Edit3 } from 'lucide-vue-next'
+
+const emit = defineEmits<{
+  navigate: [page: string]
+}>()
 const showAddForm = ref(false)
 const newAddress = ref('')
 const editingAddress = ref<string | null>(null)
@@ -60,7 +64,7 @@ const cancelEdit = () => {
   <div class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
-      <button class="btn btn-primary p-3 rounded-full">
+      <button @click="emit('navigate', 'main')" class="btn btn-primary p-3 rounded-full">
         <ArrowLeft class="h-5 w-5" />
       </button>
       <h1 class="text-2xl font-bold text-white">Adrese Extra</h1>
