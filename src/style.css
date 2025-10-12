@@ -11,12 +11,12 @@
 body {
   @apply antialiased text-gray-800;
   background: 
-    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.15) 0%, transparent 50%),
     linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
   background-size: 400% 400%, 300% 300%, 200% 200%, 400% 400%;
-  animation: gradientShift 25s ease infinite, floatingOrbs 30s ease-in-out infinite;
+  animation: gradientShift 60s ease infinite;
   min-height: 100dvh;
   position: relative;
   overflow-x: hidden;
@@ -26,25 +26,6 @@ body {
   0% { background-position: 0% 50%, 0% 0%, 0% 0%, 0% 50%; }
   50% { background-position: 100% 50%, 100% 100%, 50% 50%, 100% 50%; }
   100% { background-position: 0% 50%, 0% 0%, 0% 0%, 0% 50%; }
-}
-
-@keyframes floatingOrbs {
-  0%, 100% { 
-    transform: translateY(0px) rotate(0deg);
-    filter: blur(0px);
-  }
-  25% { 
-    transform: translateY(-30px) rotate(90deg);
-    filter: blur(1px);
-  }
-  50% { 
-    transform: translateY(-60px) rotate(180deg);
-    filter: blur(2px);
-  }
-  75% { 
-    transform: translateY(-30px) rotate(270deg);
-    filter: blur(1px);
-  }
 }
 
 /* Glass card utility */
@@ -132,13 +113,13 @@ body {
 }
 
 .btn:hover::after {
-  width: 300px;
-  height: 300px;
+  width: 200px;
+  height: 200px;
 }
 
 .btn:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
 .btn:active {
@@ -285,32 +266,17 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(1400px 700px at 100% -10%, rgba(59,130,246,0.25), rgba(59,130,246,0) 60%),
-    radial-gradient(1000px 600px at -10% 110%, rgba(16,185,129,0.25), rgba(16,185,129,0) 60%),
-    radial-gradient(900px 500px at 50% 50%, rgba(139,92,246,0.2), rgba(139,92,246,0) 70%),
-    radial-gradient(800px 400px at 80% 20%, rgba(236,72,153,0.15), rgba(236,72,153,0) 60%),
-    radial-gradient(600px 300px at 20% 80%, rgba(6,182,212,0.2), rgba(6,182,212,0) 70%);
+    radial-gradient(1400px 700px at 100% -10%, rgba(59,130,246,0.15), rgba(59,130,246,0) 60%),
+    radial-gradient(1000px 600px at -10% 110%, rgba(16,185,129,0.15), rgba(16,185,129,0) 60%),
+    radial-gradient(900px 500px at 50% 50%, rgba(139,92,246,0.1), rgba(139,92,246,0) 70%);
   filter: blur(40px);
   pointer-events: none;
-  animation: float 25s ease-in-out infinite, pulseGlow 15s ease-in-out infinite;
+  animation: float 40s ease-in-out infinite;
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
-  25% { transform: translateY(-30px) rotate(1deg) scale(1.05); }
-  50% { transform: translateY(-60px) rotate(0deg) scale(1.1); }
-  75% { transform: translateY(-30px) rotate(-1deg) scale(1.05); }
-}
-
-@keyframes pulseGlow {
-  0%, 100% { 
-    filter: blur(40px) brightness(1) saturate(1);
-    opacity: 0.8;
-  }
-  50% { 
-    filter: blur(50px) brightness(1.2) saturate(1.3);
-    opacity: 1;
-  }
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-20px) scale(1.02); }
 }
 
 /* Text styling for better contrast on gradient background */
@@ -348,7 +314,7 @@ body {
 
 @keyframes rainbowShift {
   0%, 100% { filter: hue-rotate(0deg); }
-  50% { filter: hue-rotate(180deg); }
+  50% { filter: hue-rotate(60deg); }
 }
 
 /* Enhanced glass effect for better visibility */
@@ -505,9 +471,9 @@ body {
 }
 
 .card-hover:hover {
-  transform: translateY(-12px) scale(1.03);
+  transform: translateY(-4px) scale(1.01);
   box-shadow: 
-    0 30px 60px rgba(0, 0, 0, 0.2),
+    0 15px 30px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.1);
   background: linear-gradient(135deg, 
     rgba(255, 255, 255, 0.2) 0%, 
@@ -545,11 +511,8 @@ body {
 }
 
 @keyframes floatParticles {
-  0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  25% { transform: translateY(-25px) translateX(25px) rotate(90deg); }
-  50% { transform: translateY(-50px) translateX(50px) rotate(180deg); }
-  75% { transform: translateY(-75px) translateX(75px) rotate(270deg); }
-  100% { transform: translateY(-100px) translateX(100px) rotate(360deg); }
+  0% { transform: translateY(0px) translateX(0px); }
+  100% { transform: translateY(-50px) translateX(25px); }
 }
 
 /* Enhanced glass morphism */
