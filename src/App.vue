@@ -79,8 +79,8 @@ const stateLabel = computed(() => {
 })
 
 const breakElapsed = computed(() => {
-  if (!timer.breakStartedAt) return 0
-  return now.value - timer.breakStartedAt
+  if (!timer.breakStartedAt) return timer.totalBreakTimeMs
+  return timer.totalBreakTimeMs + (now.value - timer.breakStartedAt)
 })
 
 const navigateTo = (page: string) => {
