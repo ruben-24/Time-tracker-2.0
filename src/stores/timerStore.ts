@@ -30,6 +30,10 @@ export interface TimerState {
   currentSessionId: string | null
   pausedAt: number | null
   totalPausedMs: number
+  // Session-specific totals (reset with each new session)
+  sessionWorkMs: number
+  sessionBreakMs: number
+  sessionCigaretteMs: number
 }
 
 const STORAGE_KEY = 'tt2_state_v1'
@@ -46,52 +50,35 @@ export const useTimerStore = defineStore('timer', {
     currentSessionId: null,
     pausedAt: null,
     totalPausedMs: 0,
+    sessionWorkMs: 0,
+    sessionBreakMs: 0,
+    sessionCigaretteMs: 0,
   }),
   getters: {
     isRunning: (s): boolean => s.activeType !== null && s.pausedAt === null,
     isPaused: (s): boolean => s.activeType !== null && s.pausedAt !== null,
     totalWorkMs: (s): number => {
-      const workSessions = s.sessions.filter(x => x.type === 'work')
-      const workTime = workSessions.reduce((acc, x) => {
-        if (x.endedAt) {
-          return acc + (x.endedAt - x.startedAt)
-        }
-        return acc
-      }, 0)
-      // Add current work time if we're in work mode (running or paused)
+      // Use session-specific work time
       if (s.activeType === 'work' && s.activeStartedAt) {
         const currentTime = Date.now() - s.activeStartedAt
-        return workTime + Math.max(0, currentTime - s.totalPausedMs)
+        return s.sessionWorkMs + Math.max(0, currentTime - s.totalPausedMs)
       }
-      return workTime
+      return s.sessionWorkMs
     },
     totalBreakMs: (s): number => {
-      const breakSessions = s.sessions.filter(x => x.type === 'break')
-      const breakTime = breakSessions.reduce((acc, x) => {
-        if (x.endedAt) {
-          return acc + (x.endedAt - x.startedAt)
-        }
-        return acc
-      }, 0)
-      // Add current break time if we're in break mode
+      // Use session-specific break time
       if (s.activeType === 'break' && s.activeStartedAt) {
-        return breakTime + (Date.now() - s.activeStartedAt)
+        return s.sessionBreakMs + (Date.now() - s.activeStartedAt)
       }
       // Add paused time to break time if we're paused
       if (s.activeType !== null && s.pausedAt !== null) {
-        return breakTime + (Date.now() - s.pausedAt)
+        return s.sessionBreakMs + (Date.now() - s.pausedAt)
       }
-      return breakTime
+      return s.sessionBreakMs
     },
     totalCigaretteMs: (s): number => {
-      const cigaretteSessions = s.sessions.filter(x => x.type === 'cigarette')
-      const cigaretteTime = cigaretteSessions.reduce((acc, x) => {
-        if (x.endedAt) {
-          return acc + (x.endedAt - x.startedAt)
-        }
-        return acc
-      }, 0)
-      return cigaretteTime
+      // Use session-specific cigarette time
+      return s.sessionCigaretteMs
     },
     currentAddress(): string {
       if (this.selectedAddressId) {
@@ -124,6 +111,9 @@ export const useTimerStore = defineStore('timer', {
         currentSessionId: this.currentSessionId,
         pausedAt: this.pausedAt,
         totalPausedMs: this.totalPausedMs,
+        sessionWorkMs: this.sessionWorkMs,
+        sessionBreakMs: this.sessionBreakMs,
+        sessionCigaretteMs: this.sessionCigaretteMs,
       }
       await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(copy) })
     },
@@ -132,12 +122,15 @@ export const useTimerStore = defineStore('timer', {
       if (this.activeType && this.activeStartedAt) {
         this.endCurrent()
       }
-      // Create new work session
+      // Create new work session and reset session totals
       this.activeType = 'work'
       this.activeStartedAt = Date.now()
       this.currentSessionId = crypto.randomUUID()
       this.pausedAt = null
       this.totalPausedMs = 0
+      this.sessionWorkMs = 0
+      this.sessionBreakMs = 0
+      this.sessionCigaretteMs = 0
       void this.persist()
     },
     startBreak() {
@@ -172,16 +165,26 @@ export const useTimerStore = defineStore('timer', {
       // If break is under 5 minutes, save as cigarette break
       const sessionType: SessionType = breakDurationMinutes < 5 ? 'cigarette' : 'break'
       
-      const session: Session = {
-        id: this.currentSessionId || crypto.randomUUID(),
-        type: sessionType,
-        startedAt: this.activeStartedAt,
-        endedAt: now,
-        manual: false,
-        note: sessionType === 'cigarette' ? 'Pauză țigară' : undefined,
-        address: this.currentAddress,
+      // Update session totals
+      if (sessionType === 'cigarette') {
+        this.sessionCigaretteMs += breakDuration
+      } else {
+        this.sessionBreakMs += breakDuration
       }
-      this.sessions.unshift(session)
+      
+      // Only save to sessions if it's a regular break (not cigarette)
+      if (sessionType === 'break') {
+        const session: Session = {
+          id: this.currentSessionId || crypto.randomUUID(),
+          type: sessionType,
+          startedAt: this.activeStartedAt,
+          endedAt: now,
+          manual: false,
+          note: undefined,
+          address: this.currentAddress,
+        }
+        this.sessions.unshift(session)
+      }
       
       // Reset state
       this.activeType = null
@@ -195,7 +198,11 @@ export const useTimerStore = defineStore('timer', {
       // If we're in break mode, end the break and switch back to work
       if (this.activeType === 'break' && this.activeStartedAt) {
         this.endBreak()
-        this.startWork()
+        // Continue work from where we left off
+        this.activeType = 'work'
+        this.activeStartedAt = Date.now() - this.totalPausedMs
+        this.pausedAt = null
+        void this.persist()
         return
       }
       // If we're paused (work), resume
@@ -227,9 +234,11 @@ export const useTimerStore = defineStore('timer', {
         }
         
         actualDuration = Math.max(0, totalTime - pausedTime)
+        this.sessionWorkMs += actualDuration
       } else {
         // For break sessions, use total time
         actualDuration = now - this.activeStartedAt
+        this.sessionBreakMs += actualDuration
       }
       
       // Create session with actual duration
