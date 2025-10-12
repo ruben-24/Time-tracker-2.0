@@ -88,9 +88,11 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     startBreak() {
-      // If there's an active work session, pause it instead of ending
+      // If there's an active work session, pause it and start break timer
       if (this.activeType === 'work' && this.activeStartedAt && !this.pausedAt) {
         this.pausedAt = Date.now()
+        this.activeType = 'break'
+        this.activeStartedAt = Date.now()
         void this.persist()
         return
       }
@@ -106,7 +108,14 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     resumeWork() {
-      // If paused, resume from where we left off
+      // If we're in break mode, switch back to work
+      if (this.activeType === 'break' && this.activeStartedAt) {
+        this.activeType = 'work'
+        this.pausedAt = null
+        void this.persist()
+        return
+      }
+      // If paused work, resume from where we left off
       if (this.isPaused && this.activeType === 'work') {
         this.totalPausedMs += Date.now() - this.pausedAt!
         this.pausedAt = null

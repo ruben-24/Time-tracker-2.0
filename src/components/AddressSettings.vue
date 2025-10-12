@@ -21,6 +21,12 @@ const removeCustomAddress = () => {
   custom.value = ''
   showCustomSection.value = false
 }
+
+const useDefaultAddress = () => {
+  timer.setCustomAddress(null)
+  custom.value = ''
+  showCustomSection.value = false
+}
 </script>
 
 <template>
@@ -40,9 +46,14 @@ const removeCustomAddress = () => {
     <div v-if="showCustomSection" class="glass-enhanced rounded-xl p-4 space-y-3">
       <div class="flex items-center justify-between">
         <label class="text-sm font-medium text-white">Adresa personalizată</label>
-        <button @click="removeCustomAddress" class="text-red-400 hover:text-red-300 text-sm">
-          <i class="fas fa-trash"></i>
-        </button>
+        <div class="flex gap-2">
+          <button @click="useDefaultAddress" class="text-blue-400 hover:text-blue-300 text-sm">
+            <i class="fas fa-undo mr-1"></i>Default
+          </button>
+          <button @click="removeCustomAddress" class="text-red-400 hover:text-red-300 text-sm">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
       </div>
       <input 
         v-model="custom" 
