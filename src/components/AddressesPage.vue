@@ -61,9 +61,9 @@ const cancelEdit = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4">
+  <div class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-6 pt-4">
       <button @click="emit('navigate', 'main')" class="btn btn-primary p-3 rounded-full">
         <ArrowLeft class="h-5 w-5" />
       </button>

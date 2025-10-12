@@ -115,8 +115,8 @@ const forceUpdateTotals = () => {
     <AddressesPage v-else-if="currentPage === 'addresses'" @navigate="navigateTo" />
 
     <!-- Financial Reports Page -->
-    <div v-else-if="currentPage === 'financial'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4">
-      <div class="flex items-center justify-between mb-6">
+    <div v-else-if="currentPage === 'financial'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
+      <div class="flex items-center justify-between mb-6 pt-4">
         <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
           <ArrowLeft class="h-5 w-5" />
         </button>
@@ -127,8 +127,8 @@ const forceUpdateTotals = () => {
     </div>
 
     <!-- Import/Export Page -->
-    <div v-else-if="currentPage === 'import-export'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4">
-      <div class="flex items-center justify-between mb-6">
+    <div v-else-if="currentPage === 'import-export'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
+      <div class="flex items-center justify-between mb-6 pt-4">
         <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
           <ArrowLeft class="h-5 w-5" />
         </button>
@@ -142,8 +142,8 @@ const forceUpdateTotals = () => {
     </div>
 
     <!-- Settings Page -->
-    <div v-else-if="currentPage === 'settings'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4">
-      <div class="flex items-center justify-between mb-6">
+    <div v-else-if="currentPage === 'settings'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
+      <div class="flex items-center justify-between mb-6 pt-4">
         <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
           <ArrowLeft class="h-5 w-5" />
         </button>

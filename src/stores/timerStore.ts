@@ -43,10 +43,10 @@ export const useTimerStore = defineStore('timer', {
     totalWorkMs: (s): number => {
       const workSessions = s.sessions.filter(x => x.type === 'work')
       const workTime = workSessions.reduce((acc, x) => acc + ((x.endedAt ?? Date.now()) - x.startedAt), 0)
-      // Add current work time if we're in work mode
+      // Add current work time if we're in work mode (running or paused)
       if (s.activeType === 'work' && s.activeStartedAt) {
         const currentTime = Date.now() - s.activeStartedAt
-        return workTime + currentTime - s.totalPausedMs
+        return workTime + Math.max(0, currentTime - s.totalPausedMs)
       }
       return workTime
     },
@@ -56,6 +56,10 @@ export const useTimerStore = defineStore('timer', {
       // Add current break time if we're in break mode
       if (s.activeType === 'break' && s.activeStartedAt) {
         return breakTime + (Date.now() - s.activeStartedAt)
+      }
+      // Add paused time to break time if we're paused
+      if (s.activeType !== null && s.pausedAt !== null) {
+        return breakTime + (Date.now() - s.pausedAt)
       }
       return breakTime
     },
@@ -103,11 +107,8 @@ export const useTimerStore = defineStore('timer', {
     startBreak() {
       // If there's an active work session, pause it and start break timer
       if (this.activeType === 'work' && this.activeStartedAt && !this.pausedAt) {
-        // Save the work time so far
-        this.totalPausedMs += Date.now() - this.activeStartedAt
-        this.activeType = 'break'
-        this.activeStartedAt = Date.now()
-        this.currentSessionId = crypto.randomUUID()
+        // Pause the work session
+        this.pausedAt = Date.now()
         void this.persist()
         return
       }
@@ -123,19 +124,21 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     resumeWork() {
+      // If we're paused (work or break), resume
+      if (this.isPaused) {
+        if (this.pausedAt) {
+          this.totalPausedMs += Date.now() - this.pausedAt
+        }
+        this.pausedAt = null
+        void this.persist()
+        return
+      }
       // If we're in break mode, switch back to work
       if (this.activeType === 'break' && this.activeStartedAt) {
         // Save break time and switch to work
         this.totalPausedMs += Date.now() - this.activeStartedAt
         this.activeType = 'work'
         this.activeStartedAt = Date.now()
-        this.pausedAt = null
-        void this.persist()
-        return
-      }
-      // If paused work, resume from where we left off
-      if (this.isPaused && this.activeType === 'work') {
-        this.totalPausedMs += Date.now() - this.pausedAt!
         this.pausedAt = null
         void this.persist()
         return
@@ -148,8 +151,14 @@ export const useTimerStore = defineStore('timer', {
       
       // Calculate actual work time (excluding pauses)
       const now = Date.now()
-      const totalTime = now - this.activeStartedAt
-      const actualWorkTime = totalTime - this.totalPausedMs
+      let totalTime = now - this.activeStartedAt
+      
+      // If we're paused, add the pause time to totalPausedMs
+      if (this.isPaused && this.pausedAt) {
+        this.totalPausedMs += now - this.pausedAt
+      }
+      
+      const actualWorkTime = Math.max(0, totalTime - this.totalPausedMs)
       
       // Create session with actual work time
       const session: Session = {
