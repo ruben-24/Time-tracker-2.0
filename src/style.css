@@ -10,7 +10,7 @@
 
 body {
   @apply antialiased text-gray-800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+  background: linear-gradient(135deg, #1e293b 0%, #334155 25%, #475569 50%, #64748b 75%, #94a3b8 100%);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
   min-height: 100dvh;
@@ -63,43 +63,43 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(45deg, #4facfe, #00f2fe);
+  background: linear-gradient(45deg, #3b82f6, #1d4ed8);
   color: white;
-  box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 12px 25px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 12px 25px rgba(59, 130, 246, 0.4);
 }
 
 .btn-amber { 
-  background: linear-gradient(45deg, #feca57, #ff9ff3);
+  background: linear-gradient(45deg, #f59e0b, #d97706);
   color: white;
-  box-shadow: 0 8px 20px rgba(254, 202, 87, 0.3);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
 }
 
 .btn-amber:hover {
-  box-shadow: 0 12px 25px rgba(254, 202, 87, 0.4);
+  box-shadow: 0 12px 25px rgba(245, 158, 11, 0.4);
 }
 
 .btn-emerald { 
-  background: linear-gradient(45deg, #48dbfb, #0abde3);
+  background: linear-gradient(45deg, #10b981, #059669);
   color: white;
-  box-shadow: 0 8px 20px rgba(72, 219, 251, 0.3);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
 }
 
 .btn-emerald:hover {
-  box-shadow: 0 12px 25px rgba(72, 219, 251, 0.4);
+  box-shadow: 0 12px 25px rgba(16, 185, 129, 0.4);
 }
 
 .btn-rose { 
-  background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+  background: linear-gradient(45deg, #ef4444, #dc2626);
   color: white;
-  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
 }
 
 .btn-rose:hover {
-  box-shadow: 0 12px 25px rgba(255, 107, 107, 0.4);
+  box-shadow: 0 12px 25px rgba(239, 68, 68, 0.4);
 }
 
 /* Safe area padding for bottom bar */
@@ -107,9 +107,16 @@ body {
   padding-bottom: max(env(safe-area-inset-bottom), 16px);
 }
 
-/* Safe area top padding */
+/* Safe area top padding - iPhone 16 Pro Max optimized */
 .safe-top {
-  padding-top: max(env(safe-area-inset-top), 18px);
+  padding-top: max(env(safe-area-inset-top), 44px);
+}
+
+/* Additional padding for iPhone 16 Pro Max dynamic island */
+@media screen and (device-width: 430px) and (device-height: 932px) {
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 54px);
+  }
 }
 
 /* Hero decorative gradient background */
@@ -117,9 +124,9 @@ body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(1200px 600px at 100% -10%, rgba(79,172,254,0.25), rgba(79,172,254,0) 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(255,107,107,0.25), rgba(255,107,107,0) 60%),
-    radial-gradient(800px 400px at 50% 50%, rgba(168,85,247,0.2), rgba(168,85,247,0) 70%);
+    radial-gradient(1200px 600px at 100% -10%, rgba(59,130,246,0.2), rgba(59,130,246,0) 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(16,185,129,0.2), rgba(16,185,129,0) 60%),
+    radial-gradient(800px 400px at 50% 50%, rgba(100,116,139,0.15), rgba(100,116,139,0) 70%);
   filter: blur(30px);
   pointer-events: none;
   animation: float 20s ease-in-out infinite;

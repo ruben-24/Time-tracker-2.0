@@ -19,6 +19,9 @@ export interface TimerState {
   sessions: Session[]
   defaultAddress: string
   customAddress: string | null
+  currentSessionId: string | null
+  pausedAt: number | null
+  totalPausedMs: number
 }
 
 const STORAGE_KEY = 'tt2_state_v1'
@@ -30,9 +33,13 @@ export const useTimerStore = defineStore('timer', {
     sessions: [],
     defaultAddress: 'Wasserburger str 15a,83119,Obing',
     customAddress: null,
+    currentSessionId: null,
+    pausedAt: null,
+    totalPausedMs: 0,
   }),
   getters: {
-    isRunning: (s): boolean => s.activeType !== null,
+    isRunning: (s): boolean => s.activeType !== null && s.pausedAt === null,
+    isPaused: (s): boolean => s.activeType !== null && s.pausedAt !== null,
     totalWorkMs: (s): number => s.sessions
       .filter(x => x.type === 'work')
       .reduce((acc, x) => acc + ((x.endedAt ?? Date.now()) - x.startedAt), 0),
@@ -58,6 +65,9 @@ export const useTimerStore = defineStore('timer', {
         sessions: this.sessions,
         defaultAddress: this.defaultAddress,
         customAddress: this.customAddress,
+        currentSessionId: this.currentSessionId,
+        pausedAt: this.pausedAt,
+        totalPausedMs: this.totalPausedMs,
       }
       await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(copy) })
     },
@@ -65,41 +75,72 @@ export const useTimerStore = defineStore('timer', {
       return this.customAddress ?? this.defaultAddress
     },
     startWork() {
-      // Always allow switching to work; if there is an active session, end it before starting work
+      // If there's an active session, end it first
       if (this.activeType && this.activeStartedAt) {
         this.endCurrent()
       }
+      // Create new work session
       this.activeType = 'work'
       this.activeStartedAt = Date.now()
+      this.currentSessionId = crypto.randomUUID()
+      this.pausedAt = null
+      this.totalPausedMs = 0
       void this.persist()
     },
     startBreak() {
-      // Always allow switching to break; if there is an active session, end it before starting break
+      // If there's an active work session, pause it instead of ending
+      if (this.activeType === 'work' && this.activeStartedAt && !this.pausedAt) {
+        this.pausedAt = Date.now()
+        void this.persist()
+        return
+      }
+      // If no active session, start a new break session
       if (this.activeType && this.activeStartedAt) {
         this.endCurrent()
       }
       this.activeType = 'break'
       this.activeStartedAt = Date.now()
+      this.currentSessionId = crypto.randomUUID()
+      this.pausedAt = null
+      this.totalPausedMs = 0
       void this.persist()
     },
     resumeWork() {
-      // Resume is equivalent to starting work now
+      // If paused, resume from where we left off
+      if (this.isPaused && this.activeType === 'work') {
+        this.totalPausedMs += Date.now() - this.pausedAt!
+        this.pausedAt = null
+        void this.persist()
+        return
+      }
+      // If no active session, start new work
       this.startWork()
     },
     endCurrent(note?: string) {
       if (!this.activeType || !this.activeStartedAt) return
+      
+      // Calculate actual work time (excluding pauses)
+      const now = Date.now()
+      const totalTime = now - this.activeStartedAt
+      const actualWorkTime = totalTime - this.totalPausedMs
+      
       const session: Session = {
-        id: crypto.randomUUID(),
+        id: this.currentSessionId || crypto.randomUUID(),
         type: this.activeType,
         startedAt: this.activeStartedAt,
-        endedAt: Date.now(),
+        endedAt: now,
         manual: false,
         note,
         address: this.currentAddress(),
       }
       this.sessions.unshift(session)
+      
+      // Reset state
       this.activeType = null
       this.activeStartedAt = null
+      this.currentSessionId = null
+      this.pausedAt = null
+      this.totalPausedMs = 0
       void this.persist()
     },
     addManualSession(type: SessionType, startedAt: number, endedAt: number, note?: string) {

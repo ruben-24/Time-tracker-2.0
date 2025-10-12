@@ -47,7 +47,7 @@ const canEnd = computed(() => true)
       @click="timer.endCurrent()"
     >
       <Square class="h-6 w-6" />
-      <span class="text-xs">Stop</span>
+      <span class="text-xs">Încheie lucru</span>
     </button>
   </div>
 </template>

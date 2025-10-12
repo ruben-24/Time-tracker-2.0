@@ -29,9 +29,11 @@ const elapsed = computed(() => {
   return now.value - timer.activeStartedAt
 })
 
-const stateLabel = computed(() =>
-  timer.activeType ? (timer.activeType === 'work' ? 'Lucru' : 'Pauză') : 'Inactiv'
-)
+const stateLabel = computed(() => {
+  if (!timer.activeType) return 'Inactiv'
+  if (timer.isPaused) return 'Pauză'
+  return timer.activeType === 'work' ? 'Lucru' : 'Pauză'
+})
 </script>
 
 <template>
