@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
 import { useFinancialStore } from '../stores/financialStore'
-import { ArrowLeft, Settings, Clock, DollarSign, MapPin, Bell, Trash2, Download, Upload } from 'lucide-vue-next'
+import { useThemeStore } from '../stores/themeStore'
+import { ArrowLeft, Settings, Clock, DollarSign, MapPin, Bell, Trash2, Download, Upload, Palette, Brush, Sparkles, Eye, Zap } from 'lucide-vue-next'
 
 const emit = defineEmits<{
   navigate: [page: string]
@@ -10,6 +11,7 @@ const emit = defineEmits<{
 
 const timer = useTimerStore()
 const financial = useFinancialStore()
+const theme = useThemeStore()
 
 // Settings state
 const showDeleteConfirm = ref(false)
@@ -37,6 +39,15 @@ const taxClass = ref(financial.taxClass)
 
 // Address settings
 const defaultAddress = ref(timer.defaultAddress)
+
+// Theme settings
+const showThemeCustomizer = ref(false)
+const customBackgroundColor = ref(theme.settings.backgroundColors.primary)
+const customButtonColor = ref(theme.settings.buttonColors.primary)
+
+onMounted(() => {
+  theme.load()
+})
 
 const updateFinancialSettings = () => {
   financial.updateSettings({
@@ -87,6 +98,41 @@ const deleteAllData = () => {
   }
 }
 
+// Theme functions
+const applyBackgroundPreset = (preset: any) => {
+  theme.applyBackgroundPreset(preset)
+  customBackgroundColor.value = preset.colors.primary
+}
+
+const applyButtonPreset = (preset: any) => {
+  theme.applyButtonPreset(preset)
+  customButtonColor.value = preset.colors.primary
+}
+
+const updateCustomBackground = () => {
+  theme.updateSettings({
+    backgroundColors: {
+      ...theme.settings.backgroundColors,
+      primary: customBackgroundColor.value
+    }
+  })
+}
+
+const updateCustomButton = () => {
+  theme.updateSettings({
+    buttonColors: {
+      ...theme.settings.buttonColors,
+      primary: customButtonColor.value
+    }
+  })
+}
+
+const resetTheme = () => {
+  theme.reset()
+  customBackgroundColor.value = theme.settings.backgroundColors.primary
+  customButtonColor.value = theme.settings.buttonColors.primary
+}
+
 // const closeApp = () => {
 //   if (confirm('Sigur vrei să închizi aplicația?')) {
 //     // In a real app, this would close the app
@@ -107,6 +153,187 @@ const deleteAllData = () => {
     </div>
 
     <div class="space-y-6">
+      <!-- Theme Customization -->
+      <div class="card-glass p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <Palette class="h-6 w-6 text-pink-400" />
+          <h2 class="text-lg font-semibold text-white">Personalizare Temă</h2>
+        </div>
+        
+        <div class="space-y-6">
+          <!-- Background Presets -->
+          <div>
+            <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
+              <Eye class="h-4 w-4" />
+              Preset-uri Background
+            </h3>
+            <div class="grid grid-cols-2 gap-3">
+              <button
+                v-for="preset in theme.backgroundPresets"
+                :key="preset.name"
+                @click="applyBackgroundPreset(preset)"
+                class="p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105"
+                :class="theme.settings.backgroundColors.primary === preset.colors.primary ? 'border-pink-400 bg-pink-400/20' : 'border-white/20 bg-white/10 hover:border-white/40'"
+              >
+                <div class="flex items-center gap-2 mb-2">
+                  <div 
+                    class="w-4 h-4 rounded-full"
+                    :style="{ backgroundColor: preset.colors.primary }"
+                  ></div>
+                  <div 
+                    class="w-4 h-4 rounded-full"
+                    :style="{ backgroundColor: preset.colors.secondary }"
+                  ></div>
+                  <div 
+                    class="w-4 h-4 rounded-full"
+                    :style="{ backgroundColor: preset.colors.accent }"
+                  ></div>
+                </div>
+                <div class="text-xs text-white/70">{{ preset.name }}</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Button Presets -->
+          <div>
+            <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
+              <Brush class="h-4 w-4" />
+              Preset-uri Butoane
+            </h3>
+            <div class="grid grid-cols-2 gap-3">
+              <button
+                v-for="preset in theme.buttonPresets"
+                :key="preset.name"
+                @click="applyButtonPreset(preset)"
+                class="p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105"
+                :class="theme.settings.buttonColors.primary === preset.colors.primary ? 'border-cyan-400 bg-cyan-400/20' : 'border-white/20 bg-white/10 hover:border-white/40'"
+              >
+                <div class="flex items-center gap-2 mb-2">
+                  <div 
+                    class="w-4 h-4 rounded-full"
+                    :style="{ backgroundColor: preset.colors.primary }"
+                  ></div>
+                  <div 
+                    class="w-4 h-4 rounded-full"
+                    :style="{ backgroundColor: preset.colors.secondary }"
+                  ></div>
+                  <div 
+                    class="w-4 h-4 rounded-full"
+                    :style="{ backgroundColor: preset.colors.accent }"
+                  ></div>
+                </div>
+                <div class="text-xs text-white/70">{{ preset.name }}</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Custom Colors -->
+          <div>
+            <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
+              <Sparkles class="h-4 w-4" />
+              Culori Personalizate
+            </h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm text-white/70 mb-2">Background Principal</label>
+                <div class="flex gap-2">
+                  <input
+                    v-model="customBackgroundColor"
+                    @change="updateCustomBackground"
+                    type="color"
+                    class="w-12 h-10 rounded-lg border border-white/20 cursor-pointer"
+                  />
+                  <input
+                    v-model="customBackgroundColor"
+                    @change="updateCustomBackground"
+                    type="text"
+                    class="flex-1 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white text-sm"
+                    placeholder="#0f0f23"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm text-white/70 mb-2">Butoane Principale</label>
+                <div class="flex gap-2">
+                  <input
+                    v-model="customButtonColor"
+                    @change="updateCustomButton"
+                    type="color"
+                    class="w-12 h-10 rounded-lg border border-white/20 cursor-pointer"
+                  />
+                  <input
+                    v-model="customButtonColor"
+                    @change="updateCustomButton"
+                    type="text"
+                    class="flex-1 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white text-sm"
+                    placeholder="#3b82f6"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual Effects -->
+          <div>
+            <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
+              <Zap class="h-4 w-4" />
+              Efecte Vizuale
+            </h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-white/80">Animații</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input
+                    v-model="theme.settings.animations"
+                    @change="theme.updateSettings({ animations: theme.settings.animations })"
+                    type="checkbox"
+                    class="sr-only peer"
+                  />
+                  <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <span class="text-white/80">Particule flotante</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input
+                    v-model="theme.settings.particles"
+                    @change="theme.updateSettings({ particles: theme.settings.particles })"
+                    type="checkbox"
+                    class="sr-only peer"
+                  />
+                  <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <span class="text-white/80">Efect glass</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input
+                    v-model="theme.settings.glassEffect"
+                    @change="theme.updateSettings({ glassEffect: theme.settings.glassEffect })"
+                    type="checkbox"
+                    class="sr-only peer"
+                  />
+                  <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reset Theme -->
+          <div class="pt-4 border-t border-white/20">
+            <button
+              @click="resetTheme"
+              class="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-red-500/20 border border-red-400/50 text-red-400 hover:bg-red-500/30 transition-colors"
+            >
+              <Settings class="h-4 w-4" />
+              <span>Resetează la setările implicite</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Timer Settings -->
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
@@ -312,12 +539,140 @@ const deleteAllData = () => {
         </div>
       </div>
 
+      <!-- Advanced Settings -->
+      <div class="card-glass p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <Settings class="h-6 w-6 text-indigo-400" />
+          <h2 class="text-lg font-semibold text-white">Setări Avansate</h2>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-white/80 mb-2">
+              Interval de actualizare (secunde)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="60"
+              value="1"
+              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-white/80 mb-2">
+              Limita de sesiuni în istoric
+            </label>
+            <input
+              type="number"
+              min="50"
+              max="1000"
+              value="500"
+              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none"
+            />
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <span class="text-white/80">Mod întunecat permanent</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked
+                class="sr-only peer"
+              />
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <span class="text-white/80">Auto-save la fiecare minut</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked
+                class="sr-only peer"
+              />
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <span class="text-white/80">Vibrații la notificări</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                class="sr-only peer"
+              />
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Performance Settings -->
+      <div class="card-glass p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <Zap class="h-6 w-6 text-yellow-400" />
+          <h2 class="text-lg font-semibold text-white">Setări Performanță</h2>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-white/80 mb-2">
+              Calitatea animațiilor
+            </label>
+            <select class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-yellow-400 focus:outline-none">
+              <option value="high">Înaltă (60fps)</option>
+              <option value="medium" selected>Medie (30fps)</option>
+              <option value="low">Scăzută (15fps)</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-white/80 mb-2">
+              Cache pentru date (MB)
+            </label>
+            <input
+              type="number"
+              min="10"
+              max="100"
+              value="50"
+              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-yellow-400 focus:outline-none"
+            />
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <span class="text-white/80">Optimizare baterie</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked
+                class="sr-only peer"
+              />
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- App Info -->
       <div class="card-glass p-6">
         <div class="text-center">
           <h3 class="text-lg font-semibold text-white mb-2">Time Tracker Pro</h3>
           <p class="text-white/70 text-sm">Versiunea 2.0.0</p>
           <p class="text-white/60 text-xs mt-2">Dezvoltat cu ❤️ pentru productivitate</p>
+          <div class="mt-4 flex justify-center gap-4">
+            <button class="btn btn-glass btn-rounded px-4 py-2 text-xs">
+              Changelog
+            </button>
+            <button class="btn btn-glass btn-rounded px-4 py-2 text-xs">
+              Support
+            </button>
+            <button class="btn btn-glass btn-rounded px-4 py-2 text-xs">
+              Rate App
+            </button>
+          </div>
         </div>
       </div>
     </div>
