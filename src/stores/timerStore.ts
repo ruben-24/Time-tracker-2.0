@@ -14,6 +14,14 @@ export interface Session {
   address?: string
 }
 
+export interface WorkBreak {
+  id: string
+  type: 'break' | 'cigarette'
+  startedAt: number
+  endedAt: number
+  duration: number
+}
+
 export interface ExtraAddress {
   id: string
   name: string
@@ -24,6 +32,7 @@ export interface TimerState {
   activeType: SessionType | null
   activeStartedAt: number | null
   sessions: Session[]
+  currentWorkBreaks: WorkBreak[]
   defaultAddress: string
   customAddress: string | null
   extraAddresses: ExtraAddress[]
@@ -60,6 +69,7 @@ export const useTimerStore = defineStore('timer', {
     activeType: null,
     activeStartedAt: null,
     sessions: [],
+    currentWorkBreaks: [],
     defaultAddress: 'Wasserburger str 15a,83119,Obing',
     customAddress: null,
     extraAddresses: [],
@@ -139,6 +149,7 @@ export const useTimerStore = defineStore('timer', {
         activeType: this.activeType,
         activeStartedAt: this.activeStartedAt,
         sessions: this.sessions,
+        currentWorkBreaks: this.currentWorkBreaks,
         defaultAddress: this.defaultAddress,
         customAddress: this.customAddress,
         extraAddresses: this.extraAddresses,
@@ -172,6 +183,7 @@ export const useTimerStore = defineStore('timer', {
       this.breakStartedAt = null
       this.breakSessionId = null
       this.totalBreakTimeMs = 0
+      this.currentWorkBreaks = []
       this.sessionWorkMs = 0
       this.sessionBreakMs = 0
       this.sessionCigaretteMs = 0
@@ -232,13 +244,33 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     resumeWork() {
-      // If we're in break mode, save current break and resume work
+      // If we're in break mode, add break to current work session and resume work
       if (this.pausedAt && this.breakStartedAt) {
-        // Save current break session to history immediately
-        this.endBreakSession()
+        // Add current break to total break time (don't save as separate session)
+        const now = Date.now()
+        const currentBreakDuration = now - this.breakStartedAt
+        this.totalBreakTimeMs += currentBreakDuration
+        
+        // Add break to current work session breaks array
+        const breakDurationMinutes = currentBreakDuration / (1000 * 60)
+        const breakType = breakDurationMinutes < 5 ? 'cigarette' : 'break'
+        
+        // Store break info in current work session (not as separate session)
+        if (!this.currentWorkBreaks) {
+          this.currentWorkBreaks = []
+        }
+        this.currentWorkBreaks.push({
+          id: crypto.randomUUID(),
+          type: breakType,
+          startedAt: this.breakStartedAt,
+          endedAt: now,
+          duration: currentBreakDuration
+        })
         
         // Resume work from where we left off
         this.pausedAt = null
+        this.breakStartedAt = null
+        this.breakSessionId = null
         void this.persist()
         return
       }
@@ -273,7 +305,7 @@ export const useTimerStore = defineStore('timer', {
         actualDuration = Math.max(0, totalTime - pausedTime)
         this.sessionWorkMs += actualDuration
         
-        // Create work session
+        // Create work session with breaks included
         const session: Session = {
           id: this.currentSessionId || crypto.randomUUID(),
           type: 'work',
@@ -284,6 +316,22 @@ export const useTimerStore = defineStore('timer', {
           address: this.currentAddress,
         }
         this.sessions.unshift(session)
+        
+        // Add all breaks as separate sessions linked to this work session
+        if (this.currentWorkBreaks && this.currentWorkBreaks.length > 0) {
+          this.currentWorkBreaks.forEach(workBreak => {
+            const breakSession: Session = {
+              id: workBreak.id,
+              type: workBreak.type,
+              startedAt: workBreak.startedAt,
+              endedAt: workBreak.endedAt,
+              manual: false,
+              note: `Pauză din sesiunea ${session.id}`,
+              address: this.currentAddress,
+            }
+            this.sessions.unshift(breakSession)
+          })
+        }
       }
       
       // End any active break session
@@ -300,6 +348,7 @@ export const useTimerStore = defineStore('timer', {
       this.breakStartedAt = null
       this.breakSessionId = null
       this.totalBreakTimeMs = 0
+      this.currentWorkBreaks = []
       this.sessionWorkMs = 0
       this.sessionBreakMs = 0
       this.sessionCigaretteMs = 0
