@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
 import { useFinancialStore } from '../stores/financialStore'
 import { useThemeStore } from '../stores/themeStore'
-import { ArrowLeft, Settings, Clock, DollarSign, MapPin, Bell, Trash2, Download, Upload, Palette, Brush, Sparkles, Eye, Zap } from 'lucide-vue-next'
+import { ArrowLeft, Settings, Clock, DollarSign, MapPin, Bell, Trash2, Download, Upload, Palette, Brush, Sparkles, Eye, Zap, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
 
 const emit = defineEmits<{
   navigate: [page: string]
@@ -563,6 +563,67 @@ const resetTheme = () => {
             <Trash2 class="h-5 w-5" />
             <span>Șterge toate datele</span>
           </button>
+        </div>
+      </div>
+
+      <!-- File Backup Management -->
+      <div class="card-glass p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <FolderOpen class="h-6 w-6 text-gray-400" />
+          <h2 class="text-lg font-semibold text-white">Backup-uri în Fișiere</h2>
+        </div>
+        
+        <div class="space-y-3">
+          <button
+            @click="loadBackupFiles"
+            class="w-full flex items-center gap-3 p-3 rounded-lg bg-purple-500/20 border border-purple-400/50 text-purple-400 hover:bg-purple-500/30 transition-colors"
+          >
+            <RefreshCw class="h-5 w-5" />
+            <span>Încarcă lista backup-uri</span>
+          </button>
+          
+          <button
+            @click="createManualBackup"
+            class="w-full flex items-center gap-3 p-3 rounded-lg bg-green-500/20 border border-green-400/50 text-green-400 hover:bg-green-500/30 transition-colors"
+          >
+            <Save class="h-5 w-5" />
+            <span>Creează backup manual</span>
+          </button>
+        </div>
+
+        <!-- Backup Files List -->
+        <div v-if="backupFiles.length > 0" class="mt-4">
+          <h3 class="text-md font-medium text-white/80 mb-3">Backup-uri disponibile:</h3>
+          <div class="space-y-2 max-h-40 overflow-y-auto">
+            <div 
+              v-for="file in backupFiles" 
+              :key="file.name"
+              class="flex items-center justify-between bg-white/10 rounded-lg p-3"
+            >
+              <div class="flex-1">
+                <div class="text-sm text-white/80">{{ file.name }}</div>
+                <div class="text-xs text-white/60">
+                  {{ new Date(file.modificationTime).toLocaleString('ro-RO') }}
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  @click="restoreBackup(file.name)"
+                  class="btn btn-blue p-2 rounded-full"
+                  title="Restaurează"
+                >
+                  <RotateCcw class="h-4 w-4" />
+                </button>
+                <button
+                  @click="downloadBackup(file.name)"
+                  class="btn btn-emerald p-2 rounded-full"
+                  title="Descarcă"
+                >
+                  <Download class="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

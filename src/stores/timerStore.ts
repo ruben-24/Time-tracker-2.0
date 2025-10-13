@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { Preferences } from '@capacitor/preferences'
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 
 export type SessionType = 'work' | 'break' | 'cigarette'
 
@@ -41,6 +42,8 @@ export interface TimerState {
 }
 
 const STORAGE_KEY = 'tt2_state_v1'
+const DATA_FILE = 'time-tracker-data.json'
+const BACKUP_DIR = 'TimeTracker'
 
 export const useTimerStore = defineStore('timer', {
   state: (): TimerState => ({
@@ -98,11 +101,25 @@ export const useTimerStore = defineStore('timer', {
   },
   actions: {
     async load() {
+      try {
+        // Try to load from file first
+        const fileData = await this.loadFromFile()
+        if (fileData) {
+          this.$patch(fileData)
+          return
+        }
+      } catch (error) {
+        console.log('No file data found, trying preferences...')
+      }
+
+      // Fallback to preferences
       const { value } = await Preferences.get({ key: STORAGE_KEY })
       if (!value) return
       try {
         const parsed = JSON.parse(value) as TimerState
         this.$patch(parsed)
+        // Save to file for future use
+        await this.saveToFile(parsed)
       } catch {
         // ignore corrupted state
       }
@@ -126,7 +143,10 @@ export const useTimerStore = defineStore('timer', {
         sessionBreakMs: this.sessionBreakMs,
         sessionCigaretteMs: this.sessionCigaretteMs,
       }
+      
+      // Save to both preferences and file
       await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(copy) })
+      await this.saveToFile(copy)
     },
     startWork() {
       // If there's an active session, end it first
@@ -396,6 +416,95 @@ export const useTimerStore = defineStore('timer', {
         console.error('Import error:', error)
         const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută'
         throw new Error(`Eroare la importarea datelor: ${errorMessage}`)
+      }
+    },
+
+    // File system methods
+    async saveToFile(data: TimerState) {
+      try {
+        const jsonData = JSON.stringify(data, null, 2)
+        
+        // Create directory if it doesn't exist
+        try {
+          await Filesystem.mkdir({
+            path: BACKUP_DIR,
+            directory: Directory.Documents,
+            recursive: true
+          })
+        } catch (error) {
+          // Directory might already exist, ignore error
+        }
+
+        // Save data file
+        await Filesystem.writeFile({
+          path: `${BACKUP_DIR}/${DATA_FILE}`,
+          data: jsonData,
+          directory: Directory.Documents,
+          encoding: Encoding.UTF8
+        })
+
+        // Create timestamped backup
+        const timestamp = new Date().toISOString().split('T')[0]
+        await Filesystem.writeFile({
+          path: `${BACKUP_DIR}/backup-${timestamp}.json`,
+          data: jsonData,
+          directory: Directory.Documents,
+          encoding: Encoding.UTF8
+        })
+
+        console.log('Data saved to file successfully')
+      } catch (error) {
+        console.error('Failed to save to file:', error)
+      }
+    },
+
+    async loadFromFile() {
+      try {
+        const result = await Filesystem.readFile({
+          path: `${BACKUP_DIR}/${DATA_FILE}`,
+          directory: Directory.Documents,
+          encoding: Encoding.UTF8
+        })
+        
+        return JSON.parse(result.data) as TimerState
+      } catch (error) {
+        console.log('No data file found')
+        return null
+      }
+    },
+
+    async getBackupFiles() {
+      try {
+        const result = await Filesystem.readdir({
+          path: BACKUP_DIR,
+          directory: Directory.Documents
+        })
+        
+        return result.files
+          .filter(file => file.name.endsWith('.json'))
+          .sort((a, b) => b.name.localeCompare(a.name))
+      } catch (error) {
+        console.error('Failed to list backup files:', error)
+        return []
+      }
+    },
+
+    async restoreFromBackup(filename: string) {
+      try {
+        const result = await Filesystem.readFile({
+          path: `${BACKUP_DIR}/${filename}`,
+          directory: Directory.Documents,
+          encoding: Encoding.UTF8
+        })
+        
+        const data = JSON.parse(result.data) as TimerState
+        this.$patch(data)
+        await this.persist()
+        
+        return true
+      } catch (error) {
+        console.error('Failed to restore from backup:', error)
+        throw new Error(`Eroare la restaurarea backup-ului: ${error.message}`)
       }
     }
   }
