@@ -184,19 +184,17 @@ export const useTimerStore = defineStore('timer', {
         this.sessionBreakMs += breakDuration
       }
       
-      // Only save to sessions if it's a regular break (not cigarette)
-      if (sessionType === 'break') {
-        const session: Session = {
-          id: this.breakSessionId || crypto.randomUUID(),
-          type: sessionType,
-          startedAt: this.breakStartedAt,
-          endedAt: now,
-          manual: false,
-          note: undefined,
-          address: this.currentAddress,
-        }
-        this.sessions.unshift(session)
+      // Always save to sessions (both break and cigarette)
+      const session: Session = {
+        id: this.breakSessionId || crypto.randomUUID(),
+        type: sessionType,
+        startedAt: this.breakStartedAt,
+        endedAt: now,
+        manual: false,
+        note: undefined,
+        address: this.currentAddress,
       }
+      this.sessions.unshift(session)
       
       // Reset break state
       this.breakStartedAt = null

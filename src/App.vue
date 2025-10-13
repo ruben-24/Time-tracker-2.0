@@ -11,13 +11,21 @@ import AddressSelector from './components/AddressSelector.vue'
 import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
-import { ArrowLeft, DollarSign } from 'lucide-vue-next'
+import { ArrowLeft, DollarSign, Clock, Pause, Settings } from 'lucide-vue-next'
 
 const timer = useTimerStore()
 const theme = useThemeStore()
 const now = ref(Date.now())
 const currentPage = ref('main')
 let ticker: number | undefined
+
+// Manual entry variables
+const manualWorkStart = ref('')
+const manualWorkEnd = ref('')
+const manualWorkNote = ref('')
+const manualBreakStart = ref('')
+const manualBreakEnd = ref('')
+const manualBreakNote = ref('')
 
 onMounted(() => {
   void timer.load()
@@ -89,6 +97,82 @@ const isOnBreak = computed(() => {
 
 const navigateTo = (page: string) => {
   currentPage.value = page
+}
+
+// Manual entry functions
+const addManualWorkSession = () => {
+  if (!manualWorkStart.value || !manualWorkEnd.value) {
+    alert('Te rog completează începutul și sfârșitul!')
+    return
+  }
+  
+  const startTime = new Date(manualWorkStart.value).getTime()
+  const endTime = new Date(manualWorkEnd.value).getTime()
+  
+  if (endTime <= startTime) {
+    alert('Sfârșitul trebuie să fie după începutul!')
+    return
+  }
+  
+  timer.addManualSession('work', startTime, endTime, manualWorkNote.value)
+  
+  // Reset form
+  manualWorkStart.value = ''
+  manualWorkEnd.value = ''
+  manualWorkNote.value = ''
+  
+  alert('Sesiunea de lucru a fost adăugată cu succes!')
+}
+
+const addManualBreakSession = () => {
+  if (!manualBreakStart.value || !manualBreakEnd.value) {
+    alert('Te rog completează începutul și sfârșitul!')
+    return
+  }
+  
+  const startTime = new Date(manualBreakStart.value).getTime()
+  const endTime = new Date(manualBreakEnd.value).getTime()
+  
+  if (endTime <= startTime) {
+    alert('Sfârșitul trebuie să fie după începutul!')
+    return
+  }
+  
+  timer.addManualSession('break', startTime, endTime, manualBreakNote.value)
+  
+  // Reset form
+  manualBreakStart.value = ''
+  manualBreakEnd.value = ''
+  manualBreakNote.value = ''
+  
+  alert('Sesiunea de pauză a fost adăugată cu succes!')
+}
+
+const setCurrentTime = (type: 'work' | 'break') => {
+  const now = new Date()
+  const timeString = now.toISOString().slice(0, 16) // Format for datetime-local input
+  
+  if (type === 'work') {
+    if (!manualWorkStart.value) {
+      manualWorkStart.value = timeString
+    } else if (!manualWorkEnd.value) {
+      manualWorkEnd.value = timeString
+    } else {
+      // Reset and set start time
+      manualWorkStart.value = timeString
+      manualWorkEnd.value = ''
+    }
+  } else {
+    if (!manualBreakStart.value) {
+      manualBreakStart.value = timeString
+    } else if (!manualBreakEnd.value) {
+      manualBreakEnd.value = timeString
+    } else {
+      // Reset and set start time
+      manualBreakStart.value = timeString
+      manualBreakEnd.value = ''
+    }
+  }
 }
 
 // Force update totals every second
@@ -247,6 +331,132 @@ const forceUpdateTotals = () => {
       <div class="card-glass p-6">
         <h2 class="text-lg font-semibold text-white mb-4">Funcționalitate în dezvoltare</h2>
         <p class="text-white/70">Această funcționalitate va fi disponibilă în versiunea următoare.</p>
+      </div>
+    </div>
+
+    <!-- Manual Entry Page -->
+    <div v-else-if="currentPage === 'manual'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
+      <div class="flex items-center justify-between mb-6 pt-4">
+        <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
+          <ArrowLeft class="h-5 w-5" />
+        </button>
+        <h1 class="text-2xl font-bold text-white">Adăugare Manuală</h1>
+        <div></div>
+      </div>
+      
+      <div class="space-y-6">
+        <!-- Work Session -->
+        <div class="card-glass p-6">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <Clock class="h-5 w-5 text-blue-400" />
+            Sesiune de Lucru
+          </h2>
+          
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Început</label>
+              <input
+                v-model="manualWorkStart"
+                type="datetime-local"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit</label>
+              <input
+                v-model="manualWorkEnd"
+                type="datetime-local"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-white/80 mb-2">Observații</label>
+            <textarea
+              v-model="manualWorkNote"
+              placeholder="Adaugă observații despre sesiunea de lucru..."
+              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-blue-400 focus:outline-none resize-none"
+              rows="3"
+            ></textarea>
+          </div>
+          
+          <button
+            @click="addManualWorkSession"
+            class="btn btn-primary w-full"
+          >
+            Adaugă Sesiune de Lucru
+          </button>
+        </div>
+
+        <!-- Break Session -->
+        <div class="card-glass p-6">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <Pause class="h-5 w-5 text-orange-400" />
+            Sesiune de Pauză
+          </h2>
+          
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Început</label>
+              <input
+                v-model="manualBreakStart"
+                type="datetime-local"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit</label>
+              <input
+                v-model="manualBreakEnd"
+                type="datetime-local"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
+              />
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-white/80 mb-2">Observații</label>
+            <textarea
+              v-model="manualBreakNote"
+              placeholder="Adaugă observații despre pauză..."
+              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-orange-400 focus:outline-none resize-none"
+              rows="3"
+            ></textarea>
+          </div>
+          
+          <button
+            @click="addManualBreakSession"
+            class="btn btn-amber w-full"
+          >
+            Adaugă Sesiune de Pauză
+          </button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card-glass p-6">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <Settings class="h-5 w-5 text-purple-400" />
+            Acțiuni Rapide
+          </h2>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <button
+              @click="setCurrentTime('work')"
+              class="btn btn-glass flex-col p-4"
+            >
+              <Clock class="h-6 w-6 mb-2" />
+              <span class="text-sm">Folosește ora curentă pentru lucru</span>
+            </button>
+            <button
+              @click="setCurrentTime('break')"
+              class="btn btn-glass flex-col p-4"
+            >
+              <Pause class="h-6 w-6 mb-2" />
+              <span class="text-sm">Folosește ora curentă pentru pauză</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
