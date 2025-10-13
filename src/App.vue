@@ -11,7 +11,7 @@ import AddressSelector from './components/AddressSelector.vue'
 import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
-import { ArrowLeft, DollarSign, Clock, Pause, Settings, X } from 'lucide-vue-next'
+import { ArrowLeft, DollarSign, Clock, Pause, Settings, X, Download, Upload, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
 
 const timer = useTimerStore()
 const theme = useThemeStore()
@@ -38,10 +38,23 @@ const manualBreaks = ref<Array<{
 // Ongoing session
 const isOngoingSession = ref(false)
 
+// Import/Export variables
+const importData = ref('')
+const backupFiles = ref<Array<{name: string, modificationTime: number}>>([])
+const backupFolder = ref('TimeTracker')
+
 onMounted(() => {
   void timer.load()
   void theme.load()
   void setupBackgroundHandlers()
+  
+  // Load backup settings
+  const savedSettings = localStorage.getItem('backupSettings')
+  if (savedSettings) {
+    const settings = JSON.parse(savedSettings)
+    backupFolder.value = settings.customFolder || 'TimeTracker'
+  }
+  
   ticker = window.setInterval(() => {
     now.value = Date.now()
     forceUpdateTotals()
@@ -270,6 +283,137 @@ const addOngoingWorkSession = () => {
   isOngoingSession.value = false
   
   alert('Sesiunea în curs a fost adăugată!')
+}
+
+// Import/Export functions
+const exportAllData = async () => {
+  try {
+    const data = timer.exportData()
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    
+    // Create download link
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`
+    a.style.display = 'none'
+    
+    // Add to DOM, click, and remove
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    
+    // Clean up
+    setTimeout(() => {
+      URL.revokeObjectURL(url)
+    }, 100)
+    
+    alert('Backup-ul a fost descărcat cu succes!')
+  } catch (error) {
+    console.error('Export error:', error)
+    alert('Eroare la exportarea datelor. Încearcă din nou.')
+  }
+}
+
+const importAllData = async () => {
+  try {
+    if (!importData.value.trim()) {
+      alert('Te rog introdu datele JSON pentru import!')
+      return
+    }
+    
+    await timer.importData(importData.value)
+    importData.value = ''
+    alert('Datele au fost importate cu succes! Aplicația va fi reîncărcată.')
+    
+    // Reload the page to refresh all data
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
+  } catch (error) {
+    console.error('Import error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută'
+    alert(`Eroare la importarea datelor: ${errorMessage}`)
+  }
+}
+
+// Backup functions
+const loadBackupFiles = async () => {
+  try {
+    const files = await timer.getBackupFiles()
+    backupFiles.value = files.map(file => ({
+      name: file.name,
+      modificationTime: (file as any).modificationTime || Date.now()
+    }))
+    alert(`Găsite ${files.length} backup-uri`)
+  } catch (error) {
+    console.error('Failed to load backup files:', error)
+    alert('Eroare la încărcarea backup-urilor')
+  }
+}
+
+const createManualBackup = async () => {
+  try {
+    await timer.saveToFile(timer.$state)
+    alert('Backup manual creat cu succes!')
+    await loadBackupFiles()
+  } catch (error) {
+    console.error('Failed to create backup:', error)
+    alert('Eroare la crearea backup-ului')
+  }
+}
+
+const restoreBackup = async (filename: string) => {
+  if (!confirm(`Sigur vrei să restaurezi backup-ul ${filename}? Toate datele curente vor fi înlocuite!`)) {
+    return
+  }
+  
+  try {
+    await timer.restoreFromBackup(filename)
+    alert('Backup restaurat cu succes! Aplicația va fi reîncărcată.')
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
+  } catch (error) {
+    console.error('Failed to restore backup:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută'
+    alert(`Eroare la restaurarea backup-ului: ${errorMessage}`)
+  }
+}
+
+const downloadBackup = async (filename: string) => {
+  try {
+    const data = await timer.exportData()
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    alert('Backup descărcat cu succes!')
+  } catch (error) {
+    console.error('Failed to download backup:', error)
+    alert('Eroare la descărcarea backup-ului')
+  }
+}
+
+const selectBackupFolder = () => {
+  const newFolder = prompt('Introdu numele folderului pentru backup:', backupFolder.value)
+  if (newFolder && newFolder.trim()) {
+    backupFolder.value = newFolder.trim()
+    // Update timer store with new folder
+    localStorage.setItem('backupSettings', JSON.stringify({
+      customFolder: backupFolder.value,
+      useiCloud: false,
+      autoBackup: true,
+      backupFrequency: 'daily'
+    }))
+    alert(`Folder backup setat la: ${backupFolder.value}`)
+  }
 }
 
 const setCurrentTime = (type: 'work' | 'break') => {
@@ -686,6 +830,145 @@ const forceUpdateTotals = () => {
               <Pause class="h-6 w-6 mb-2" />
               <span class="text-sm">Folosește ora curentă pentru pauză</span>
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import/Export Page -->
+    <div v-else-if="currentPage === 'import-export'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
+      <div class="flex items-center justify-between mb-6 pt-4">
+        <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
+          <ArrowLeft class="h-5 w-5" />
+        </button>
+        <h1 class="text-2xl font-bold text-white">Import/Export</h1>
+        <div></div>
+      </div>
+      
+      <div class="space-y-6">
+        <!-- Export Section -->
+        <div class="card-glass p-6">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <Download class="h-5 w-5 text-green-400" />
+            Export Date
+          </h2>
+          <p class="text-white/70 text-sm mb-6">
+            Toate datele tale (sesiuni, adrese, setări) vor fi descărcate ca fișier JSON.
+          </p>
+          <button
+            @click="exportAllData"
+            class="btn btn-emerald w-full"
+          >
+            Exportă toate datele
+          </button>
+        </div>
+        
+        <!-- Import Section -->
+        <div class="card-glass p-6">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <Upload class="h-5 w-5 text-blue-400" />
+            Import Date
+          </h2>
+          <p class="text-white/70 text-sm mb-4">
+            Lipește datele JSON aici pentru a încărca backup-ul.
+          </p>
+          <textarea
+            v-model="importData"
+            placeholder="Lipește datele JSON aici..."
+            class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-blue-400 focus:outline-none resize-none mb-4"
+            rows="4"
+          ></textarea>
+          <button
+            @click="importAllData"
+            class="btn btn-blue w-full"
+            :disabled="!importData.trim()"
+          >
+            Importă date
+          </button>
+        </div>
+        
+        <!-- Backup Management -->
+        <div class="card-glass p-6">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <FolderOpen class="h-5 w-5 text-purple-400" />
+            Gestionare Backup-uri
+          </h2>
+          
+          <div class="space-y-4">
+            <!-- Backup Folder Selection -->
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Folder Backup</label>
+              <div class="flex gap-2">
+                <input
+                  v-model="backupFolder"
+                  type="text"
+                  placeholder="Numele folderului pentru backup"
+                  class="flex-1 rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-purple-400 focus:outline-none"
+                />
+                <button
+                  @click="selectBackupFolder"
+                  class="btn btn-purple px-4"
+                >
+                  Alege
+                </button>
+              </div>
+              <p class="text-xs text-white/60 mt-1">
+                Folder curent: {{ backupFolder || 'TimeTracker' }}
+              </p>
+            </div>
+            
+            <!-- Backup Actions -->
+            <div class="grid grid-cols-2 gap-3">
+              <button
+                @click="loadBackupFiles"
+                class="btn btn-purple flex items-center justify-center gap-2"
+              >
+                <RefreshCw class="h-4 w-4" />
+                Încarcă Backup-uri
+              </button>
+              <button
+                @click="createManualBackup"
+                class="btn btn-green flex items-center justify-center gap-2"
+              >
+                <Save class="h-4 w-4" />
+                Backup Manual
+              </button>
+            </div>
+            
+            <!-- Backup Files List -->
+            <div v-if="backupFiles.length > 0" class="space-y-2">
+              <h3 class="text-md font-medium text-white/80">Backup-uri disponibile:</h3>
+              <div class="max-h-40 overflow-y-auto space-y-2">
+                <div 
+                  v-for="file in backupFiles" 
+                  :key="file.name"
+                  class="flex items-center justify-between bg-white/10 rounded-lg p-3"
+                >
+                  <div class="flex-1">
+                    <div class="text-sm text-white/80">{{ file.name }}</div>
+                    <div class="text-xs text-white/60">
+                      {{ new Date(file.modificationTime).toLocaleString('ro-RO') }}
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <button
+                      @click="restoreBackup(file.name)"
+                      class="btn btn-blue p-2 rounded-full"
+                      title="Restaurează"
+                    >
+                      <RotateCcw class="h-4 w-4" />
+                    </button>
+                    <button
+                      @click="downloadBackup(file.name)"
+                      class="btn btn-emerald p-2 rounded-full"
+                      title="Descarcă"
+                    >
+                      <Download class="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

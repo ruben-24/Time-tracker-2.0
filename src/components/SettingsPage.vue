@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
 import { useFinancialStore } from '../stores/financialStore'
 import { useThemeStore } from '../stores/themeStore'
-import { ArrowLeft, Settings, Clock, DollarSign, MapPin, Bell, Trash2, Download, Upload, Palette, Brush, Sparkles, Eye, Zap, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
+import { ArrowLeft, Settings, Clock, DollarSign, MapPin, Bell, Trash2, Palette, Brush, Sparkles, Eye, Zap } from 'lucide-vue-next'
 
 const emit = defineEmits<{
   navigate: [page: string]
@@ -15,16 +15,6 @@ const theme = useThemeStore()
 
 // Settings state
 const showDeleteConfirm = ref(false)
-const showExportConfirm = ref(false)
-const showImportConfirm = ref(false)
-const importData = ref('')
-const backupFiles = ref<Array<{name: string, modificationTime: number}>>([])
-const backupSettings = ref({
-  useiCloud: false,
-  customFolder: 'TimeTracker',
-  autoBackup: true,
-  backupFrequency: 'daily' // daily, weekly, onSave
-})
 
 // Theme settings (for future use)
 // const isDarkMode = ref(true) // Default to dark mode
@@ -53,7 +43,6 @@ const customButtonColor = ref(theme.settings.buttonColors.primary)
 
 onMounted(() => {
   theme.load()
-  loadBackupSettings()
 })
 
 const updateFinancialSettings = () => {
@@ -69,58 +58,6 @@ const updateDefaultAddress = () => {
   timer.persist()
 }
 
-const exportAllData = async () => {
-  try {
-    const data = timer.exportData()
-    const blob = new Blob([data], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    
-    // Create download link
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`
-    a.style.display = 'none'
-    
-    // Add to DOM, click, and remove
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    
-    // Clean up
-    setTimeout(() => {
-      URL.revokeObjectURL(url)
-    }, 100)
-    
-    showExportConfirm.value = false
-    alert('Backup-ul a fost descărcat cu succes!')
-  } catch (error) {
-    console.error('Export error:', error)
-    alert('Eroare la exportarea datelor. Încearcă din nou.')
-  }
-}
-
-const importAllData = async () => {
-  try {
-    if (!importData.value.trim()) {
-      alert('Te rog introdu datele JSON pentru import!')
-      return
-    }
-    
-    await timer.importData(importData.value)
-    showImportConfirm.value = false
-    importData.value = ''
-    alert('Datele au fost importate cu succes! Aplicația va fi reîncărcată.')
-    
-    // Reload the page to refresh all data
-    setTimeout(() => {
-      window.location.reload()
-    }, 1000)
-  } catch (error) {
-    console.error('Import error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută'
-    alert(`Eroare la importarea datelor: ${errorMessage}`)
-  }
-}
 
 const deleteAllData = () => {
   if (confirm('Sigur vrei să ștergi TOATE datele? Această acțiune nu poate fi anulată!')) {
@@ -133,82 +70,6 @@ const deleteAllData = () => {
   }
 }
 
-// Backup functions
-const loadBackupFiles = async () => {
-  try {
-    const files = await timer.getBackupFiles()
-    backupFiles.value = files.map(file => ({
-      name: file.name,
-      modificationTime: (file as any).modificationTime || Date.now()
-    }))
-    alert(`Găsite ${files.length} backup-uri`)
-  } catch (error) {
-    console.error('Failed to load backup files:', error)
-    alert('Eroare la încărcarea backup-urilor')
-  }
-}
-
-const createManualBackup = async () => {
-  try {
-    await timer.saveToFile(timer.$state)
-    alert('Backup manual creat cu succes!')
-    await loadBackupFiles()
-  } catch (error) {
-    console.error('Failed to create backup:', error)
-    alert('Eroare la crearea backup-ului')
-  }
-}
-
-const restoreBackup = async (filename: string) => {
-  if (!confirm(`Sigur vrei să restaurezi backup-ul ${filename}? Toate datele curente vor fi înlocuite!`)) {
-    return
-  }
-  
-  try {
-    await timer.restoreFromBackup(filename)
-    alert('Backup restaurat cu succes! Aplicația va fi reîncărcată.')
-    setTimeout(() => {
-      window.location.reload()
-    }, 1000)
-  } catch (error) {
-    console.error('Failed to restore backup:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută'
-    alert(`Eroare la restaurarea backup-ului: ${errorMessage}`)
-  }
-}
-
-const downloadBackup = async (filename: string) => {
-  try {
-    const data = await timer.exportData()
-    const blob = new Blob([data], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.style.display = 'none'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    alert('Backup descărcat cu succes!')
-  } catch (error) {
-    console.error('Failed to download backup:', error)
-    alert('Eroare la descărcarea backup-ului')
-  }
-}
-
-const updateBackupSettings = () => {
-  // Save backup settings to localStorage
-  localStorage.setItem('backupSettings', JSON.stringify(backupSettings.value))
-  alert('Setările de backup au fost salvate!')
-}
-
-const loadBackupSettings = () => {
-  const saved = localStorage.getItem('backupSettings')
-  if (saved) {
-    backupSettings.value = { ...backupSettings.value, ...JSON.parse(saved) }
-  }
-}
 
 // Theme functions
 const applyBackgroundPreset = (preset: any) => {
@@ -626,22 +487,6 @@ const resetTheme = () => {
         
         <div class="space-y-3">
           <button
-            @click="showExportConfirm = true"
-            class="w-full flex items-center gap-3 p-3 rounded-lg bg-green-500/20 border border-green-400/50 text-green-400 hover:bg-green-500/30 transition-colors"
-          >
-            <Download class="h-5 w-5" />
-            <span>Exportă toate datele</span>
-          </button>
-          
-          <button
-            @click="showImportConfirm = true"
-            class="w-full flex items-center gap-3 p-3 rounded-lg bg-blue-500/20 border border-blue-400/50 text-blue-400 hover:bg-blue-500/30 transition-colors"
-          >
-            <Upload class="h-5 w-5" />
-            <span>Importă date</span>
-          </button>
-          
-          <button
             @click="showDeleteConfirm = true"
             class="w-full flex items-center gap-3 p-3 rounded-lg bg-red-500/20 border border-red-400/50 text-red-400 hover:bg-red-500/30 transition-colors"
           >
@@ -651,156 +496,6 @@ const resetTheme = () => {
         </div>
       </div>
 
-      <!-- File Backup Management -->
-      <div class="card-glass p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <FolderOpen class="h-6 w-6 text-gray-400" />
-          <h2 class="text-lg font-semibold text-white">Backup-uri în Fișiere</h2>
-        </div>
-        
-        <div class="space-y-3">
-          <button
-            @click="loadBackupFiles"
-            class="w-full flex items-center gap-3 p-3 rounded-lg bg-purple-500/20 border border-purple-400/50 text-purple-400 hover:bg-purple-500/30 transition-colors"
-          >
-            <RefreshCw class="h-5 w-5" />
-            <span>Încarcă lista backup-uri</span>
-          </button>
-          
-          <button
-            @click="createManualBackup"
-            class="w-full flex items-center gap-3 p-3 rounded-lg bg-green-500/20 border border-green-400/50 text-green-400 hover:bg-green-500/30 transition-colors"
-          >
-            <Save class="h-5 w-5" />
-            <span>Creează backup manual</span>
-          </button>
-        </div>
-
-        <!-- Backup Files List -->
-        <div v-if="backupFiles.length > 0" class="mt-4">
-          <h3 class="text-md font-medium text-white/80 mb-3">Backup-uri disponibile:</h3>
-          <div class="space-y-2 max-h-40 overflow-y-auto">
-            <div 
-              v-for="file in backupFiles" 
-              :key="file.name"
-              class="flex items-center justify-between bg-white/10 rounded-lg p-3"
-            >
-              <div class="flex-1">
-                <div class="text-sm text-white/80">{{ file.name }}</div>
-                <div class="text-xs text-white/60">
-                  {{ new Date(file.modificationTime).toLocaleString('ro-RO') }}
-                </div>
-              </div>
-              <div class="flex gap-2">
-                <button
-                  @click="restoreBackup(file.name)"
-                  class="btn btn-blue p-2 rounded-full"
-                  title="Restaurează"
-                >
-                  <RotateCcw class="h-4 w-4" />
-                </button>
-                <button
-                  @click="downloadBackup(file.name)"
-                  class="btn btn-emerald p-2 rounded-full"
-                  title="Descarcă"
-                >
-                  <Download class="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Backup Settings -->
-      <div class="card-glass p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <Settings class="h-6 w-6 text-indigo-400" />
-          <h2 class="text-lg font-semibold text-white">Setări Backup</h2>
-        </div>
-        
-        <div class="space-y-4">
-          <!-- iCloud Backup -->
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-md font-medium text-white/80">Backup în iCloud</h3>
-              <p class="text-sm text-white/60">Sincronizează backup-urile cu iCloud (iOS)</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input
-                v-model="backupSettings.useiCloud"
-                type="checkbox"
-                class="sr-only peer"
-              />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          <!-- Custom Folder -->
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">Folder Backup</label>
-            <div class="flex gap-2">
-              <input
-                v-model="backupSettings.customFolder"
-                type="text"
-                placeholder="Numele folderului pentru backup"
-                class="flex-1 rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-blue-400 focus:outline-none"
-              />
-              <button
-                @click="updateBackupSettings"
-                class="btn btn-blue px-4"
-              >
-                Salvează
-              </button>
-            </div>
-          </div>
-
-          <!-- Auto Backup -->
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-md font-medium text-white/80">Backup Automat</h3>
-              <p class="text-sm text-white/60">Creează backup automat la modificări</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input
-                v-model="backupSettings.autoBackup"
-                type="checkbox"
-                class="sr-only peer"
-              />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-
-          <!-- Backup Frequency -->
-          <div v-if="backupSettings.autoBackup">
-            <label class="block text-sm font-medium text-white/80 mb-2">Frecvența Backup-ului</label>
-            <select
-              v-model="backupSettings.backupFrequency"
-              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
-            >
-              <option value="onSave">La fiecare salvare</option>
-              <option value="daily">Zilnic</option>
-              <option value="weekly">Săptămânal</option>
-            </select>
-          </div>
-
-          <!-- Backup Actions -->
-          <div class="flex gap-3 pt-2">
-            <button
-              @click="updateBackupSettings"
-              class="btn btn-primary flex-1"
-            >
-              Salvează Setări
-            </button>
-            <button
-              @click="loadBackupSettings"
-              class="btn btn-glass flex-1"
-            >
-              Încarcă Setări
-            </button>
-          </div>
-        </div>
-      </div>
 
       <!-- Advanced Settings -->
       <div class="card-glass p-6">
@@ -940,59 +635,6 @@ const resetTheme = () => {
       </div>
     </div>
 
-    <!-- Export Confirmation Modal -->
-    <div v-if="showExportConfirm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="card-glass p-6 max-w-sm w-full">
-        <h3 class="text-lg font-semibold text-white mb-4">Export Date</h3>
-        <p class="text-white/70 text-sm mb-6">
-          Toate datele tale (sesiuni, adrese, setări) vor fi descărcate ca fișier JSON.
-        </p>
-        <div class="flex gap-3">
-          <button
-            @click="exportAllData"
-            class="btn btn-emerald flex-1"
-          >
-            Exportă
-          </button>
-          <button
-            @click="showExportConfirm = false"
-            class="btn btn-rose flex-1"
-          >
-            Anulează
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Import Confirmation Modal -->
-    <div v-if="showImportConfirm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="card-glass p-6 max-w-sm w-full">
-        <h3 class="text-lg font-semibold text-white mb-4">Import Date</h3>
-        <p class="text-white/70 text-sm mb-4">
-          Lipește conținutul fișierului JSON exportat anterior.
-        </p>
-        <textarea
-          v-model="importData"
-          placeholder="Lipește datele JSON aici..."
-          class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-blue-400 focus:outline-none resize-none mb-4"
-          rows="4"
-        ></textarea>
-        <div class="flex gap-3">
-          <button
-            @click="importAllData"
-            class="btn btn-emerald flex-1"
-          >
-            Importă
-          </button>
-          <button
-            @click="showImportConfirm = false"
-            class="btn btn-rose flex-1"
-          >
-            Anulează
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
