@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] - 2024-12-19
+
+### Added
+- **Mutare calcul financiar** - din pagina principală în burger menu
+- **12 culori noi pentru butoane** - Ocean Blue, Cherry Pink, Lime Green, Copper Orange, Indigo Purple, Coral Red, Mint Cyan, Rose Red, Electric Blue, Square Style, Pill Style
+- **Rapoarte financiare** - accesibile din meniul principal
+
+### Improved
+- **Organizare interfață** - pagina principală mai curată și mai focusată
+- **Accesibilitate** - rapoarte financiare mai ușor de găsit
+- **Personalizare** - mai multe opțiuni de culori pentru butoane
+
 ## [2.1.0] - 2024-12-19
 
 ### Added

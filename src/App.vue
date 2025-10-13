@@ -11,7 +11,7 @@ import AddressSelector from './components/AddressSelector.vue'
 import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
-import { ArrowLeft, DollarSign, Clock, Pause, Settings, X, Download, Upload, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
+import { ArrowLeft, Clock, Pause, Settings, X, Download, Upload, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
 
 const timer = useTimerStore()
 const theme = useThemeStore()
@@ -20,7 +20,7 @@ const currentPage = ref('main')
 let ticker: number | undefined
 
 // App version
-const appVersion = ref('2.1.0')
+const appVersion = ref('2.2.0')
 
 // Manual entry variables
 const manualWorkStart = ref('')
@@ -128,6 +128,17 @@ const navigateTo = (page: string) => {
 
 // Changelog data
 const changelog = ref([
+  {
+    version: '2.2.0',
+    date: '2024-12-19',
+    changes: [
+      'Mutare calcul financiar din pagina principală în burger menu',
+      'Adăugare 12 culori noi pentru butoane (Ocean Blue, Cherry Pink, Lime Green, etc.)',
+      'Îmbunătățire organizare interfață - pagina principală mai curată',
+      'Rapoarte financiare accesibile din meniul principal',
+      'Actualizare versiune la 2.2.0'
+    ]
+  },
   {
     version: '2.1.0',
     date: '2024-12-19',
@@ -572,17 +583,6 @@ const forceUpdateTotals = () => {
           </div>
         </div>
 
-        <!-- Financial Information -->
-        <div class="mt-8">
-          <div class="flex items-center gap-2 mb-4">
-            <DollarSign class="h-5 w-5 text-green-400" />
-            <h2 class="text-lg font-semibold text-white">Informații Financiare</h2>
-            <div class="ml-auto">
-              <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-          <FinancialInfo />
-        </div>
       </section>
 
       <!-- Floating Timer Controls - Always visible on main page -->

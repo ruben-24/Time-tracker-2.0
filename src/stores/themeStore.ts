@@ -153,6 +153,61 @@ export const useThemeStore = defineStore('theme', () => {
       name: 'Glass Effect',
       colors: { primary: '#ffffff', secondary: '#f8fafc', accent: '#e2e8f0' },
       style: 'glass'
+    },
+    {
+      name: 'Ocean Blue',
+      colors: { primary: '#0ea5e9', secondary: '#0284c7', accent: '#0369a1' },
+      style: 'rounded'
+    },
+    {
+      name: 'Cherry Pink',
+      colors: { primary: '#f472b6', secondary: '#ec4899', accent: '#db2777' },
+      style: 'rounded'
+    },
+    {
+      name: 'Lime Green',
+      colors: { primary: '#84cc16', secondary: '#65a30d', accent: '#4d7c0f' },
+      style: 'rounded'
+    },
+    {
+      name: 'Copper Orange',
+      colors: { primary: '#f59e0b', secondary: '#d97706', accent: '#b45309' },
+      style: 'rounded'
+    },
+    {
+      name: 'Indigo Purple',
+      colors: { primary: '#6366f1', secondary: '#4f46e5', accent: '#4338ca' },
+      style: 'rounded'
+    },
+    {
+      name: 'Coral Red',
+      colors: { primary: '#f97316', secondary: '#ea580c', accent: '#c2410c' },
+      style: 'rounded'
+    },
+    {
+      name: 'Mint Cyan',
+      colors: { primary: '#06b6d4', secondary: '#0891b2', accent: '#0e7490' },
+      style: 'rounded'
+    },
+    {
+      name: 'Rose Red',
+      colors: { primary: '#f43f5e', secondary: '#e11d48', accent: '#be123c' },
+      style: 'rounded'
+    },
+    {
+      name: 'Electric Blue',
+      colors: { primary: '#3b82f6', secondary: '#2563eb', accent: '#1d4ed8' },
+      style: 'rounded'
+    },
+    {
+      name: 'Square Style',
+      colors: { primary: '#8b5cf6', secondary: '#7c3aed', accent: '#6d28d9' },
+      style: 'square'
+    },
+    {
+      name: 'Pill Style',
+      colors: { primary: '#10b981', secondary: '#059669', accent: '#047857' },
+      style: 'pill'
     }
   ])
 
