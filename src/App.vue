@@ -140,6 +140,12 @@ const addManualBreakSession = () => {
     return
   }
   
+  // Check if there's an active work session
+  if (timer.activeType === 'work' && timer.activeStartedAt) {
+    alert('Există o sesiune de lucru activă! Pauzele se adaugă automat în sesiunea activă. Folosește butonul "Pauză" din timer.')
+    return
+  }
+  
   // Determine if it's a cigarette break (< 5 minutes)
   const sessionType = breakDuration < 5 * 60 * 1000 ? 'cigarette' : 'break'
   
@@ -169,7 +175,7 @@ const addBreakToSession = () => {
     return
   }
 
-  // Add break to the list
+  // Add break to the list (only for manual session creation)
   manualBreaks.value.push({
     id: crypto.randomUUID(),
     start: manualBreakStart.value,
@@ -181,6 +187,8 @@ const addBreakToSession = () => {
   manualBreakStart.value = ''
   manualBreakEnd.value = ''
   manualBreakNote.value = ''
+  
+  alert('Pauza a fost adăugată la sesiunea manuală!')
 }
 
 const removeBreak = (breakId: string) => {
@@ -225,17 +233,8 @@ const addIntegratedWorkSession = () => {
   const workEndTime = endTime || (startTime + workTime + totalBreakTime)
   timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
   
-  // Add all breaks as separate sessions but linked to work
-  for (const breakItem of manualBreaks.value) {
-    const breakStart = new Date(breakItem.start).getTime()
-    const breakEnd = new Date(breakItem.end).getTime()
-    const breakDuration = breakEnd - breakStart
-    
-    // Determine if it's a cigarette break (< 5 minutes)
-    const sessionType = breakDuration < 5 * 60 * 1000 ? 'cigarette' : 'break'
-    
-    timer.addManualSession(sessionType, breakStart, breakEnd, breakItem.note)
-  }
+  // Don't add breaks as separate sessions - they're part of the work session
+  // The breaks are already calculated in the work time above
 
   // Clear all forms
   manualWorkStart.value = ''
@@ -263,17 +262,8 @@ const addOngoingWorkSession = () => {
   // Add ongoing work session (no end time)
   timer.addManualSession('work', startTime, null, manualWorkNote.value)
   
-  // Add all breaks to the session
-  for (const breakItem of manualBreaks.value) {
-    const breakStart = new Date(breakItem.start).getTime()
-    const breakEnd = new Date(breakItem.end).getTime()
-    const breakDuration = breakEnd - breakStart
-    
-    // Determine if it's a cigarette break (< 5 minutes)
-    const sessionType = breakDuration < 5 * 60 * 1000 ? 'cigarette' : 'break'
-    
-    timer.addManualSession(sessionType, breakStart, breakEnd, breakItem.note)
-  }
+  // Don't add breaks as separate sessions - they're part of the work session
+  // The breaks are tracked within the work session
 
   // Clear all forms
   manualWorkStart.value = ''
@@ -587,20 +577,6 @@ const forceUpdateTotals = () => {
       <FinancialInfo />
     </div>
 
-    <!-- Import/Export Page -->
-    <div v-else-if="currentPage === 'import-export'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
-      <div class="flex items-center justify-between mb-6 pt-4">
-        <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
-          <ArrowLeft class="h-5 w-5" />
-        </button>
-        <h1 class="text-2xl font-bold text-white">Import/Export</h1>
-        <div></div>
-      </div>
-      <div class="card-glass p-6">
-        <h2 class="text-lg font-semibold text-white mb-4">Funcționalitate în dezvoltare</h2>
-        <p class="text-white/70">Această funcționalitate va fi disponibilă în versiunea următoare.</p>
-      </div>
-    </div>
 
     <!-- Manual Entry Page -->
     <div v-else-if="currentPage === 'manual'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
