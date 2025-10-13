@@ -18,6 +18,13 @@ const showDeleteConfirm = ref(false)
 const showExportConfirm = ref(false)
 const showImportConfirm = ref(false)
 const importData = ref('')
+const backupFiles = ref<Array<{name: string, modificationTime: number}>>([])
+const backupSettings = ref({
+  useiCloud: false,
+  customFolder: 'TimeTracker',
+  autoBackup: true,
+  backupFrequency: 'daily' // daily, weekly, onSave
+})
 
 // Theme settings (for future use)
 // const isDarkMode = ref(true) // Default to dark mode
@@ -46,6 +53,7 @@ const customButtonColor = ref(theme.settings.buttonColors.primary)
 
 onMounted(() => {
   theme.load()
+  loadBackupSettings()
 })
 
 const updateFinancialSettings = () => {
@@ -122,6 +130,83 @@ const deleteAllData = () => {
     timer.persist()
     showDeleteConfirm.value = false
     alert('Toate datele au fost șterse!')
+  }
+}
+
+// Backup functions
+const loadBackupFiles = async () => {
+  try {
+    const files = await timer.getBackupFiles()
+    backupFiles.value = files.map(file => ({
+      name: file.name,
+      modificationTime: (file as any).modificationTime || Date.now()
+    }))
+    alert(`Găsite ${files.length} backup-uri`)
+  } catch (error) {
+    console.error('Failed to load backup files:', error)
+    alert('Eroare la încărcarea backup-urilor')
+  }
+}
+
+const createManualBackup = async () => {
+  try {
+    await timer.saveToFile(timer.$state)
+    alert('Backup manual creat cu succes!')
+    await loadBackupFiles()
+  } catch (error) {
+    console.error('Failed to create backup:', error)
+    alert('Eroare la crearea backup-ului')
+  }
+}
+
+const restoreBackup = async (filename: string) => {
+  if (!confirm(`Sigur vrei să restaurezi backup-ul ${filename}? Toate datele curente vor fi înlocuite!`)) {
+    return
+  }
+  
+  try {
+    await timer.restoreFromBackup(filename)
+    alert('Backup restaurat cu succes! Aplicația va fi reîncărcată.')
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
+  } catch (error) {
+    console.error('Failed to restore backup:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută'
+    alert(`Eroare la restaurarea backup-ului: ${errorMessage}`)
+  }
+}
+
+const downloadBackup = async (filename: string) => {
+  try {
+    const data = await timer.exportData()
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    alert('Backup descărcat cu succes!')
+  } catch (error) {
+    console.error('Failed to download backup:', error)
+    alert('Eroare la descărcarea backup-ului')
+  }
+}
+
+const updateBackupSettings = () => {
+  // Save backup settings to localStorage
+  localStorage.setItem('backupSettings', JSON.stringify(backupSettings.value))
+  alert('Setările de backup au fost salvate!')
+}
+
+const loadBackupSettings = () => {
+  const saved = localStorage.getItem('backupSettings')
+  if (saved) {
+    backupSettings.value = { ...backupSettings.value, ...JSON.parse(saved) }
   }
 }
 
@@ -623,6 +708,96 @@ const resetTheme = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Backup Settings -->
+      <div class="card-glass p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <Settings class="h-6 w-6 text-indigo-400" />
+          <h2 class="text-lg font-semibold text-white">Setări Backup</h2>
+        </div>
+        
+        <div class="space-y-4">
+          <!-- iCloud Backup -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-md font-medium text-white/80">Backup în iCloud</h3>
+              <p class="text-sm text-white/60">Sincronizează backup-urile cu iCloud (iOS)</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                v-model="backupSettings.useiCloud"
+                type="checkbox"
+                class="sr-only peer"
+              />
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <!-- Custom Folder -->
+          <div>
+            <label class="block text-sm font-medium text-white/80 mb-2">Folder Backup</label>
+            <div class="flex gap-2">
+              <input
+                v-model="backupSettings.customFolder"
+                type="text"
+                placeholder="Numele folderului pentru backup"
+                class="flex-1 rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-blue-400 focus:outline-none"
+              />
+              <button
+                @click="updateBackupSettings"
+                class="btn btn-blue px-4"
+              >
+                Salvează
+              </button>
+            </div>
+          </div>
+
+          <!-- Auto Backup -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-md font-medium text-white/80">Backup Automat</h3>
+              <p class="text-sm text-white/60">Creează backup automat la modificări</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                v-model="backupSettings.autoBackup"
+                type="checkbox"
+                class="sr-only peer"
+              />
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <!-- Backup Frequency -->
+          <div v-if="backupSettings.autoBackup">
+            <label class="block text-sm font-medium text-white/80 mb-2">Frecvența Backup-ului</label>
+            <select
+              v-model="backupSettings.backupFrequency"
+              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+            >
+              <option value="onSave">La fiecare salvare</option>
+              <option value="daily">Zilnic</option>
+              <option value="weekly">Săptămânal</option>
+            </select>
+          </div>
+
+          <!-- Backup Actions -->
+          <div class="flex gap-3 pt-2">
+            <button
+              @click="updateBackupSettings"
+              class="btn btn-primary flex-1"
+            >
+              Salvează Setări
+            </button>
+            <button
+              @click="loadBackupSettings"
+              class="btn btn-glass flex-1"
+            >
+              Încarcă Setări
+            </button>
           </div>
         </div>
       </div>

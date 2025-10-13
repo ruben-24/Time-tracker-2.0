@@ -45,6 +45,16 @@ const STORAGE_KEY = 'tt2_state_v1'
 const DATA_FILE = 'time-tracker-data.json'
 const BACKUP_DIR = 'TimeTracker'
 
+// Get backup directory from settings
+const getBackupDirectory = () => {
+  const settings = localStorage.getItem('backupSettings')
+  if (settings) {
+    const parsed = JSON.parse(settings)
+    return parsed.customFolder || BACKUP_DIR
+  }
+  return BACKUP_DIR
+}
+
 export const useTimerStore = defineStore('timer', {
   state: (): TimerState => ({
     activeType: null,
@@ -423,11 +433,12 @@ export const useTimerStore = defineStore('timer', {
     async saveToFile(data: TimerState) {
       try {
         const jsonData = JSON.stringify(data, null, 2)
+        const backupDir = getBackupDirectory()
         
         // Create directory if it doesn't exist
         try {
           await Filesystem.mkdir({
-            path: BACKUP_DIR,
+            path: backupDir,
             directory: Directory.Documents,
             recursive: true
           })
@@ -437,7 +448,7 @@ export const useTimerStore = defineStore('timer', {
 
         // Save data file
         await Filesystem.writeFile({
-          path: `${BACKUP_DIR}/${DATA_FILE}`,
+          path: `${backupDir}/${DATA_FILE}`,
           data: jsonData,
           directory: Directory.Documents,
           encoding: Encoding.UTF8
@@ -446,11 +457,31 @@ export const useTimerStore = defineStore('timer', {
         // Create timestamped backup
         const timestamp = new Date().toISOString().split('T')[0]
         await Filesystem.writeFile({
-          path: `${BACKUP_DIR}/backup-${timestamp}.json`,
+          path: `${backupDir}/backup-${timestamp}.json`,
           data: jsonData,
           directory: Directory.Documents,
           encoding: Encoding.UTF8
         })
+
+        // Check if iCloud backup is enabled
+        const settings = localStorage.getItem('backupSettings')
+        if (settings) {
+          const parsed = JSON.parse(settings)
+          if (parsed.useiCloud) {
+            // Save to iCloud Documents directory
+            try {
+              await Filesystem.writeFile({
+                path: `${backupDir}/${DATA_FILE}`,
+                data: jsonData,
+                directory: Directory.External,
+                encoding: Encoding.UTF8
+              })
+              console.log('Data also saved to iCloud')
+            } catch (error) {
+              console.log('iCloud save failed, continuing with local save')
+            }
+          }
+        }
 
         console.log('Data saved to file successfully')
       } catch (error) {
@@ -460,13 +491,14 @@ export const useTimerStore = defineStore('timer', {
 
     async loadFromFile() {
       try {
+        const backupDir = getBackupDirectory()
         const result = await Filesystem.readFile({
-          path: `${BACKUP_DIR}/${DATA_FILE}`,
+          path: `${backupDir}/${DATA_FILE}`,
           directory: Directory.Documents,
           encoding: Encoding.UTF8
         })
         
-        return JSON.parse(result.data) as TimerState
+        return JSON.parse(result.data as string) as TimerState
       } catch (error) {
         console.log('No data file found')
         return null
@@ -475,8 +507,9 @@ export const useTimerStore = defineStore('timer', {
 
     async getBackupFiles() {
       try {
+        const backupDir = getBackupDirectory()
         const result = await Filesystem.readdir({
-          path: BACKUP_DIR,
+          path: backupDir,
           directory: Directory.Documents
         })
         
@@ -491,20 +524,22 @@ export const useTimerStore = defineStore('timer', {
 
     async restoreFromBackup(filename: string) {
       try {
+        const backupDir = getBackupDirectory()
         const result = await Filesystem.readFile({
-          path: `${BACKUP_DIR}/${filename}`,
+          path: `${backupDir}/${filename}`,
           directory: Directory.Documents,
           encoding: Encoding.UTF8
         })
         
-        const data = JSON.parse(result.data) as TimerState
+        const data = JSON.parse(result.data as string) as TimerState
         this.$patch(data)
         await this.persist()
         
         return true
       } catch (error) {
         console.error('Failed to restore from backup:', error)
-        throw new Error(`Eroare la restaurarea backup-ului: ${error.message}`)
+        const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută'
+        throw new Error(`Eroare la restaurarea backup-ului: ${errorMessage}`)
       }
     }
   }
