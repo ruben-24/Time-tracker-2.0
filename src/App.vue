@@ -111,29 +111,6 @@ const navigateTo = (page: string) => {
 }
 
 // Manual entry functions
-const addManualWorkSession = () => {
-  if (!manualWorkStart.value || !manualWorkEnd.value) {
-    alert('Te rog completează începutul și sfârșitul!')
-    return
-  }
-  
-  const startTime = new Date(manualWorkStart.value).getTime()
-  const endTime = new Date(manualWorkEnd.value).getTime()
-  
-  if (endTime <= startTime) {
-    alert('Sfârșitul trebuie să fie după începutul!')
-    return
-  }
-  
-  timer.addManualSession('work', startTime, endTime, manualWorkNote.value)
-  
-  // Reset form
-  manualWorkStart.value = ''
-  manualWorkEnd.value = ''
-  manualWorkNote.value = ''
-  
-  alert('Sesiunea de lucru a fost adăugată cu succes!')
-}
 
 const addManualBreakSession = () => {
   if (!manualBreakStart.value || !manualBreakEnd.value) {
@@ -143,20 +120,25 @@ const addManualBreakSession = () => {
   
   const startTime = new Date(manualBreakStart.value).getTime()
   const endTime = new Date(manualBreakEnd.value).getTime()
+  const breakDuration = endTime - startTime
   
   if (endTime <= startTime) {
     alert('Sfârșitul trebuie să fie după începutul!')
     return
   }
   
-  timer.addManualSession('break', startTime, endTime, manualBreakNote.value)
+  // Determine if it's a cigarette break (< 5 minutes)
+  const sessionType = breakDuration < 5 * 60 * 1000 ? 'cigarette' : 'break'
+  
+  timer.addManualSession(sessionType, startTime, endTime, manualBreakNote.value)
   
   // Reset form
   manualBreakStart.value = ''
   manualBreakEnd.value = ''
   manualBreakNote.value = ''
   
-  alert('Sesiunea de pauză a fost adăugată cu succes!')
+  const breakTypeLabel = sessionType === 'cigarette' ? 'pauză țigară' : 'pauză'
+  alert(`Sesiunea de ${breakTypeLabel} a fost adăugată cu succes!`)
 }
 
 // Multiple breaks management
@@ -192,6 +174,65 @@ const removeBreak = (breakId: string) => {
   manualBreaks.value = manualBreaks.value.filter(b => b.id !== breakId)
 }
 
+const addIntegratedWorkSession = () => {
+  if (!manualWorkStart.value) {
+    alert('Te rog completează timpul de început!')
+    return
+  }
+
+  const startTime = new Date(manualWorkStart.value).getTime()
+  const endTime = manualWorkEnd.value ? new Date(manualWorkEnd.value).getTime() : null
+  const now = Date.now()
+
+  if (startTime > now) {
+    alert('Timpul de început nu poate fi în viitor!')
+    return
+  }
+
+  if (endTime && endTime <= startTime) {
+    alert('Timpul de sfârșit trebuie să fie după timpul de început!')
+    return
+  }
+
+  // Calculate total break time
+  const totalBreakTime = manualBreaks.value.reduce((total, breakItem) => {
+    return total + (new Date(breakItem.end).getTime() - new Date(breakItem.start).getTime())
+  }, 0)
+
+  // Calculate work time (total time minus breaks)
+  const totalTime = endTime ? endTime - startTime : now - startTime
+  const workTime = totalTime - totalBreakTime
+
+  if (workTime <= 0) {
+    alert('Timpul de lucru nu poate fi negativ! Verifică pauzele.')
+    return
+  }
+
+  // Add work session with calculated end time
+  const workEndTime = endTime || (startTime + workTime + totalBreakTime)
+  timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
+  
+  // Add all breaks as separate sessions but linked to work
+  for (const breakItem of manualBreaks.value) {
+    const breakStart = new Date(breakItem.start).getTime()
+    const breakEnd = new Date(breakItem.end).getTime()
+    const breakDuration = breakEnd - breakStart
+    
+    // Determine if it's a cigarette break (< 5 minutes)
+    const sessionType = breakDuration < 5 * 60 * 1000 ? 'cigarette' : 'break'
+    
+    timer.addManualSession(sessionType, breakStart, breakEnd, breakItem.note)
+  }
+
+  // Clear all forms
+  manualWorkStart.value = ''
+  manualWorkEnd.value = ''
+  manualWorkNote.value = ''
+  manualBreaks.value = []
+  
+  alert(`Sesiunea integrată a fost adăugată! Timp lucru: ${formatDuration(workTime)}, Pauze: ${formatDuration(totalBreakTime)}`)
+}
+
 const addOngoingWorkSession = () => {
   if (!manualWorkStart.value) {
     alert('Te rog completează timpul de început!')
@@ -213,7 +254,12 @@ const addOngoingWorkSession = () => {
   for (const breakItem of manualBreaks.value) {
     const breakStart = new Date(breakItem.start).getTime()
     const breakEnd = new Date(breakItem.end).getTime()
-    timer.addManualSession('break', breakStart, breakEnd, breakItem.note)
+    const breakDuration = breakEnd - breakStart
+    
+    // Determine if it's a cigarette break (< 5 minutes)
+    const sessionType = breakDuration < 5 * 60 * 1000 ? 'cigarette' : 'break'
+    
+    timer.addManualSession(sessionType, breakStart, breakEnd, breakItem.note)
   }
 
   // Clear all forms
@@ -423,16 +469,17 @@ const forceUpdateTotals = () => {
       </div>
       
       <div class="space-y-6">
-        <!-- Work Session -->
+        <!-- Integrated Work Session with Breaks -->
         <div class="card-glass p-6">
           <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <Clock class="h-5 w-5 text-blue-400" />
-            Sesiune de Lucru
+            Sesiune de Lucru cu Pauze
           </h2>
           
+          <!-- Work Session Times -->
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Început</label>
+              <label class="block text-sm font-medium text-white/80 mb-2">Început Lucru</label>
               <input
                 v-model="manualWorkStart"
                 type="datetime-local"
@@ -440,7 +487,7 @@ const forceUpdateTotals = () => {
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit (opțional)</label>
+              <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit Lucru (opțional)</label>
               <input
                 v-model="manualWorkEnd"
                 type="datetime-local"
@@ -449,90 +496,64 @@ const forceUpdateTotals = () => {
             </div>
           </div>
           
+          <!-- Work Session Note -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-white/80 mb-2">Observații</label>
+            <label class="block text-sm font-medium text-white/80 mb-2">Observații Sesiune</label>
             <textarea
               v-model="manualWorkNote"
               placeholder="Adaugă observații despre sesiunea de lucru..."
               class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-blue-400 focus:outline-none resize-none"
-              rows="3"
-            ></textarea>
-          </div>
-          
-          <div class="flex gap-3">
-            <button
-              @click="addManualWorkSession"
-              class="btn btn-primary flex-1"
-              :disabled="!manualWorkStart || !manualWorkEnd"
-            >
-              Adaugă Sesiune Completă
-            </button>
-            <button
-              @click="addOngoingWorkSession"
-              class="btn btn-glass flex-1"
-              :disabled="!manualWorkStart"
-            >
-              Adaugă Sesiune în Curs
-            </button>
-          </div>
-        </div>
-        
-        <!-- Multiple Breaks Management -->
-        <div class="card-glass p-6">
-          <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Pause class="h-5 w-5 text-orange-400" />
-            Pauze Multiple
-          </h2>
-          
-          <!-- Break Form -->
-          <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Început Pauză</label>
-              <input
-                v-model="manualBreakStart"
-                type="datetime-local"
-                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit Pauză</label>
-              <input
-                v-model="manualBreakEnd"
-                type="datetime-local"
-                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
-              />
-            </div>
-          </div>
-          
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-white/80 mb-2">Observații Pauză</label>
-            <textarea
-              v-model="manualBreakNote"
-              placeholder="Adaugă observații despre pauză..."
-              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-orange-400 focus:outline-none resize-none"
               rows="2"
             ></textarea>
           </div>
           
-          <div class="flex gap-3 mb-4">
+          <!-- Break Form -->
+          <div class="border-t border-white/20 pt-4 mb-4">
+            <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
+              <Pause class="h-4 w-4 text-orange-400" />
+              Adaugă Pauză
+            </h3>
+            
+            <div class="grid grid-cols-2 gap-4 mb-3">
+              <div>
+                <label class="block text-sm font-medium text-white/80 mb-2">Început Pauză</label>
+                <input
+                  v-model="manualBreakStart"
+                  type="datetime-local"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit Pauză</label>
+                <input
+                  v-model="manualBreakEnd"
+                  type="datetime-local"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
+                />
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="block text-sm font-medium text-white/80 mb-2">Observații Pauză</label>
+              <textarea
+                v-model="manualBreakNote"
+                placeholder="Adaugă observații despre pauză..."
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-orange-400 focus:outline-none resize-none"
+                rows="2"
+              ></textarea>
+            </div>
+            
             <button
               @click="addBreakToSession"
-              class="btn btn-amber flex-1"
+              class="btn btn-amber w-full"
               :disabled="!manualBreakStart || !manualBreakEnd"
             >
               Adaugă Pauză la Sesiune
             </button>
-            <button
-              @click="addManualBreakSession"
-              class="btn btn-rose flex-1"
-              :disabled="!manualBreakStart || !manualBreakEnd"
-            >
-              Adaugă Pauză Individuală
-            </button>
           </div>
           
           <!-- Breaks List -->
-          <div v-if="manualBreaks.length > 0" class="space-y-2">
+          <div v-if="manualBreaks.length > 0" class="space-y-2 mb-4">
             <h3 class="text-md font-medium text-white/80 mb-2">Pauze adăugate:</h3>
             <div 
               v-for="breakItem in manualBreaks" 
@@ -543,6 +564,12 @@ const forceUpdateTotals = () => {
                 <div class="text-sm text-white/80">
                   {{ new Date(breakItem.start).toLocaleString('ro-RO') }} - 
                   {{ new Date(breakItem.end).toLocaleString('ro-RO') }}
+                </div>
+                <div class="text-xs text-white/60 mt-1">
+                  Durată: {{ formatDuration(new Date(breakItem.end).getTime() - new Date(breakItem.start).getTime()) }}
+                  <span v-if="(new Date(breakItem.end).getTime() - new Date(breakItem.start).getTime()) < 5 * 60 * 1000" class="text-yellow-400 ml-2">
+                    (Pauză țigară)
+                  </span>
                 </div>
                 <div v-if="breakItem.note" class="text-xs text-white/60 mt-1">
                   {{ breakItem.note }}
@@ -556,6 +583,85 @@ const forceUpdateTotals = () => {
               </button>
             </div>
           </div>
+          
+          <!-- Session Summary -->
+          <div v-if="manualWorkStart && manualBreaks.length > 0" class="bg-white/10 rounded-lg p-4 mb-4">
+            <h3 class="text-md font-medium text-white/80 mb-2">Rezumat Sesiune:</h3>
+            <div class="text-sm text-white/70 space-y-1">
+              <div>Început: {{ new Date(manualWorkStart).toLocaleString('ro-RO') }}</div>
+              <div v-if="manualWorkEnd">Sfârșit: {{ new Date(manualWorkEnd).toLocaleString('ro-RO') }}</div>
+              <div>Pauze: {{ manualBreaks.length }}</div>
+              <div class="text-orange-400">
+                Timp total pauze: {{ formatDuration(manualBreaks.reduce((total, b) => total + (new Date(b.end).getTime() - new Date(b.start).getTime()), 0)) }}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="flex gap-3">
+            <button
+              @click="addIntegratedWorkSession"
+              class="btn btn-primary flex-1"
+              :disabled="!manualWorkStart"
+            >
+              Adaugă Sesiune Completă
+            </button>
+            <button
+              @click="addOngoingWorkSession"
+              class="btn btn-glass flex-1"
+              :disabled="!manualWorkStart"
+            >
+              Adaugă Sesiune în Curs
+            </button>
+          </div>
+        </div>
+        
+        <!-- Individual Break Session (for standalone breaks) -->
+        <div class="card-glass p-6">
+          <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <Pause class="h-5 w-5 text-rose-400" />
+            Pauză Individuală
+          </h2>
+          <p class="text-sm text-white/60 mb-4">
+            Pentru pauze care nu fac parte dintr-o sesiune de lucru
+          </p>
+          
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Început</label>
+              <input
+                v-model="manualBreakStart"
+                type="datetime-local"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit</label>
+              <input
+                v-model="manualBreakEnd"
+                type="datetime-local"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
+              />
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-white/80 mb-2">Observații</label>
+            <textarea
+              v-model="manualBreakNote"
+              placeholder="Adaugă observații despre pauză..."
+              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-rose-400 focus:outline-none resize-none"
+              rows="2"
+            ></textarea>
+          </div>
+          
+          <button
+            @click="addManualBreakSession"
+            class="btn btn-rose w-full"
+            :disabled="!manualBreakStart || !manualBreakEnd"
+          >
+            Adaugă Pauză Individuală
+          </button>
         </div>
 
         <!-- Quick Actions -->
