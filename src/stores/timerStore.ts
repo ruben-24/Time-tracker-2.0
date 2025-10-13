@@ -394,7 +394,8 @@ export const useTimerStore = defineStore('timer', {
         return true
       } catch (error) {
         console.error('Import error:', error)
-        throw new Error(`Eroare la importarea datelor: ${error.message}`)
+        const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută'
+        throw new Error(`Eroare la importarea datelor: ${errorMessage}`)
       }
     }
   }

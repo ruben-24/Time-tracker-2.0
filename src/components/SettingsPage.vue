@@ -91,14 +91,26 @@ const exportAllData = async () => {
   }
 }
 
-const importAllData = () => {
+const importAllData = async () => {
   try {
-    timer.importData(importData.value)
+    if (!importData.value.trim()) {
+      alert('Te rog introdu datele JSON pentru import!')
+      return
+    }
+    
+    await timer.importData(importData.value)
     showImportConfirm.value = false
     importData.value = ''
-    alert('Datele au fost importate cu succes!')
+    alert('Datele au fost importate cu succes! Aplicația va fi reîncărcată.')
+    
+    // Reload the page to refresh all data
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
   } catch (error) {
-    alert('Eroare la importarea datelor. Verifică formatul fișierului.')
+    console.error('Import error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută'
+    alert(`Eroare la importarea datelor: ${errorMessage}`)
   }
 }
 
