@@ -331,24 +331,71 @@ export const useTimerStore = defineStore('timer', {
     exportData(): string {
       const payload = {
         exportedAt: new Date().toISOString(),
+        version: '2.0.0',
         state: {
-          sessions: this.sessions,
+          // Timer state
+          activeType: this.activeType,
+          activeStartedAt: this.activeStartedAt,
+          currentSessionId: this.currentSessionId,
+          pausedAt: this.pausedAt,
+          totalPausedMs: this.totalPausedMs,
+          breakStartedAt: this.breakStartedAt,
+          breakSessionId: this.breakSessionId,
+          totalBreakTimeMs: this.totalBreakTimeMs,
+          sessionWorkMs: this.sessionWorkMs,
+          sessionBreakMs: this.sessionBreakMs,
+          sessionCigaretteMs: this.sessionCigaretteMs,
+          // Address data
           defaultAddress: this.defaultAddress,
           customAddress: this.customAddress,
           extraAddresses: this.extraAddresses,
           selectedAddressId: this.selectedAddressId,
+          // Sessions
+          sessions: this.sessions,
         }
       }
       return JSON.stringify(payload, null, 2)
     },
     async importData(json: string) {
-      const parsed = JSON.parse(json)
-      if (parsed?.state?.sessions) this.sessions = parsed.state.sessions
-      if (parsed?.state?.defaultAddress) this.defaultAddress = parsed.state.defaultAddress
-      this.customAddress = parsed?.state?.customAddress ?? null
-      this.extraAddresses = parsed?.state?.extraAddresses ?? []
-      this.selectedAddressId = parsed?.state?.selectedAddressId ?? null
-      void this.persist()
+      try {
+        const parsed = JSON.parse(json)
+        
+        if (!parsed?.state) {
+          throw new Error('Format invalid: lipsește secțiunea state')
+        }
+        
+        const state = parsed.state
+        
+        // Import timer state
+        if (state.activeType !== undefined) this.activeType = state.activeType
+        if (state.activeStartedAt !== undefined) this.activeStartedAt = state.activeStartedAt
+        if (state.currentSessionId !== undefined) this.currentSessionId = state.currentSessionId
+        if (state.pausedAt !== undefined) this.pausedAt = state.pausedAt
+        if (state.totalPausedMs !== undefined) this.totalPausedMs = state.totalPausedMs
+        if (state.breakStartedAt !== undefined) this.breakStartedAt = state.breakStartedAt
+        if (state.breakSessionId !== undefined) this.breakSessionId = state.breakSessionId
+        if (state.totalBreakTimeMs !== undefined) this.totalBreakTimeMs = state.totalBreakTimeMs
+        if (state.sessionWorkMs !== undefined) this.sessionWorkMs = state.sessionWorkMs
+        if (state.sessionBreakMs !== undefined) this.sessionBreakMs = state.sessionBreakMs
+        if (state.sessionCigaretteMs !== undefined) this.sessionCigaretteMs = state.sessionCigaretteMs
+        
+        // Import address data
+        if (state.defaultAddress !== undefined) this.defaultAddress = state.defaultAddress
+        if (state.customAddress !== undefined) this.customAddress = state.customAddress
+        if (state.extraAddresses !== undefined) this.extraAddresses = state.extraAddresses
+        if (state.selectedAddressId !== undefined) this.selectedAddressId = state.selectedAddressId
+        
+        // Import sessions
+        if (state.sessions !== undefined) this.sessions = state.sessions
+        
+        // Save to storage
+        await this.persist()
+        
+        return true
+      } catch (error) {
+        console.error('Import error:', error)
+        throw new Error(`Eroare la importarea datelor: ${error.message}`)
+      }
     }
   }
 })

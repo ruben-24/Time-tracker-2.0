@@ -61,18 +61,34 @@ const updateDefaultAddress = () => {
   timer.persist()
 }
 
-const exportAllData = () => {
-  const data = timer.exportData()
-  const blob = new Blob([data], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-  showExportConfirm.value = false
+const exportAllData = async () => {
+  try {
+    const data = timer.exportData()
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    
+    // Create download link
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`
+    a.style.display = 'none'
+    
+    // Add to DOM, click, and remove
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    
+    // Clean up
+    setTimeout(() => {
+      URL.revokeObjectURL(url)
+    }, 100)
+    
+    showExportConfirm.value = false
+    alert('Backup-ul a fost descărcat cu succes!')
+  } catch (error) {
+    console.error('Export error:', error)
+    alert('Eroare la exportarea datelor. Încearcă din nou.')
+  }
 }
 
 const importAllData = () => {
