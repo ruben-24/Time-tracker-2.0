@@ -178,11 +178,11 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     startBreak() {
-      // If there's an active work session, pause it and start/resume break timer
+      // If there's an active work session, pause it and start break timer
       if (this.activeType === 'work' && this.activeStartedAt && !this.pausedAt) {
         // Pause the work session
         this.pausedAt = Date.now()
-        // Start new break timer (don't resume, start fresh)
+        // Start new break timer
         this.breakStartedAt = Date.now()
         this.breakSessionId = crypto.randomUUID()
         void this.persist()
@@ -232,9 +232,9 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     resumeWork() {
-      // If we're in break mode, resume work and save current break
+      // If we're in break mode, save current break and resume work
       if (this.pausedAt && this.breakStartedAt) {
-        // Save current break session to history
+        // Save current break session to history immediately
         this.endBreakSession()
         
         // Resume work from where we left off
