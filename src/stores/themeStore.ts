@@ -70,6 +70,56 @@ export const useThemeStore = defineStore('theme', () => {
       name: 'Midnight Blue',
       colors: { primary: '#1e293b', secondary: '#334155', accent: '#475569' },
       style: 'gradient'
+    },
+    {
+      name: 'Aurora Borealis',
+      colors: { primary: '#06ffa5', secondary: '#00d4aa', accent: '#00a8cc' },
+      style: 'gradient'
+    },
+    {
+      name: 'Fire & Ice',
+      colors: { primary: '#ff416c', secondary: '#ff4b2b', accent: '#ff6b6b' },
+      style: 'gradient'
+    },
+    {
+      name: 'Cosmic Purple',
+      colors: { primary: '#667eea', secondary: '#764ba2', accent: '#f093fb' },
+      style: 'gradient'
+    },
+    {
+      name: 'Golden Hour',
+      colors: { primary: '#f093fb', secondary: '#f5576c', accent: '#4facfe' },
+      style: 'gradient'
+    },
+    {
+      name: 'Neon Nights',
+      colors: { primary: '#00c9ff', secondary: '#92fe9d', accent: '#ff9a9e' },
+      style: 'gradient'
+    },
+    {
+      name: 'Dark Matter',
+      colors: { primary: '#0c0c0c', secondary: '#1a1a1a', accent: '#2d2d2d' },
+      style: 'gradient'
+    },
+    {
+      name: 'Tropical Paradise',
+      colors: { primary: '#11998e', secondary: '#38ef7d', accent: '#56ab2f' },
+      style: 'gradient'
+    },
+    {
+      name: 'Rose Gold',
+      colors: { primary: '#f8b500', secondary: '#f093fb', accent: '#f5576c' },
+      style: 'gradient'
+    },
+    {
+      name: 'Electric Blue',
+      colors: { primary: '#00d2ff', secondary: '#3a7bd5', accent: '#00c6ff' },
+      style: 'gradient'
+    },
+    {
+      name: 'Mystic Violet',
+      colors: { primary: '#667eea', secondary: '#764ba2', accent: '#f093fb' },
+      style: 'gradient'
     }
   ])
 

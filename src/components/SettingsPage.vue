@@ -497,6 +497,102 @@ const resetTheme = () => {
       </div>
 
 
+      <!-- Essential Settings -->
+      <div class="card-glass p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <Settings class="h-6 w-6 text-indigo-400" />
+          <h2 class="text-lg font-semibold text-white">Setări Esențiale</h2>
+        </div>
+        
+        <div class="space-y-4">
+          <!-- Language -->
+          <div>
+            <label class="block text-sm font-medium text-white/80 mb-2">Limbă</label>
+            <select class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none">
+              <option value="ro">Română</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+          
+          <!-- Time Format -->
+          <div>
+            <label class="block text-sm font-medium text-white/80 mb-2">Format Timp</label>
+            <select class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none">
+              <option value="24h">24 ore (HH:MM)</option>
+              <option value="12h">12 ore (AM/PM)</option>
+            </select>
+          </div>
+          
+          <!-- Date Format -->
+          <div>
+            <label class="block text-sm font-medium text-white/80 mb-2">Format Dată</label>
+            <select class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none">
+              <option value="dd/mm/yyyy">DD/MM/YYYY</option>
+              <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+              <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+            </select>
+          </div>
+          
+          <!-- Auto-save Interval -->
+          <div>
+            <label class="block text-sm font-medium text-white/80 mb-2">Interval Auto-save (secunde)</label>
+            <input 
+              type="number" 
+              min="5" 
+              max="300" 
+              value="30"
+              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification Settings -->
+      <div class="card-glass p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <Bell class="h-6 w-6 text-yellow-400" />
+          <h2 class="text-lg font-semibold text-white">Setări Notificări</h2>
+        </div>
+        
+        <div class="space-y-4">
+          <!-- Push Notifications -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-md font-medium text-white/80">Notificări Push</h3>
+              <p class="text-sm text-white/60">Primește notificări despre pauze</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" checked />
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
+            </label>
+          </div>
+          
+          <!-- Break Reminders -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-md font-medium text-white/80">Memento Pauze</h3>
+              <p class="text-sm text-white/60">Notificări pentru pauze regulate</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" />
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
+            </label>
+          </div>
+          
+          <!-- Sound Notifications -->
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-md font-medium text-white/80">Sunete Notificări</h3>
+              <p class="text-sm text-white/60">Activează sunete pentru notificări</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" checked />
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- Advanced Settings -->
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
