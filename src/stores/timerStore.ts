@@ -279,8 +279,8 @@ export const useTimerStore = defineStore('timer', {
       this.sessionCigaretteMs = 0
       void this.persist()
     },
-    addManualSession(type: SessionType, startedAt: number, endedAt: number, note?: string) {
-      if (endedAt <= startedAt) return
+    addManualSession(type: SessionType, startedAt: number, endedAt: number | null, note?: string) {
+      if (endedAt && endedAt <= startedAt) return
       const session: Session = {
         id: crypto.randomUUID(),
         type,

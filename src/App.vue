@@ -11,7 +11,7 @@ import AddressSelector from './components/AddressSelector.vue'
 import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
-import { ArrowLeft, DollarSign, Clock, Pause, Settings } from 'lucide-vue-next'
+import { ArrowLeft, DollarSign, Clock, Pause, Settings, X } from 'lucide-vue-next'
 
 const timer = useTimerStore()
 const theme = useThemeStore()
