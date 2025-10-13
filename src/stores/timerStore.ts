@@ -148,22 +148,13 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     startBreak() {
-      // If there's an active work session, pause it and start/resume break timer
+      // If there's an active work session, pause it and start break timer
       if (this.activeType === 'work' && this.activeStartedAt && !this.pausedAt) {
         // Pause the work session
         this.pausedAt = Date.now()
-        // Start or continue break timer (independent)
-        if (!this.breakStartedAt) {
-          this.breakStartedAt = Date.now()
-          this.breakSessionId = crypto.randomUUID()
-        } else {
-          // If break timer was already running, add accumulated time
-          const now = Date.now()
-          const breakDuration = now - this.breakStartedAt
-          this.totalBreakTimeMs += breakDuration
-          // Reset break start time for new break period
-          this.breakStartedAt = now
-        }
+        // Start break timer (independent)
+        this.breakStartedAt = Date.now()
+        this.breakSessionId = crypto.randomUUID()
         void this.persist()
         return
       }
@@ -213,11 +204,17 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     resumeWork() {
-      // If we're in break mode, resume work but keep break timer running
+      // If we're in break mode, resume work and pause break timer
       if (this.pausedAt && this.breakStartedAt) {
+        // Add current break time to total
+        const now = Date.now()
+        const currentBreakDuration = now - this.breakStartedAt
+        this.totalBreakTimeMs += currentBreakDuration
+        
         // Resume work from where we left off
         this.pausedAt = null
-        // Keep break timer running (don't end it)
+        // Pause break timer (don't reset it, just stop counting)
+        this.breakStartedAt = null
         void this.persist()
         return
       }

@@ -83,6 +83,10 @@ const breakElapsed = computed(() => {
   return timer.totalBreakTimeMs + (now.value - timer.breakStartedAt)
 })
 
+const isOnBreak = computed(() => {
+  return timer.pausedAt !== null && timer.breakStartedAt !== null
+})
+
 const navigateTo = (page: string) => {
   currentPage.value = page
 }
@@ -124,14 +128,14 @@ const forceUpdateTotals = () => {
         <div class="mb-8">
           <div class="text-center mb-6">
             <div class="text-xs text-white/70 font-medium uppercase tracking-wide mb-2">
-              {{ timer.isOnBreak ? 'Cronometru Pauză' : 'Cronometru Principal' }}
+              {{ isOnBreak ? 'Cronometru Pauză' : 'Cronometru Principal' }}
             </div>
             <div class="text-7xl font-bold tabular-nums tracking-tight timer-display text-white" 
-                 :class="timer.isOnBreak ? 'neon-glow-green' : 'neon-glow-blue'">
-              {{ formatDuration(timer.isOnBreak ? breakElapsed : elapsed) }}
+                 :class="isOnBreak ? 'neon-glow-green' : 'neon-glow-blue'">
+              {{ formatDuration(isOnBreak ? breakElapsed : elapsed) }}
             </div>
             <div class="text-sm text-white/60 mt-2">
-              {{ timer.isOnBreak ? 'Timpul curent de pauză' : 'Timpul curent de lucru' }}
+              {{ isOnBreak ? 'Timpul curent de pauză' : 'Timpul curent de lucru' }}
             </div>
           </div>
           
