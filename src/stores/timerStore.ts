@@ -368,6 +368,10 @@ export const useTimerStore = defineStore('timer', {
       this.sessions.unshift(session)
       void this.persist()
     },
+    updateDefaultAddress(newAddress: string) {
+      this.defaultAddress = newAddress
+      void this.persist()
+    },
     setCustomAddress(addr: string | null) {
       this.customAddress = addr && addr.trim().length > 0 ? addr : null
       void this.persist()

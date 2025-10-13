@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
 import { useFinancialStore } from '../stores/financialStore'
 import { useThemeStore } from '../stores/themeStore'
@@ -43,6 +43,110 @@ const customButtonColor = ref(theme.settings.buttonColors.primary)
 
 onMounted(() => {
   theme.load()
+  
+  // Load saved settings
+  const savedNotifications = localStorage.getItem('notificationsEnabled')
+  if (savedNotifications !== null) {
+    notificationsEnabled.value = savedNotifications === 'true'
+  }
+  
+  const savedBreakReminders = localStorage.getItem('breakReminders')
+  if (savedBreakReminders !== null) {
+    breakReminders.value = savedBreakReminders === 'true'
+  }
+  
+  const savedWorkReminders = localStorage.getItem('workReminders')
+  if (savedWorkReminders !== null) {
+    workReminders.value = savedWorkReminders === 'true'
+  }
+  
+  const savedAutoStartBreak = localStorage.getItem('autoStartBreak')
+  if (savedAutoStartBreak !== null) {
+    autoStartBreak.value = savedAutoStartBreak === 'true'
+  }
+  
+  const savedBreakDuration = localStorage.getItem('breakDuration')
+  if (savedBreakDuration !== null) {
+    breakDuration.value = parseInt(savedBreakDuration)
+  }
+  
+  const savedWorkSessionGoal = localStorage.getItem('workSessionGoal')
+  if (savedWorkSessionGoal !== null) {
+    workSessionGoal.value = parseInt(savedWorkSessionGoal)
+  }
+})
+
+// Auto-save watchers
+watch(notificationsEnabled, (newValue) => {
+  localStorage.setItem('notificationsEnabled', newValue.toString())
+})
+
+watch(breakReminders, (newValue) => {
+  localStorage.setItem('breakReminders', newValue.toString())
+})
+
+watch(workReminders, (newValue) => {
+  localStorage.setItem('workReminders', newValue.toString())
+})
+
+watch(autoStartBreak, (newValue) => {
+  localStorage.setItem('autoStartBreak', newValue.toString())
+})
+
+watch(breakDuration, (newValue) => {
+  localStorage.setItem('breakDuration', newValue.toString())
+})
+
+watch(workSessionGoal, (newValue) => {
+  localStorage.setItem('workSessionGoal', newValue.toString())
+})
+
+watch(hourlyRate, (newValue) => {
+  financial.updateSettings({
+    hourlyRate: newValue,
+    weeklyHours: financial.weeklyHours,
+    taxClass: financial.taxClass
+  })
+})
+
+watch(weeklyHours, (newValue) => {
+  financial.updateSettings({
+    hourlyRate: financial.hourlyRate,
+    weeklyHours: newValue,
+    taxClass: financial.taxClass
+  })
+})
+
+watch(taxClass, (newValue) => {
+  financial.updateSettings({
+    hourlyRate: financial.hourlyRate,
+    weeklyHours: financial.weeklyHours,
+    taxClass: newValue
+  })
+})
+
+watch(defaultAddress, (newValue) => {
+  timer.updateDefaultAddress(newValue)
+})
+
+watch(customBackgroundColor, (newValue) => {
+  theme.updateSettings({
+    ...theme.settings,
+    backgroundColors: {
+      ...theme.settings.backgroundColors,
+      primary: newValue
+    }
+  })
+})
+
+watch(customButtonColor, (newValue) => {
+  theme.updateSettings({
+    ...theme.settings,
+    buttonColors: {
+      ...theme.settings.buttonColors,
+      primary: newValue
+    }
+  })
 })
 
 const updateFinancialSettings = () => {
@@ -714,10 +818,10 @@ const resetTheme = () => {
       <div class="card-glass p-6">
         <div class="text-center">
           <h3 class="text-lg font-semibold text-white mb-2">Time Tracker Pro</h3>
-          <p class="text-white/70 text-sm">Versiunea 2.0.0</p>
+          <p class="text-white/70 text-sm">Versiunea 2.1.0</p>
           <p class="text-white/60 text-xs mt-2">Dezvoltat cu ❤️ pentru productivitate</p>
           <div class="mt-4 flex justify-center gap-4">
-            <button class="btn btn-glass btn-rounded px-4 py-2 text-xs">
+            <button @click="emit('navigate', 'changelog')" class="btn btn-glass btn-rounded px-4 py-2 text-xs">
               Changelog
             </button>
             <button class="btn btn-glass btn-rounded px-4 py-2 text-xs">

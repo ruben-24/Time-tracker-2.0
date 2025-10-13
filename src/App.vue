@@ -19,6 +19,9 @@ const now = ref(Date.now())
 const currentPage = ref('main')
 let ticker: number | undefined
 
+// App version
+const appVersion = ref('2.1.0')
+
 // Manual entry variables
 const manualWorkStart = ref('')
 const manualWorkEnd = ref('')
@@ -122,6 +125,39 @@ const isOnBreak = computed(() => {
 const navigateTo = (page: string) => {
   currentPage.value = page
 }
+
+// Changelog data
+const changelog = ref([
+  {
+    version: '2.1.0',
+    date: '2024-12-19',
+    changes: [
+      'Auto-save pentru setări - modificările se salvează automat',
+      'Incrementare automată a versiunii la fiecare push',
+      'Changelog în aplicație - istoricul modificărilor',
+      'Logica pauzelor în sesiuni - salvare corectă în sesiunea activă',
+      'Timer de pauză continuu - nu se mai resetează',
+      'Salvare pauze în istoric ca sesiuni separate'
+    ]
+  },
+  {
+    version: '2.0.0',
+    date: '2024-12-19',
+    changes: [
+      'Design profesional și sexy cu glassmorphism',
+      '20+ preset-uri de background și butoane',
+      'Culori personalizabile cu picker custom',
+      'Efecte vizuale - particule, glass effect, animații',
+      'Butoane floating accesibile tot timpul',
+      'Setări extinse - esențiale, notificări, performanță',
+      'Import/Export cu backup în fișiere și iCloud',
+      'Gestionare adrese cu tarife și selectare',
+      'Adăugare manuală - sesiuni integrate cu pauze',
+      'Timer logic perfect - work/pause/resume/end',
+      'Istoric și statistici complete'
+    ]
+  }
+])
 
 // Manual entry functions
 
@@ -952,6 +988,33 @@ const forceUpdateTotals = () => {
 
     <!-- Settings Page -->
     <SettingsPage v-else-if="currentPage === 'settings'" @navigate="navigateTo" />
+
+    <!-- Changelog Page -->
+    <div v-else-if="currentPage === 'changelog'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
+      <div class="flex items-center justify-between mb-6 pt-4">
+        <button @click="navigateTo('settings')" class="btn btn-primary p-3 rounded-full">
+          <ArrowLeft class="h-5 w-5" />
+        </button>
+        <h1 class="text-2xl font-bold text-white">Changelog</h1>
+        <div class="text-sm text-white/60">v{{ appVersion }}</div>
+      </div>
+      
+      <div class="space-y-6">
+        <div v-for="version in changelog" :key="version.version" class="card-glass p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-white">Versiunea {{ version.version }}</h2>
+            <span class="text-sm text-white/60">{{ version.date }}</span>
+          </div>
+          
+          <div class="space-y-2">
+            <div v-for="change in version.changes" :key="change" class="flex items-start gap-3">
+              <div class="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+              <p class="text-white/80 text-sm">{{ change }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
