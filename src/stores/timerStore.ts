@@ -389,32 +389,26 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     
-    // Clean up old break/cigarette sessions that are not linked to work sessions
+    // Clean up old break/cigarette sessions that are linked to work sessions
     cleanupOldBreakSessions() {
       const workSessions = this.sessions.filter(s => s.type === 'work')
-      const cleaned: Session[] = []
+      const workSessionIds = workSessions.map(s => s.id)
       
-      // Keep all work sessions
-      cleaned.push(...workSessions)
-      
-      // Keep only breaks that are linked to work sessions
-      for (const workSession of workSessions) {
-        if (workSession.endedAt) {
-          const linkedBreaks = this.sessions.filter(s => 
-            (s.type === 'break' || s.type === 'cigarette') &&
-            s.startedAt >= workSession.startedAt &&
-            s.endedAt && s.endedAt <= (workSession.endedAt || 0)
-          )
-          cleaned.push(...linkedBreaks)
+      // Remove all break and cigarette sessions that are linked to work sessions
+      this.sessions = this.sessions.filter(session => {
+        if (session.type === 'break' || session.type === 'cigarette') {
+          // Check if this break is linked to a work session via note
+          if (session.note && session.note.includes('Pauză din sesiunea ')) {
+            const workSessionId = session.note.replace('Pauză din sesiunea ', '')
+            return !workSessionIds.includes(workSessionId)
+          }
+          // Keep breaks that are not linked to work sessions
+          return true
         }
-      }
+        // Keep all work sessions
+        return true
+      })
       
-      // Remove duplicates
-      const uniqueSessions = cleaned.filter((session, index, self) => 
-        index === self.findIndex(s => s.id === session.id)
-      )
-      
-      this.sessions = uniqueSessions
       void this.persist()
     },
     setCustomAddress(addr: string | null) {
