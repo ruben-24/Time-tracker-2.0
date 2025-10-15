@@ -389,27 +389,32 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     
-    // Clean up duplicated break/cigarette sessions while preserving a single instance
+    // Clean up old break/cigarette sessions that are not linked to work sessions
     cleanupOldBreakSessions() {
-      const seenKeys = new Set<string>()
+      const workSessions = this.sessions.filter(s => s.type === 'work')
       const cleaned: Session[] = []
-
-      for (const session of this.sessions) {
-        if (session.type === 'break' || session.type === 'cigarette') {
-          const startedAt = session.startedAt ?? 0
-          const endedAt = session.endedAt ?? 0
-          const key = `${session.type}|${startedAt}|${endedAt}`
-          if (!seenKeys.has(key)) {
-            seenKeys.add(key)
-            cleaned.push(session)
-          }
-          // If already seen, skip duplicate
-        } else {
-          cleaned.push(session)
+      
+      // Keep all work sessions
+      cleaned.push(...workSessions)
+      
+      // Keep only breaks that are linked to work sessions
+      for (const workSession of workSessions) {
+        if (workSession.endedAt) {
+          const linkedBreaks = this.sessions.filter(s => 
+            (s.type === 'break' || s.type === 'cigarette') &&
+            s.startedAt >= workSession.startedAt &&
+            s.endedAt && s.endedAt <= (workSession.endedAt || 0)
+          )
+          cleaned.push(...linkedBreaks)
         }
       }
-
-      this.sessions = cleaned
+      
+      // Remove duplicates
+      const uniqueSessions = cleaned.filter((session, index, self) => 
+        index === self.findIndex(s => s.id === session.id)
+      )
+      
+      this.sessions = uniqueSessions
       void this.persist()
     },
     setCustomAddress(addr: string | null) {
