@@ -135,6 +135,7 @@ const getSessionDetails = (session: any) => {
       
       if (s.type === 'cigarette') {
         totalCigaretteTime += breakDuration
+        totalBreakTime += breakDuration // Include cigarette breaks in total break time
       } else {
         totalBreakTime += breakDuration
       }
