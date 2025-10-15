@@ -27,8 +27,16 @@ const deleteSession = (sessionId: string) => {
 
 const cleanupOldData = () => {
   if (confirm('Sigur vrei să elimini toate sesiunile vechi de pauză din istoric? Această acțiune nu poate fi anulată.')) {
+    const beforeCount = timer.sessions.length
     timer.cleanupOldBreakSessions()
-    alert('Datele au fost curățate! Sesiunile vechi de pauză au fost eliminate.')
+    const afterCount = timer.sessions.length
+    const removedCount = beforeCount - afterCount
+    
+    if (removedCount > 0) {
+      alert(`Datele au fost curățate! Au fost eliminate ${removedCount} sesiuni duplicate.`)
+    } else {
+      alert('Nu au fost găsite sesiuni duplicate de eliminat.')
+    }
   }
 }
 
