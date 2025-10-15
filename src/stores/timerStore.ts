@@ -389,25 +389,42 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     
-    // Clean up old break/cigarette sessions that are linked to work sessions
+    // Clean up old break/cigarette sessions by moving them to currentWorkBreaks
     cleanupOldBreakSessions() {
       const workSessions = this.sessions.filter(s => s.type === 'work')
-      const workSessionIds = workSessions.map(s => s.id)
       
-      // Remove all break and cigarette sessions that are linked to work sessions
-      this.sessions = this.sessions.filter(session => {
-        if (session.type === 'break' || session.type === 'cigarette') {
-          // Check if this break is linked to a work session via note
-          if (session.note && session.note.includes('Pauză din sesiunea ')) {
-            const workSessionId = session.note.replace('Pauză din sesiunea ', '')
-            return !workSessionIds.includes(workSessionId)
+      // Process each work session
+      for (const workSession of workSessions) {
+        if (!workSession.endedAt) continue
+        
+        // Find breaks linked to this work session
+        const linkedBreaks = this.sessions.filter(s => 
+          (s.type === 'break' || s.type === 'cigarette') &&
+          s.note && s.note.includes(`Pauză din sesiunea ${workSession.id}`) &&
+          s.startedAt >= workSession.startedAt &&
+          s.endedAt && s.endedAt <= (workSession.endedAt || 0)
+        )
+        
+        // Add breaks to currentWorkBreaks (global state)
+        if (linkedBreaks.length > 0) {
+          if (!this.currentWorkBreaks) {
+            this.currentWorkBreaks = []
           }
-          // Keep breaks that are not linked to work sessions
-          return true
+          
+          for (const breakSession of linkedBreaks) {
+            this.currentWorkBreaks.push({
+              id: breakSession.id,
+              type: breakSession.type as 'break' | 'cigarette',
+              startedAt: breakSession.startedAt,
+              endedAt: breakSession.endedAt!,
+              duration: breakSession.endedAt! - breakSession.startedAt
+            })
+          }
         }
-        // Keep all work sessions
-        return true
-      })
+      }
+      
+      // Remove all break and cigarette sessions (they're now in currentWorkBreaks)
+      this.sessions = this.sessions.filter(session => session.type === 'work')
       
       void this.persist()
     },
