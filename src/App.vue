@@ -125,8 +125,10 @@ const stateLabel = computed(() => {
 })
 
 const breakElapsed = computed(() => {
-  if (!timer.breakStartedAt) return timer.totalBreakTimeMs
-  return timer.totalBreakTimeMs + (now.value - timer.breakStartedAt)
+  if (timer.pausedAt !== null && timer.breakStartedAt !== null) {
+    return timer.totalBreakTimeMs + (now.value - timer.breakStartedAt)
+  }
+  return timer.totalBreakTimeMs
 })
 
 const isOnBreak = computed(() => {
