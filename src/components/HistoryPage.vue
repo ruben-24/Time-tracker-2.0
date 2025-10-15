@@ -49,9 +49,34 @@ const getSessionDuration = (session: any) => {
 
 const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
   if (type === 'work') {
-    // For work sessions, use the duration directly (already calculated correctly)
+    // For work sessions, calculate actual work time (excluding breaks)
     const workSessions = timer.sessions.filter(s => s.type === 'work')
-    const total = workSessions.reduce((acc, session) => {
+    let totalWorkTime = 0
+    
+    for (const session of workSessions) {
+      if (session.endedAt) {
+        const sessionDuration = session.endedAt - session.startedAt
+        // Find all breaks that occurred during this work session
+        const sessionBreaks = timer.sessions.filter(s => 
+          (s.type === 'break' || s.type === 'cigarette') &&
+          s.startedAt >= session.startedAt &&
+          s.endedAt && s.endedAt <= (session.endedAt || 0)
+        )
+        
+        const totalBreakTime = sessionBreaks.reduce((acc, breakSession) => {
+          return acc + (breakSession.endedAt ? breakSession.endedAt - breakSession.startedAt : 0)
+        }, 0)
+        
+        // Subtract break time from work time
+        totalWorkTime += Math.max(0, sessionDuration - totalBreakTime)
+      }
+    }
+    
+    return formatDuration(totalWorkTime)
+  } else if (type === 'break') {
+    // For breaks, include both normal breaks and cigarettes
+    const breakSessions = timer.sessions.filter(s => s.type === 'break' || s.type === 'cigarette')
+    const total = breakSessions.reduce((acc, session) => {
       if (session.endedAt) {
         return acc + (session.endedAt - session.startedAt)
       }
@@ -59,7 +84,7 @@ const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
     }, 0)
     return formatDuration(total)
   } else {
-    // For breaks and cigarettes, calculate normally
+    // For cigarettes only
     const sessions = timer.sessions.filter(s => s.type === type)
     const total = sessions.reduce((acc, session) => {
       if (session.endedAt) {
@@ -154,7 +179,7 @@ const getSessionDetails = (session: any) => {
   }
   
   // Calculate actual work time (subtract breaks from work time)
-  const actualWorkTime = Math.max(0, totalWorkTime - totalBreakTime - totalCigaretteTime)
+  const actualWorkTime = Math.max(0, totalWorkTime - totalBreakTime)
   
   return {
     date: sessionDate.toLocaleDateString('ro-RO', {
