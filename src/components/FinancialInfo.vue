@@ -33,9 +33,11 @@ const actualEarnings = computed(() => {
     totalWorkTimeMs += Math.max(0, sessionDuration - totalBreakTime)
   }
   
-  // Add current session work time if active
+  // Add current session work time if active (only if not already completed)
   if (timer.activeType === 'work' && timer.activeStartedAt) {
-    totalWorkTimeMs += timer.totalWorkMs
+    // Don't double count - current session is already included in totalWorkMs
+    // totalWorkMs already includes sessionWorkMs + current work time
+    totalWorkTimeMs += timer.totalWorkMs - timer.sessionWorkMs
   }
   
   const workTimeHours = totalWorkTimeMs / 3600000

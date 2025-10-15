@@ -49,30 +49,15 @@ const getSessionDuration = (session: any) => {
 
 const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
   if (type === 'work') {
-    // For work sessions, calculate actual work time (excluding breaks)
+    // For work sessions, use the duration directly (already calculated correctly)
     const workSessions = timer.sessions.filter(s => s.type === 'work')
-    let totalWorkTime = 0
-    
-    for (const session of workSessions) {
+    const total = workSessions.reduce((acc, session) => {
       if (session.endedAt) {
-        const sessionDuration = session.endedAt - session.startedAt
-        // Find all breaks that occurred during this work session
-        const sessionBreaks = timer.sessions.filter(s => 
-          (s.type === 'break' || s.type === 'cigarette') &&
-          s.startedAt >= session.startedAt &&
-          s.endedAt && s.endedAt <= (session.endedAt || 0)
-        )
-        
-        const totalBreakTime = sessionBreaks.reduce((acc, breakSession) => {
-          return acc + (breakSession.endedAt ? breakSession.endedAt - breakSession.startedAt : 0)
-        }, 0)
-        
-        // Subtract break time from work time
-        totalWorkTime += Math.max(0, sessionDuration - totalBreakTime)
+        return acc + (session.endedAt - session.startedAt)
       }
-    }
-    
-    return formatDuration(totalWorkTime)
+      return acc
+    }, 0)
+    return formatDuration(total)
   } else {
     // For breaks and cigarettes, calculate normally
     const sessions = timer.sessions.filter(s => s.type === type)

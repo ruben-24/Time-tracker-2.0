@@ -330,7 +330,7 @@ export const useTimerStore = defineStore('timer', {
         let pausedTime = this.totalPausedMs
         
         // If we're currently paused, add current pause time
-        if (this.isPaused && this.pausedAt) {
+        if (this.activeType !== null && this.pausedAt !== null && this.breakStartedAt === null) {
           pausedTime += now - this.pausedAt
         }
         
@@ -342,7 +342,7 @@ export const useTimerStore = defineStore('timer', {
           id: this.currentSessionId || crypto.randomUUID(),
           type: 'work',
           startedAt: this.activeStartedAt,
-          endedAt: this.activeStartedAt + actualDuration + (this.isPaused && this.pausedAt ? now - this.pausedAt : 0),
+          endedAt: this.activeStartedAt + actualDuration + (this.activeType !== null && this.pausedAt !== null && this.breakStartedAt === null ? now - this.pausedAt : 0),
           manual: false,
           note,
           address: this.currentAddress,
