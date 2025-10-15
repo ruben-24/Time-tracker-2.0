@@ -249,26 +249,26 @@ export const useTimerStore = defineStore('timer', {
       const breakDurationMinutes = breakDuration / (1000 * 60)
       
       // If break is under 5 minutes, save as cigarette break
-      const sessionType: SessionType = breakDurationMinutes < 5 ? 'cigarette' : 'break'
+      const breakType = breakDurationMinutes < 5 ? 'cigarette' : 'break'
       
       // Update session totals
-      if (sessionType === 'cigarette') {
+      if (breakType === 'cigarette') {
         this.sessionCigaretteMs += breakDuration
       } else {
         this.sessionBreakMs += breakDuration
       }
       
-      // Always save to sessions (both break and cigarette)
-      const session: Session = {
-        id: this.breakSessionId || crypto.randomUUID(),
-        type: sessionType,
+      // Add break to current work session breaks array (don't save as separate session)
+      if (!this.currentWorkBreaks) {
+        this.currentWorkBreaks = []
+      }
+      this.currentWorkBreaks.push({
+        id: crypto.randomUUID(),
+        type: breakType,
         startedAt: this.breakStartedAt,
         endedAt: now,
-        manual: false,
-        note: undefined,
-        address: this.currentAddress,
-      }
-      this.sessions.unshift(session)
+        duration: breakDuration
+      })
       
       // Reset break state
       this.breakStartedAt = null
