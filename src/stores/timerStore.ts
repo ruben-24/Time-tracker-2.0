@@ -356,6 +356,13 @@ export const useTimerStore = defineStore('timer', {
       this.defaultAddress = newAddress
       void this.persist()
     },
+    
+    // Clean up old break sessions from imported data
+    cleanupOldBreakSessions() {
+      // Remove all break and cigarette sessions from history
+      this.sessions = this.sessions.filter(session => session.type === 'work')
+      void this.persist()
+    },
     setCustomAddress(addr: string | null) {
       this.customAddress = addr && addr.trim().length > 0 ? addr : null
       void this.persist()

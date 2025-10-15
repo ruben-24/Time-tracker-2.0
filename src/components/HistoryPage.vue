@@ -25,6 +25,13 @@ const deleteSession = (sessionId: string) => {
   }
 }
 
+const cleanupOldData = () => {
+  if (confirm('Sigur vrei să elimini toate sesiunile vechi de pauză din istoric? Această acțiune nu poate fi anulată.')) {
+    timer.cleanupOldBreakSessions()
+    alert('Datele au fost curățate! Sesiunile vechi de pauză au fost eliminate.')
+  }
+}
+
 const formatDate = (timestamp: number) => {
   return new Date(timestamp).toLocaleDateString('ro-RO', {
     day: '2-digit',
@@ -216,6 +223,22 @@ const formatTime = (date: Date) => {
       <div class="card-glass p-4 text-center">
         <div class="text-xl font-bold text-orange-400">{{ getTotalTime('cigarette') }}</div>
         <div class="text-sm text-white/70">Pauze Țigară</div>
+      </div>
+    </div>
+
+    <!-- Cleanup Button -->
+    <div class="card-glass p-4 mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-semibold text-white">Curățare date</h3>
+          <p class="text-sm text-white/70">Elimină sesiunile vechi de pauză din istoric</p>
+        </div>
+        <button 
+          @click="cleanupOldData"
+          class="btn btn-danger"
+        >
+          Curăță datele
+        </button>
       </div>
     </div>
 
