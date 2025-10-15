@@ -102,6 +102,16 @@ watch(workSessionGoal, (newValue) => {
 })
 
 watch(hourlyRate, (newValue) => {
+  // Validate hourly rate
+  if (newValue < 0) {
+    hourlyRate.value = 0
+    return
+  }
+  if (newValue > 1000) {
+    hourlyRate.value = 1000
+    return
+  }
+  
   financial.updateSettings({
     hourlyRate: newValue,
     weeklyHours: financial.weeklyHours,
@@ -110,6 +120,16 @@ watch(hourlyRate, (newValue) => {
 })
 
 watch(weeklyHours, (newValue) => {
+  // Validate weekly hours
+  if (newValue < 1) {
+    weeklyHours.value = 1
+    return
+  }
+  if (newValue > 80) {
+    weeklyHours.value = 80
+    return
+  }
+  
   financial.updateSettings({
     hourlyRate: financial.hourlyRate,
     weeklyHours: newValue,
@@ -118,6 +138,16 @@ watch(weeklyHours, (newValue) => {
 })
 
 watch(taxClass, (newValue) => {
+  // Validate tax class
+  if (newValue < 1) {
+    taxClass.value = 1
+    return
+  }
+  if (newValue > 6) {
+    taxClass.value = 6
+    return
+  }
+  
   financial.updateSettings({
     hourlyRate: financial.hourlyRate,
     weeklyHours: financial.weeklyHours,

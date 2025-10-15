@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { Preferences } from '@capacitor/preferences'
 
 export interface FinancialSettings {
   hourlyRate: number
@@ -36,7 +37,7 @@ export interface FinancialCalculation {
   }
 }
 
-// const STORAGE_KEY = 'tt2_financial_v1'
+const STORAGE_KEY = 'tt2_financial_v1'
 
 export const useFinancialStore = defineStore('financial', {
   state: (): FinancialSettings => ({
@@ -200,15 +201,73 @@ export const useFinancialStore = defineStore('financial', {
   
   actions: {
     async load() {
-      // Load from storage if needed
+      try {
+        const { value } = await Preferences.get({ key: STORAGE_KEY })
+        if (value) {
+          const settings = JSON.parse(value)
+          // Validate loaded settings
+          if (settings.hourlyRate && settings.hourlyRate >= 0 && settings.hourlyRate <= 1000) {
+            this.hourlyRate = settings.hourlyRate
+          }
+          if (settings.weeklyHours && settings.weeklyHours >= 1 && settings.weeklyHours <= 80) {
+            this.weeklyHours = settings.weeklyHours
+          }
+          if (settings.taxClass && settings.taxClass >= 1 && settings.taxClass <= 6) {
+            this.taxClass = settings.taxClass
+          }
+          if (settings.socialClass && settings.socialClass >= 1 && settings.socialClass <= 3) {
+            this.socialClass = settings.socialClass
+          }
+        }
+      } catch (error) {
+        console.error('Error loading financial settings:', error instanceof Error ? error.message : 'Unknown error')
+        // Reset to default values on error
+        this.$patch({
+          hourlyRate: 16.5,
+          socialClass: 1,
+          weeklyHours: 40,
+          taxClass: 1
+        })
+      }
     },
     
     async persist() {
-      // Save to storage if needed
+      try {
+        const settings = {
+          hourlyRate: this.hourlyRate,
+          socialClass: this.socialClass,
+          weeklyHours: this.weeklyHours,
+          taxClass: this.taxClass
+        }
+        await Preferences.set({
+          key: STORAGE_KEY,
+          value: JSON.stringify(settings)
+        })
+      } catch (error) {
+        console.error('Error saving financial settings:', error instanceof Error ? error.message : 'Unknown error')
+        throw new Error('Failed to save financial settings')
+      }
     },
     
     updateSettings(settings: Partial<FinancialSettings>) {
-      this.$patch(settings)
+      // Validate settings before applying
+      const validatedSettings: Partial<FinancialSettings> = {}
+      
+      if (settings.hourlyRate !== undefined) {
+        validatedSettings.hourlyRate = Math.max(0, Math.min(1000, settings.hourlyRate))
+      }
+      if (settings.weeklyHours !== undefined) {
+        validatedSettings.weeklyHours = Math.max(1, Math.min(80, settings.weeklyHours))
+      }
+      if (settings.taxClass !== undefined) {
+        validatedSettings.taxClass = Math.max(1, Math.min(6, settings.taxClass))
+      }
+      if (settings.socialClass !== undefined) {
+        validatedSettings.socialClass = Math.max(1, Math.min(3, settings.socialClass))
+      }
+      
+      this.$patch(validatedSettings)
+      void this.persist()
     }
   }
 })

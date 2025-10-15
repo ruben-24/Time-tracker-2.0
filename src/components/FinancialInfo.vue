@@ -11,14 +11,40 @@ const breakdown = computed(() => financial.financialBreakdown)
 // Calculate actual earnings based on worked time
 const actualEarnings = computed(() => {
   const hourlyRate = financial.hourlyRate
-  const workTimeMs = timer.totalWorkMs
-  const workTimeHours = workTimeMs / 3600000
   
-  // Calculate gross earnings
+  // Calculate total work time from all completed sessions (using effective work time)
+  const workSessions = timer.sessions.filter(s => s.type === 'work' && s.endedAt)
+  let totalWorkTimeMs = 0
+  
+  for (const session of workSessions) {
+    const sessionDuration = session.endedAt! - session.startedAt
+    // Find all breaks that occurred during this work session
+    const sessionBreaks = timer.sessions.filter(s => 
+      (s.type === 'break' || s.type === 'cigarette') &&
+      s.startedAt >= session.startedAt &&
+      s.endedAt && s.endedAt <= session.endedAt!
+    )
+    
+    const totalBreakTime = sessionBreaks.reduce((acc, breakSession) => {
+      return acc + (breakSession.endedAt! - breakSession.startedAt)
+    }, 0)
+    
+    // Add effective work time (session duration minus breaks)
+    totalWorkTimeMs += Math.max(0, sessionDuration - totalBreakTime)
+  }
+  
+  // Add current session work time if active
+  if (timer.activeType === 'work' && timer.activeStartedAt) {
+    totalWorkTimeMs += timer.totalWorkMs
+  }
+  
+  const workTimeHours = totalWorkTimeMs / 3600000
+  
+  // Calculate gross earnings for actual work time
   const grossEarnings = workTimeHours * hourlyRate
   
-  // Calculate taxes for actual earnings
-  const yearlyGross = grossEarnings * (365 / 1) // Assuming daily rate
+  // Calculate net earnings using the same logic as financial store
+  const yearlyGross = financial.hourlyRate * financial.weeklyHours * 52
   let incomeTax = 0
   if (yearlyGross > 10908) {
     if (yearlyGross <= 62810) {
@@ -32,8 +58,11 @@ const actualEarnings = computed(() => {
   const solidaritySurcharge = incomeTax * 0.00825
   const totalTaxes = incomeTax + socialContributions + solidaritySurcharge
   
-  // Calculate net earnings
-  const netEarnings = grossEarnings - (totalTaxes * (workTimeHours / (365 * 8))) // Scale down to actual work time
+  // Calculate net hourly rate
+  const netHourlyRate = financial.hourlyRate - (totalTaxes / (financial.weeklyHours * 52))
+  
+  // Calculate net earnings for actual work time
+  const netEarnings = workTimeHours * netHourlyRate
   
   return {
     gross: grossEarnings,
@@ -61,8 +90,24 @@ const dailyEarnings = computed(() => {
   const todayWorkHours = todayWorkMs / 3600000
   const hourlyRate = financial.hourlyRate
   
+  // Calculate net hourly rate using financial store logic
+  const yearlyGross = financial.hourlyRate * financial.weeklyHours * 52
+  let incomeTax = 0
+  if (yearlyGross > 10908) {
+    if (yearlyGross <= 62810) {
+      const taxableIncome = yearlyGross - 10908
+      incomeTax = taxableIncome * 0.14 + (taxableIncome - 10908) * 0.2397
+    } else {
+      incomeTax = yearlyGross * 0.42
+    }
+  }
+  const socialContributions = yearlyGross * 0.20
+  const solidaritySurcharge = incomeTax * 0.00825
+  const totalTaxes = incomeTax + socialContributions + solidaritySurcharge
+  const netHourlyRate = financial.hourlyRate - (totalTaxes / (financial.weeklyHours * 52))
+  
   const gross = todayWorkHours * hourlyRate
-  const net = gross * 0.6 // Simplified calculation for daily
+  const net = todayWorkHours * netHourlyRate
   
   return { gross, net, workTimeHours: todayWorkHours }
 })
@@ -87,8 +132,24 @@ const weeklyEarnings = computed(() => {
   const weekWorkHours = weekWorkMs / 3600000
   const hourlyRate = financial.hourlyRate
   
+  // Calculate net hourly rate using financial store logic
+  const yearlyGross = financial.hourlyRate * financial.weeklyHours * 52
+  let incomeTax = 0
+  if (yearlyGross > 10908) {
+    if (yearlyGross <= 62810) {
+      const taxableIncome = yearlyGross - 10908
+      incomeTax = taxableIncome * 0.14 + (taxableIncome - 10908) * 0.2397
+    } else {
+      incomeTax = yearlyGross * 0.42
+    }
+  }
+  const socialContributions = yearlyGross * 0.20
+  const solidaritySurcharge = incomeTax * 0.00825
+  const totalTaxes = incomeTax + socialContributions + solidaritySurcharge
+  const netHourlyRate = financial.hourlyRate - (totalTaxes / (financial.weeklyHours * 52))
+  
   const gross = weekWorkHours * hourlyRate
-  const net = gross * 0.6 // Simplified calculation for weekly
+  const net = weekWorkHours * netHourlyRate
   
   return { gross, net, workTimeHours: weekWorkHours }
 })
@@ -111,8 +172,24 @@ const monthlyEarnings = computed(() => {
   const monthWorkHours = monthWorkMs / 3600000
   const hourlyRate = financial.hourlyRate
   
+  // Calculate net hourly rate using financial store logic
+  const yearlyGross = financial.hourlyRate * financial.weeklyHours * 52
+  let incomeTax = 0
+  if (yearlyGross > 10908) {
+    if (yearlyGross <= 62810) {
+      const taxableIncome = yearlyGross - 10908
+      incomeTax = taxableIncome * 0.14 + (taxableIncome - 10908) * 0.2397
+    } else {
+      incomeTax = yearlyGross * 0.42
+    }
+  }
+  const socialContributions = yearlyGross * 0.20
+  const solidaritySurcharge = incomeTax * 0.00825
+  const totalTaxes = incomeTax + socialContributions + solidaritySurcharge
+  const netHourlyRate = financial.hourlyRate - (totalTaxes / (financial.weeklyHours * 52))
+  
   const gross = monthWorkHours * hourlyRate
-  const net = gross * 0.6 // Simplified calculation for monthly
+  const net = monthWorkHours * netHourlyRate
   
   return { gross, net, workTimeHours: monthWorkHours }
 })
