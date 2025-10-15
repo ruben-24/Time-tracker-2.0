@@ -12,6 +12,7 @@ export interface Session {
   manual: boolean
   note?: string
   address?: string
+  breaks?: WorkBreak[]
 }
 
 export interface WorkBreak {
@@ -270,6 +271,23 @@ export const useTimerStore = defineStore('timer', {
         duration: breakDuration
       })
       
+      // Also add to the active work session if it exists
+      if (this.activeType === 'work' && this.currentSessionId) {
+        const activeSession = this.sessions.find(s => s.id === this.currentSessionId)
+        if (activeSession) {
+          if (!activeSession.breaks) {
+            activeSession.breaks = []
+          }
+          activeSession.breaks.push({
+            id: crypto.randomUUID(),
+            type: breakType,
+            startedAt: this.breakStartedAt,
+            endedAt: now,
+            duration: breakDuration
+          })
+        }
+      }
+      
       // Reset break state
       this.breakStartedAt = null
       this.breakSessionId = null
@@ -389,7 +407,7 @@ export const useTimerStore = defineStore('timer', {
       void this.persist()
     },
     
-    // Clean up old break/cigarette sessions by moving them to currentWorkBreaks
+    // Clean up old break/cigarette sessions by moving them to work sessions
     cleanupOldBreakSessions() {
       const workSessions = this.sessions.filter(s => s.type === 'work')
       
@@ -405,14 +423,14 @@ export const useTimerStore = defineStore('timer', {
           s.endedAt && s.endedAt <= (workSession.endedAt || 0)
         )
         
-        // Add breaks to currentWorkBreaks (global state)
+        // Add breaks to this specific work session
         if (linkedBreaks.length > 0) {
-          if (!this.currentWorkBreaks) {
-            this.currentWorkBreaks = []
+          if (!workSession.breaks) {
+            workSession.breaks = []
           }
           
           for (const breakSession of linkedBreaks) {
-            this.currentWorkBreaks.push({
+            workSession.breaks.push({
               id: breakSession.id,
               type: breakSession.type as 'break' | 'cigarette',
               startedAt: breakSession.startedAt,
@@ -423,7 +441,7 @@ export const useTimerStore = defineStore('timer', {
         }
       }
       
-      // Remove all break and cigarette sessions (they're now in currentWorkBreaks)
+      // Remove all break and cigarette sessions (they're now in work sessions)
       this.sessions = this.sessions.filter(session => session.type === 'work')
       
       void this.persist()
