@@ -1,0 +1,123 @@
+{
+  "activeType": null,
+  "activeStartedAt": null,
+  "sessions": [
+    {
+      "id": "882ee9da-3852-47f9-8e39-c0f5c40d9847",
+      "type": "cigarette",
+      "startedAt": 1760524014890,
+      "endedAt": 1760524240882,
+      "manual": false,
+      "note": "Pauză din sesiunea 97697b35-19f9-4efa-a88a-ef0f35cb632d",
+      "address": "Wasserburger str 15a,83119,Obing"
+    },
+    {
+      "id": "7974cf5b-c61e-43ae-967e-f7d3f201e114",
+      "type": "break",
+      "startedAt": 1760516856740,
+      "endedAt": 1760517779618,
+      "manual": false,
+      "note": "Pauză din sesiunea 97697b35-19f9-4efa-a88a-ef0f35cb632d",
+      "address": "Wasserburger str 15a,83119,Obing"
+    },
+    {
+      "id": "6595d46b-08be-45be-ad80-e6710547fe41",
+      "type": "cigarette",
+      "startedAt": 1760513050297,
+      "endedAt": 1760513331960,
+      "manual": false,
+      "note": "Pauză din sesiunea 97697b35-19f9-4efa-a88a-ef0f35cb632d",
+      "address": "Wasserburger str 15a,83119,Obing"
+    },
+    {
+      "id": "32fea2d5-63d7-46a9-85c7-7382fdcc3913",
+      "type": "cigarette",
+      "startedAt": 1760504776155,
+      "endedAt": 1760505058653,
+      "manual": false,
+      "note": "Pauză din sesiunea 97697b35-19f9-4efa-a88a-ef0f35cb632d",
+      "address": "Wasserburger str 15a,83119,Obing"
+    },
+    {
+      "id": "97697b35-19f9-4efa-a88a-ef0f35cb632d",
+      "type": "work",
+      "startedAt": 1760500881428,
+      "endedAt": 1760531671203,
+      "manual": false,
+      "address": "Wasserburger str 15a,83119,Obing"
+    },
+    {
+      "id": "2bc6e573-f908-457a-980f-1af68cd2921f",
+      "type": "cigarette",
+      "startedAt": 1760442042545,
+      "endedAt": 1760442225894,
+      "manual": false,
+      "note": "Pauză din sesiunea d43d4aff-5e82-428a-8300-887caf279599",
+      "address": "Wasserburger str 15a,83119,Obing"
+    },
+    {
+      "id": "9a52fd60-daae-41a4-88c1-f95e3e5ad613",
+      "type": "cigarette",
+      "startedAt": 1760436784061,
+      "endedAt": 1760437034034,
+      "manual": false,
+      "note": "Pauză din sesiunea d43d4aff-5e82-428a-8300-887caf279599",
+      "address": "Wasserburger str 15a,83119,Obing"
+    },
+    {
+      "id": "a187088f-0584-4690-8244-14b12dc7a309",
+      "type": "break",
+      "startedAt": 1760430947659,
+      "endedAt": 1760432060025,
+      "manual": false,
+      "note": "Pauză din sesiunea d43d4aff-5e82-428a-8300-887caf279599",
+      "address": "Wasserburger str 15a,83119,Obing"
+    },
+    {
+      "id": "be1e4367-c476-462b-a86c-a9830379e595",
+      "type": "cigarette",
+      "startedAt": 1760424177844,
+      "endedAt": 1760424390581,
+      "manual": false,
+      "note": "Pauză din sesiunea d43d4aff-5e82-428a-8300-887caf279599",
+      "address": "Wasserburger str 15a,83119,Obing"
+    },
+    {
+      "id": "4397edb7-e60a-4d8d-b6c6-091e57d49427",
+      "type": "cigarette",
+      "startedAt": 1760418035024,
+      "endedAt": 1760418280636,
+      "manual": false,
+      "note": "Pauză din sesiunea d43d4aff-5e82-428a-8300-887caf279599",
+      "address": "Wasserburger str 15a,83119,Obing"
+    },
+    {
+      "id": "d43d4aff-5e82-428a-8300-887caf279599",
+      "type": "work",
+      "startedAt": 1760414160285,
+      "endedAt": 1760445099551,
+      "manual": false,
+      "address": "Wasserburger str 15a,83119,Obing"
+    }
+  ],
+  "currentWorkBreaks": [],
+  "defaultAddress": "Wasserburger str 15a,83119,Obing",
+  "customAddress": null,
+  "extraAddresses": [
+    {
+      "id": "d56cac93-ac15-4680-a82b-d295cbd6e28a",
+      "name": "Test",
+      "address": "Test"
+    }
+  ],
+  "selectedAddressId": null,
+  "currentSessionId": null,
+  "pausedAt": null,
+  "totalPausedMs": 0,
+  "breakStartedAt": null,
+  "breakSessionId": null,
+  "totalBreakTimeMs": 0,
+  "sessionWorkMs": 0,
+  "sessionBreakMs": 0,
+  "sessionCigaretteMs": 0
+}
