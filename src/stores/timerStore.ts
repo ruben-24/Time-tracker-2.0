@@ -317,27 +317,11 @@ export const useTimerStore = defineStore('timer', {
         }
         this.sessions.unshift(session)
         
-        // Add all breaks as separate sessions linked to this work session
-        if (this.currentWorkBreaks && this.currentWorkBreaks.length > 0) {
-          this.currentWorkBreaks.forEach(workBreak => {
-            const breakSession: Session = {
-              id: workBreak.id,
-              type: workBreak.type,
-              startedAt: workBreak.startedAt,
-              endedAt: workBreak.endedAt,
-              manual: false,
-              note: `Pauză din sesiunea ${session.id}`,
-              address: this.currentAddress,
-            }
-            this.sessions.unshift(breakSession)
-          })
-        }
+        // Don't create separate sessions for breaks - they're part of the work session
+        // Breaks are stored in currentWorkBreaks and will be shown in session details
       }
       
-      // End any active break session
-      if (this.breakStartedAt) {
-        this.endBreakSession()
-      }
+      // Don't end break session separately - breaks are part of work session
       
       // Reset all state
       this.activeType = null

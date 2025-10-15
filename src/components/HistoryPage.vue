@@ -41,14 +41,42 @@ const getSessionDuration = (session: any) => {
 }
 
 const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
-  const sessions = timer.sessions.filter(s => s.type === type)
-  const total = sessions.reduce((acc, session) => {
-    if (session.endedAt) {
-      return acc + (session.endedAt - session.startedAt)
+  if (type === 'work') {
+    // For work sessions, calculate actual work time (excluding breaks)
+    const workSessions = timer.sessions.filter(s => s.type === 'work')
+    let totalWorkTime = 0
+    
+    for (const session of workSessions) {
+      if (session.endedAt) {
+        const sessionDuration = session.endedAt - session.startedAt
+        // Find all breaks that occurred during this work session
+        const sessionBreaks = timer.sessions.filter(s => 
+          (s.type === 'break' || s.type === 'cigarette') &&
+          s.startedAt >= session.startedAt &&
+          s.endedAt && s.endedAt <= (session.endedAt || 0)
+        )
+        
+        const totalBreakTime = sessionBreaks.reduce((acc, breakSession) => {
+          return acc + (breakSession.endedAt ? breakSession.endedAt - breakSession.startedAt : 0)
+        }, 0)
+        
+        // Subtract break time from work time
+        totalWorkTime += Math.max(0, sessionDuration - totalBreakTime)
+      }
     }
-    return acc
-  }, 0)
-  return formatDuration(total)
+    
+    return formatDuration(totalWorkTime)
+  } else {
+    // For breaks and cigarettes, calculate normally
+    const sessions = timer.sessions.filter(s => s.type === type)
+    const total = sessions.reduce((acc, session) => {
+      if (session.endedAt) {
+        return acc + (session.endedAt - session.startedAt)
+      }
+      return acc
+    }, 0)
+    return formatDuration(total)
+  }
 }
 
 const toggleSessionDetails = (sessionId: string) => {
@@ -73,6 +101,9 @@ const getSessionDetails = (session: any) => {
   }).sort((a, b) => a.startedAt - b.startedAt)
   
   const timeline = []
+  let totalWorkTime = 0
+  let totalBreakTime = 0
+  let totalCigaretteTime = 0
   
   for (const s of daySessions) {
     const startTime = new Date(s.startedAt)
@@ -88,15 +119,25 @@ const getSessionDetails = (session: any) => {
       
       // Add work end if exists
       if (endTime) {
+        const sessionDuration = endTime.getTime() - startTime.getTime()
+        totalWorkTime += sessionDuration
+        
         timeline.push({
           type: 'work_end',
           time: endTime,
-          duration: endTime.getTime() - startTime.getTime(),
+          duration: sessionDuration,
           note: 'Program încheiat'
         })
       }
     } else if (s.type === 'break' || s.type === 'cigarette') {
       const breakType = s.type === 'cigarette' ? 'Pauză țigară' : 'Pauză'
+      const breakDuration = endTime ? endTime.getTime() - startTime.getTime() : 0
+      
+      if (s.type === 'cigarette') {
+        totalCigaretteTime += breakDuration
+      } else {
+        totalBreakTime += breakDuration
+      }
       
       // Add break start
       timeline.push({
@@ -119,13 +160,21 @@ const getSessionDetails = (session: any) => {
     }
   }
   
+  // Calculate actual work time (subtract breaks from work time)
+  const actualWorkTime = Math.max(0, totalWorkTime - totalBreakTime - totalCigaretteTime)
+  
   return {
     date: sessionDate.toLocaleDateString('ro-RO', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     }),
-    timeline: timeline.sort((a, b) => a.time.getTime() - b.time.getTime())
+    timeline: timeline.sort((a, b) => a.time.getTime() - b.time.getTime()),
+    totals: {
+      workTime: formatDuration(actualWorkTime),
+      breakTime: formatDuration(totalBreakTime),
+      cigaretteTime: formatDuration(totalCigaretteTime)
+    }
   }
 }
 
@@ -265,6 +314,22 @@ const formatTime = (date: Date) => {
         <!-- Session Details Dropdown -->
         <div v-if="expandedSessions.has(session.id)" class="mt-4 pt-4 border-t border-white/20">
           <div class="space-y-3">
+            <!-- Session Totals -->
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div class="bg-blue-500/10 border border-blue-400/30 rounded-lg p-3 text-center">
+                <div class="text-lg font-bold text-blue-400">{{ getSessionDetails(session).totals.workTime }}</div>
+                <div class="text-xs text-white/70">Total Lucru</div>
+              </div>
+              <div class="bg-orange-500/10 border border-orange-400/30 rounded-lg p-3 text-center">
+                <div class="text-lg font-bold text-orange-400">{{ getSessionDetails(session).totals.breakTime }}</div>
+                <div class="text-xs text-white/70">Total Pauză</div>
+              </div>
+              <div class="bg-red-500/10 border border-red-400/30 rounded-lg p-3 text-center">
+                <div class="text-lg font-bold text-red-400">{{ getSessionDetails(session).totals.cigaretteTime }}</div>
+                <div class="text-xs text-white/70">Pauze Țigară</div>
+              </div>
+            </div>
+            
             <div class="flex items-center gap-2 mb-3">
               <Clock class="h-4 w-4 text-blue-400" />
               <span class="font-semibold text-white">Cronologia zilei {{ getSessionDetails(session).date }}</span>
