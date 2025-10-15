@@ -205,16 +205,27 @@ const addManualBreakSession = () => {
   }
   
   // Determine if it's a cigarette break (< 5 minutes)
-  const sessionType = breakDuration < 5 * 60 * 1000 ? 'cigarette' : 'break'
+  const breakType = breakDuration < 5 * 60 * 1000 ? 'cigarette' : 'break'
   
-  timer.addManualSession(sessionType, startTime, endTime, manualBreakNote.value)
+  // Add break to currentWorkBreaks instead of creating separate session
+  if (!timer.currentWorkBreaks) {
+    timer.currentWorkBreaks = []
+  }
+  
+  timer.currentWorkBreaks.push({
+    id: crypto.randomUUID(),
+    type: breakType,
+    startedAt: startTime,
+    endedAt: endTime,
+    duration: breakDuration
+  })
   
   // Reset form
   manualBreakStart.value = ''
   manualBreakEnd.value = ''
   manualBreakNote.value = ''
   
-  const breakTypeLabel = sessionType === 'cigarette' ? 'pauză țigară' : 'pauză'
+  const breakTypeLabel = breakType === 'cigarette' ? 'pauză țigară' : 'pauză'
   alert(`Sesiunea de ${breakTypeLabel} a fost adăugată cu succes!`)
 }
 
