@@ -391,8 +391,22 @@ export const useTimerStore = defineStore('timer', {
     
     // Clean up old break sessions from imported data
     cleanupOldBreakSessions() {
-      // Remove all break and cigarette sessions from history
-      this.sessions = this.sessions.filter(session => session.type === 'work')
+      // Keep only work sessions and breaks that are properly linked to work sessions
+      const workSessions = this.sessions.filter(session => session.type === 'work')
+      const cleanedSessions = [...workSessions]
+      
+      // Add back breaks that are properly linked to work sessions
+      for (const workSession of workSessions) {
+        const linkedBreaks = this.sessions.filter(session => 
+          (session.type === 'break' || session.type === 'cigarette') &&
+          session.startedAt >= workSession.startedAt &&
+          session.endedAt && workSession.endedAt &&
+          session.endedAt <= workSession.endedAt
+        )
+        cleanedSessions.push(...linkedBreaks)
+      }
+      
+      this.sessions = cleanedSessions
       void this.persist()
     },
     setCustomAddress(addr: string | null) {
