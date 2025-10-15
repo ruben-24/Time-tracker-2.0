@@ -342,7 +342,7 @@ export const useTimerStore = defineStore('timer', {
           id: this.currentSessionId || crypto.randomUUID(),
           type: 'work',
           startedAt: this.activeStartedAt,
-          endedAt: this.activeStartedAt + actualDuration + (this.activeType !== null && this.pausedAt !== null && this.breakStartedAt === null ? now - this.pausedAt : 0),
+          endedAt: this.activeStartedAt + actualDuration,
           manual: false,
           note,
           address: this.currentAddress,
