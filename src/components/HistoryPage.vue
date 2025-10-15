@@ -142,6 +142,41 @@ const getSessionDetails = (session: any) => {
         note: 'Lucru început'
       })
       
+      // Add breaks from this work session
+      if (s.breaks && s.breaks.length > 0) {
+        for (const breakItem of s.breaks) {
+          const breakStartTime = new Date(breakItem.startedAt)
+          const breakEndTime = new Date(breakItem.endedAt)
+          const breakDuration = breakItem.duration
+          
+          const breakType = breakItem.type === 'cigarette' ? 'Pauză țigară' : 'Pauză'
+          
+          if (breakItem.type === 'cigarette') {
+            totalCigaretteTime += breakDuration
+            totalBreakTime += breakDuration
+          } else {
+            totalBreakTime += breakDuration
+          }
+          
+          // Add break start
+          timeline.push({
+            type: 'break_start',
+            time: breakStartTime,
+            note: breakType + ' la ' + formatTime(breakStartTime),
+            breakType: breakItem.type
+          })
+          
+          // Add break end
+          timeline.push({
+            type: 'break_end',
+            time: breakEndTime,
+            duration: breakDuration,
+            note: breakType + ' încheiată',
+            breakType: breakItem.type
+          })
+        }
+      }
+      
       // Add work end if exists
       if (endTime) {
         const sessionDuration = endTime.getTime() - startTime.getTime()
