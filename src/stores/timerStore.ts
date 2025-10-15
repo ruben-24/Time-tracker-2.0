@@ -89,10 +89,16 @@ export const useTimerStore = defineStore('timer', {
     isPaused: (s): boolean => s.activeType !== null && s.pausedAt !== null,
     isOnBreak: (s): boolean => s.pausedAt !== null && s.breakStartedAt !== null,
     totalWorkMs: (s): number => {
-      // Use session-specific work time
       if (s.activeType === 'work' && s.activeStartedAt) {
         const currentTime = Date.now() - s.activeStartedAt
-        return s.sessionWorkMs + Math.max(0, currentTime - s.totalPausedMs)
+        let pausedTime = s.totalPausedMs
+        
+        // Add current pause time if currently paused
+        if (s.activeType !== null && s.pausedAt !== null && s.breakStartedAt === null) {
+          pausedTime += Date.now() - s.pausedAt
+        }
+        
+        return s.sessionWorkMs + Math.max(0, currentTime - pausedTime)
       }
       return s.sessionWorkMs
     },
@@ -129,19 +135,40 @@ export const useTimerStore = defineStore('timer', {
           return
         }
       } catch (error) {
-        console.log('No file data found, trying preferences...')
+        console.log('No file data found, trying preferences...', error instanceof Error ? error.message : 'Unknown error')
       }
 
       // Fallback to preferences
-      const { value } = await Preferences.get({ key: STORAGE_KEY })
-      if (!value) return
       try {
+        const { value } = await Preferences.get({ key: STORAGE_KEY })
+        if (!value) return
+        
         const parsed = JSON.parse(value) as TimerState
         this.$patch(parsed)
         // Save to file for future use
         await this.saveToFile(parsed)
-      } catch {
-        // ignore corrupted state
+      } catch (error) {
+        console.error('Failed to load from preferences:', error instanceof Error ? error.message : 'Unknown error')
+        // Reset to default state on error
+        this.$patch({
+          activeType: null,
+          activeStartedAt: null,
+          sessions: [],
+          currentWorkBreaks: [],
+          defaultAddress: 'Munich',
+          customAddress: null,
+          extraAddresses: [],
+          selectedAddressId: null,
+          currentSessionId: null,
+          pausedAt: null,
+          totalPausedMs: 0,
+          breakStartedAt: null,
+          breakSessionId: null,
+          totalBreakTimeMs: 0,
+          sessionWorkMs: 0,
+          sessionBreakMs: 0,
+          sessionCigaretteMs: 0
+        })
       }
     },
     async persist() {
@@ -166,8 +193,13 @@ export const useTimerStore = defineStore('timer', {
       }
       
       // Save to both preferences and file
-      await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(copy) })
-      await this.saveToFile(copy)
+      try {
+        await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(copy) })
+        await this.saveToFile(copy)
+      } catch (error) {
+        console.error('Failed to persist data:', error instanceof Error ? error.message : 'Unknown error')
+        throw new Error('Failed to save data')
+      }
     },
     startWork() {
       // If there's an active session, end it first
@@ -310,7 +342,7 @@ export const useTimerStore = defineStore('timer', {
           id: this.currentSessionId || crypto.randomUUID(),
           type: 'work',
           startedAt: this.activeStartedAt,
-          endedAt: this.activeStartedAt + actualDuration,
+          endedAt: this.activeStartedAt + actualDuration + (this.isPaused && this.pausedAt ? now - this.pausedAt : 0),
           manual: false,
           note,
           address: this.currentAddress,

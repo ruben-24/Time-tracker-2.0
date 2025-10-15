@@ -46,22 +46,33 @@ const importData = ref('')
 const backupFiles = ref<Array<{name: string, modificationTime: number}>>([])
 const backupFolder = ref('TimeTracker')
 
-onMounted(() => {
-  void timer.load()
-  void theme.load()
-  void setupBackgroundHandlers()
-  
-  // Load backup settings
-  const savedSettings = localStorage.getItem('backupSettings')
-  if (savedSettings) {
-    const settings = JSON.parse(savedSettings)
-    backupFolder.value = settings.customFolder || 'TimeTracker'
+onMounted(async () => {
+  try {
+    await Promise.all([
+      timer.load(),
+      theme.load(),
+      setupBackgroundHandlers()
+    ])
+    
+    // Load backup settings
+    const savedSettings = localStorage.getItem('backupSettings')
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings)
+      backupFolder.value = settings.customFolder || 'TimeTracker'
+    }
+    
+    ticker = window.setInterval(() => {
+      now.value = Date.now()
+      forceUpdateTotals()
+    }, 1000)
+  } catch (error) {
+    console.error('Failed to initialize app:', error instanceof Error ? error.message : 'Unknown error')
+    // Continue with app initialization even if some parts fail
+    ticker = window.setInterval(() => {
+      now.value = Date.now()
+      forceUpdateTotals()
+    }, 1000)
   }
-  
-  ticker = window.setInterval(() => {
-    now.value = Date.now()
-    forceUpdateTotals()
-  }, 1000)
 })
 
 // Watch for theme changes and apply CSS variables
@@ -277,7 +288,7 @@ const addIntegratedWorkSession = () => {
   }
 
   // Add work session with calculated end time
-  const workEndTime = endTime || (startTime + workTime + totalBreakTime)
+  const workEndTime = endTime || (startTime + workTime)
   timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
   
   // Don't add breaks as separate sessions - they're part of the work session
