@@ -540,33 +540,42 @@ export const useTimerStore = defineStore('timer', {
       try {
         const parsed = JSON.parse(json)
         
-        if (!parsed?.state) {
-          throw new Error('Format invalid: lipsește secțiunea state')
+        // Accept both exported format { exportedAt, version, state: TimerState }
+        // and raw TimerState saved from Filesystem backups
+        const state = (parsed && typeof parsed === 'object' && 'state' in parsed)
+          ? (parsed as any).state
+          : parsed
+
+        if (!state || typeof state !== 'object') {
+          throw new Error('Format invalid: JSON necunoscut')
         }
-        
-        const state = parsed.state
-        
+
+        // Minimal validation for common fields (optional, tolerant to missing keys)
+        if ('sessions' in state && !Array.isArray((state as any).sessions)) {
+          throw new Error('Format invalid: câmpul sessions nu este listă')
+        }
+
         // Import timer state
-        if (state.activeType !== undefined) this.activeType = state.activeType
-        if (state.activeStartedAt !== undefined) this.activeStartedAt = state.activeStartedAt
-        if (state.currentSessionId !== undefined) this.currentSessionId = state.currentSessionId
-        if (state.pausedAt !== undefined) this.pausedAt = state.pausedAt
-        if (state.totalPausedMs !== undefined) this.totalPausedMs = state.totalPausedMs
-        if (state.breakStartedAt !== undefined) this.breakStartedAt = state.breakStartedAt
-        if (state.breakSessionId !== undefined) this.breakSessionId = state.breakSessionId
-        if (state.totalBreakTimeMs !== undefined) this.totalBreakTimeMs = state.totalBreakTimeMs
-        if (state.sessionWorkMs !== undefined) this.sessionWorkMs = state.sessionWorkMs
-        if (state.sessionBreakMs !== undefined) this.sessionBreakMs = state.sessionBreakMs
-        if (state.sessionCigaretteMs !== undefined) this.sessionCigaretteMs = state.sessionCigaretteMs
+        if ((state as any).activeType !== undefined) this.activeType = (state as any).activeType
+        if ((state as any).activeStartedAt !== undefined) this.activeStartedAt = (state as any).activeStartedAt
+        if ((state as any).currentSessionId !== undefined) this.currentSessionId = (state as any).currentSessionId
+        if ((state as any).pausedAt !== undefined) this.pausedAt = (state as any).pausedAt
+        if ((state as any).totalPausedMs !== undefined) this.totalPausedMs = (state as any).totalPausedMs
+        if ((state as any).breakStartedAt !== undefined) this.breakStartedAt = (state as any).breakStartedAt
+        if ((state as any).breakSessionId !== undefined) this.breakSessionId = (state as any).breakSessionId
+        if ((state as any).totalBreakTimeMs !== undefined) this.totalBreakTimeMs = (state as any).totalBreakTimeMs
+        if ((state as any).sessionWorkMs !== undefined) this.sessionWorkMs = (state as any).sessionWorkMs
+        if ((state as any).sessionBreakMs !== undefined) this.sessionBreakMs = (state as any).sessionBreakMs
+        if ((state as any).sessionCigaretteMs !== undefined) this.sessionCigaretteMs = (state as any).sessionCigaretteMs
         
         // Import address data
-        if (state.defaultAddress !== undefined) this.defaultAddress = state.defaultAddress
-        if (state.customAddress !== undefined) this.customAddress = state.customAddress
-        if (state.extraAddresses !== undefined) this.extraAddresses = state.extraAddresses
-        if (state.selectedAddressId !== undefined) this.selectedAddressId = state.selectedAddressId
+        if ((state as any).defaultAddress !== undefined) this.defaultAddress = (state as any).defaultAddress
+        if ((state as any).customAddress !== undefined) this.customAddress = (state as any).customAddress
+        if ((state as any).extraAddresses !== undefined) this.extraAddresses = (state as any).extraAddresses
+        if ((state as any).selectedAddressId !== undefined) this.selectedAddressId = (state as any).selectedAddressId
         
         // Import sessions
-        if (state.sessions !== undefined) this.sessions = state.sessions
+        if ((state as any).sessions !== undefined) this.sessions = (state as any).sessions
         
         // Save to storage
         await this.persist()
