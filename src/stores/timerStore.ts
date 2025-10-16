@@ -94,8 +94,8 @@ export const useTimerStore = defineStore('timer', {
         const currentTime = Date.now() - s.activeStartedAt
         let pausedTime = s.totalPausedMs
         
-        // Add current pause time if currently paused
-        if (s.activeType !== null && s.pausedAt !== null && s.breakStartedAt === null) {
+        // Add current pause time if currently paused (includes breaks)
+        if (s.activeType !== null && s.pausedAt !== null) {
           pausedTime += Date.now() - s.pausedAt
         }
         
@@ -104,15 +104,13 @@ export const useTimerStore = defineStore('timer', {
       return s.sessionWorkMs
     },
     totalBreakMs: (s): number => {
-      // Use session-specific break time
-      if (s.activeType === 'break' && s.activeStartedAt) {
-        return s.sessionBreakMs + (Date.now() - s.activeStartedAt)
+      // Show total break time accumulated in the current session,
+      // including the ongoing break (if any)
+      let total = s.totalBreakTimeMs
+      if (s.pausedAt !== null && s.breakStartedAt !== null) {
+        total += Date.now() - s.breakStartedAt
       }
-      // Add paused time to break time if we're paused
-      if (s.activeType !== null && s.pausedAt !== null) {
-        return s.sessionBreakMs + (Date.now() - s.pausedAt)
-      }
-      return s.sessionBreakMs
+      return total
     },
     totalCigaretteMs: (s): number => {
       // Use session-specific cigarette time
@@ -304,6 +302,11 @@ export const useTimerStore = defineStore('timer', {
         // Add break to current work session breaks array
         const breakDurationMinutes = currentBreakDuration / (1000 * 60)
         const breakType = breakDurationMinutes < 5 ? 'cigarette' : 'break'
+        if (breakType === 'cigarette') {
+          this.sessionCigaretteMs += currentBreakDuration
+        } else {
+          this.sessionBreakMs += currentBreakDuration
+        }
         
         // Store break info in current work session (not as separate session)
         if (!this.currentWorkBreaks) {
@@ -342,13 +345,36 @@ export const useTimerStore = defineStore('timer', {
       const now = Date.now()
       let actualDuration = 0
       
+      // If a break is currently ongoing, finalize it first so it's persisted
+      if (this.pausedAt !== null && this.breakStartedAt !== null) {
+        const currentBreakDuration = now - this.breakStartedAt
+        this.totalBreakTimeMs += currentBreakDuration
+        const breakDurationMinutes = currentBreakDuration / (1000 * 60)
+        const breakType = breakDurationMinutes < 5 ? 'cigarette' : 'break'
+        if (breakType === 'cigarette') {
+          this.sessionCigaretteMs += currentBreakDuration
+        } else {
+          this.sessionBreakMs += currentBreakDuration
+        }
+        if (!this.currentWorkBreaks) {
+          this.currentWorkBreaks = []
+        }
+        this.currentWorkBreaks.push({
+          id: crypto.randomUUID(),
+          type: breakType,
+          startedAt: this.breakStartedAt,
+          endedAt: now,
+          duration: currentBreakDuration
+        })
+      }
+      
       if (this.activeType === 'work') {
         // For work sessions, calculate actual work time (excluding pauses)
         const totalTime = now - this.activeStartedAt
         let pausedTime = this.totalPausedMs
         
-        // If we're currently paused, add current pause time
-        if (this.activeType !== null && this.pausedAt !== null && this.breakStartedAt === null) {
+        // If we're currently paused, add current pause time (includes breaks)
+        if (this.activeType !== null && this.pausedAt !== null) {
           pausedTime += now - this.pausedAt
         }
         
@@ -364,6 +390,7 @@ export const useTimerStore = defineStore('timer', {
           manual: false,
           note,
           address: this.currentAddress,
+          breaks: this.currentWorkBreaks || []
         }
         this.sessions.unshift(session)
         
