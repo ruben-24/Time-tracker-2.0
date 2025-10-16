@@ -419,9 +419,12 @@ const formatTime = (date: Date) => {
                 :key="index"
                 class="flex items-center gap-3 p-2 rounded-lg"
                 :class="{
-                  'bg-blue-500/10 border border-blue-400/30': event.type === 'work_start' || event.type === 'work_end',
-                  'bg-orange-500/10 border border-orange-400/30': event.type === 'break_start' && event.breakType === 'break' || event.type === 'break_end' && event.breakType === 'break',
-                  'bg-red-500/10 border border-red-400/30': event.type === 'break_start' && event.breakType === 'cigarette' || event.type === 'break_end' && event.breakType === 'cigarette'
+                  // Work events - clearer blue with left accent
+                  'bg-blue-600/15 border border-blue-400/40 ring-1 ring-inset ring-blue-400/20 border-l-4 border-l-blue-400': event.type === 'work_start' || event.type === 'work_end',
+                  // Long breaks - strong amber/yellow theme
+                  'bg-amber-400/15 border border-amber-400/50 ring-1 ring-inset ring-amber-400/20 border-l-4 border-l-amber-400': (event.type === 'break_start' && event.breakType === 'break') || (event.type === 'break_end' && event.breakType === 'break'),
+                  // Cigarette breaks - strong rose/red theme
+                  'bg-rose-500/15 border border-rose-500/60 ring-1 ring-inset ring-rose-500/20 border-l-4 border-l-rose-500': (event.type === 'break_start' && event.breakType === 'cigarette') || (event.type === 'break_end' && event.breakType === 'cigarette')
                 }"
               >
                 <div class="text-sm font-mono text-white/80 min-w-[60px]">
