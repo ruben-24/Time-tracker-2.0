@@ -82,15 +82,16 @@ const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
     
     return formatDuration(totalWorkTime)
   } else if (type === 'break') {
-    // For breaks, include both normal breaks and cigarettes
-    const breakSessions = timer.sessions.filter(s => s.type === 'break' || s.type === 'cigarette')
-    const total = breakSessions.reduce((acc, session) => {
-      if (session.endedAt) {
-        return acc + (session.endedAt - session.startedAt)
-      }
-      return acc
-    }, 0)
-    return formatDuration(total)
+    // Include standalone break/cigarette sessions and in-session breaks
+    const standalone = timer.sessions
+      .filter(s => s.type === 'break' || s.type === 'cigarette')
+      .reduce((acc, session) => acc + (session.endedAt ? (session.endedAt - session.startedAt) : 0), 0)
+
+    const inSession = timer.sessions
+      .filter(s => s.type === 'work' && Array.isArray((s as any).breaks))
+      .reduce((acc, s: any) => acc + (s.breaks?.reduce((bAcc: number, b: any) => bAcc + (b.duration || 0), 0) || 0), 0)
+
+    return formatDuration(standalone + inSession)
   } else {
     // For cigarettes only
     const sessions = timer.sessions.filter(s => s.type === type)

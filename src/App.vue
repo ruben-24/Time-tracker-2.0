@@ -19,6 +19,15 @@ const now = ref(Date.now())
 const currentPage = ref('main')
 let ticker: number | undefined
 
+// Count of all breaks (standalone + in-session)
+const totalBreakCount = computed(() => {
+  const standalone = timer.sessions.filter(s => s.type === 'break' || s.type === 'cigarette').length
+  const inSession = timer.sessions
+    .filter(s => s.type === 'work' && Array.isArray((s as any).breaks))
+    .reduce((acc, s: any) => acc + ((s.breaks?.length) || 0), 0)
+  return standalone + inSession
+})
+
 // App version
 const appVersion = ref('2.2.0')
 
@@ -208,19 +217,9 @@ const addManualBreakSession = () => {
   
   // Determine if it's a cigarette break (< 5 minutes)
   const breakType = breakDuration < 5 * 60 * 1000 ? 'cigarette' : 'break'
-  
-  // Add break to currentWorkBreaks instead of creating separate session
-  if (!timer.currentWorkBreaks) {
-    timer.currentWorkBreaks = []
-  }
-  
-  timer.currentWorkBreaks.push({
-    id: crypto.randomUUID(),
-    type: breakType,
-    startedAt: startTime,
-    endedAt: endTime,
-    duration: breakDuration
-  })
+
+  // Save as standalone break session so it appears in history
+  timer.addManualSession(breakType as 'break' | 'cigarette', startTime, endTime, manualBreakNote.value)
   
   // Reset form
   manualBreakStart.value = ''
@@ -580,7 +579,7 @@ const forceUpdateTotals = () => {
           <div class="rounded-2xl glass-enhanced p-6 card-hover" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
             <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Total pauză</div>
             <div class="text-2xl font-bold text-white">{{ formatDuration(timer.totalBreakMs) }}</div>
-            <div class="text-xs text-white/50 mt-1">Sesiuni: {{ timer.sessions.filter(s => s.type === 'break').length }}</div>
+            <div class="text-xs text-white/50 mt-1">Pauze: {{ totalBreakCount }}</div>
           </div>
           <div class="rounded-2xl glass-enhanced p-6 card-hover" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
             <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Pauze țigară</div>
