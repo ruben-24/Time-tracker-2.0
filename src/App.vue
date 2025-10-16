@@ -397,6 +397,30 @@ const importAllData = async () => {
   }
 }
 
+// Import from Files (iOS/Android) using a file picker
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const triggerFilePicker = () => {
+  fileInputRef.value?.click()
+}
+const importFromFile = async (e: Event) => {
+  try {
+    const input = e.target as HTMLInputElement
+    const file = input.files && input.files[0]
+    if (!file) return
+    const text = await file.text()
+    await timer.importData(text)
+    alert('Backup importat cu succes din fișier! Aplicația va fi reîncărcată.')
+    setTimeout(() => {
+      window.location.reload()
+    }, 800)
+  } catch (error) {
+    console.error('Import file error:', error)
+    alert('Eroare la importul din fișier. Încearcă din nou.')
+  } finally {
+    if (fileInputRef.value) fileInputRef.value.value = ''
+  }
+}
+
 // Backup functions
 const loadBackupFiles = async () => {
   try {
@@ -920,6 +944,24 @@ const forceUpdateTotals = () => {
           >
             Importă date
           </button>
+          <div class="mt-3">
+            <input
+              ref="fileInputRef"
+              type="file"
+              accept=".json,application/json"
+              class="hidden"
+              @change="importFromFile"
+            />
+            <button
+              @click="triggerFilePicker"
+              class="btn btn-amber w-full"
+            >
+              Importă din fișier (Files)
+            </button>
+            <p class="text-xs text-white/50 mt-2">
+              Alege un fișier backup JSON din Files (iOS/Android) pentru restaurare.
+            </p>
+          </div>
         </div>
         
         <!-- Backup Management -->
