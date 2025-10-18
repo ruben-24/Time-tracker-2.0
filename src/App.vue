@@ -285,33 +285,37 @@ const addIntegratedWorkSession = () => {
     return
   }
 
-  // Calculate total break time
+  // Calculate total break time for validation and summary
   const totalBreakTime = manualBreaks.value.reduce((total, breakItem) => {
     return total + (new Date(breakItem.end).getTime() - new Date(breakItem.start).getTime())
   }, 0)
 
-  // Calculate work time (total time minus breaks)
-  const totalTime = endTime ? endTime - startTime : now - startTime
+  const totalTime = (endTime ?? now) - startTime
   const workTime = totalTime - totalBreakTime
-
   if (workTime <= 0) {
     alert('Timpul de lucru nu poate fi negativ! Verifică pauzele.')
     return
   }
 
-  // Add work session with calculated end time
-  const workEndTime = endTime || (startTime + workTime)
-  timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
-  
-  // Don't add breaks as separate sessions - they're part of the work session
-  // The breaks are already calculated in the work time above
+  if (manualBreaks.value.length > 0) {
+    // Embed breaks inside the work session so all views subtract them
+    const breaks = manualBreaks.value.map(b => ({
+      start: new Date(b.start).getTime(),
+      end: new Date(b.end).getTime()
+    }))
+    timer.addManualWorkWithBreaks(startTime, breaks, endTime, manualWorkNote.value)
+  } else {
+    // No breaks: just add a normal manual work session
+    const workEndTime = endTime ?? (startTime + workTime)
+    timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
+  }
 
   // Clear all forms
   manualWorkStart.value = ''
   manualWorkEnd.value = ''
   manualWorkNote.value = ''
   manualBreaks.value = []
-  
+
   alert(`Sesiunea integrată a fost adăugată! Timp lucru: ${formatDuration(workTime)}, Pauze: ${formatDuration(totalBreakTime)}`)
 }
 
