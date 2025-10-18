@@ -300,7 +300,11 @@ const addIntegratedWorkSession = () => {
   }
 
   // Add work session with calculated end time
-  const workEndTime = endTime || (startTime + workTime)
+  // Important: when breaks are provided, we store NET duration
+  // so the saved session equals efectivul lucrat (pauzele scăzute)
+  const workEndTime = (manualBreaks.value.length > 0)
+    ? (startTime + workTime)
+    : (endTime || (startTime + workTime))
   timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
   
   // Don't add breaks as separate sessions - they're part of the work session
