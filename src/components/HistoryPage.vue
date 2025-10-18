@@ -52,41 +52,35 @@ const formatDate = (timestamp: number) => {
 
 const getSessionDuration = (session: any) => {
   if (!session.endedAt) return 'În desfășurare'
-  return formatDuration(session.endedAt - session.startedAt)
+  const gross = session.endedAt - session.startedAt
+  // Subtract embedded breaks when present; else subtract overlapping standalone breaks
+  if (Array.isArray(session.breaks) && session.breaks.length > 0) {
+    const embedded = session.breaks.reduce((acc: number, b: any) => acc + ((b.endedAt - b.startedAt) || b.duration || 0), 0)
+    return formatDuration(Math.max(0, gross - embedded))
+  }
+  const overlapping = timer.sessions.filter(s => (s.type === 'break' || s.type === 'cigarette') && s.endedAt && s.startedAt < session.endedAt && s.endedAt > session.startedAt)
+  const overlapMs = overlapping.reduce((acc, s) => acc + Math.max(0, Math.min(s.endedAt!, session.endedAt) - Math.max(s.startedAt, session.startedAt)), 0)
+  return formatDuration(Math.max(0, gross - overlapMs))
 }
 
 const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
   if (type === 'work') {
-    // For work sessions, calculate actual work time (excluding breaks)
+    // Sum net work time (subtract embedded breaks or overlapping standalone breaks)
     const workSessions = timer.sessions.filter(s => s.type === 'work')
-    let totalWorkTime = 0
-    
-    for (const session of workSessions) {
-      if (session.endedAt) {
-        const sessionDuration = session.endedAt - session.startedAt
-        const hasEmbeddedBreaks = Array.isArray((session as any).breaks) && ((session as any).breaks.length > 0)
-
-        if (hasEmbeddedBreaks) {
-          // New logic: endedAt-startedAt already represents effective work time
-          totalWorkTime += Math.max(0, sessionDuration)
-        } else {
-          // Legacy data: subtract standalone break/cigarette sessions that overlap
-          const sessionBreaks = timer.sessions.filter(s => 
-            (s.type === 'break' || s.type === 'cigarette') &&
-            s.startedAt >= session.startedAt &&
-            s.endedAt && s.endedAt <= (session.endedAt || 0)
-          )
-          
-          const totalBreakTime = sessionBreaks.reduce((acc, breakSession) => {
-            return acc + (breakSession.endedAt ? (breakSession.endedAt - breakSession.startedAt) : 0)
-          }, 0)
-          
-          totalWorkTime += Math.max(0, sessionDuration - totalBreakTime)
-        }
+    let totalNetWorkMs = 0
+    for (const session of workSessions as any[]) {
+      if (!session.endedAt) continue
+      const gross = session.endedAt - session.startedAt
+      if (Array.isArray(session.breaks) && session.breaks.length > 0) {
+        const embedded = session.breaks.reduce((acc: number, b: any) => acc + ((b.endedAt - b.startedAt) || b.duration || 0), 0)
+        totalNetWorkMs += Math.max(0, gross - embedded)
+      } else {
+        const overlapping = timer.sessions.filter(s => (s.type === 'break' || s.type === 'cigarette') && s.endedAt && s.startedAt < session.endedAt && s.endedAt > session.startedAt)
+        const overlapMs = overlapping.reduce((acc, s) => acc + Math.max(0, Math.min(s.endedAt!, session.endedAt) - Math.max(s.startedAt, session.startedAt)), 0)
+        totalNetWorkMs += Math.max(0, gross - overlapMs)
       }
     }
-    
-    return formatDuration(totalWorkTime)
+    return formatDuration(totalNetWorkMs)
   } else if (type === 'break') {
     // Include standalone break/cigarette sessions and in-session breaks
     const standalone = timer.sessions
@@ -134,7 +128,7 @@ const getSessionDetails = (session: any) => {
   }).sort((a, b) => a.startedAt - b.startedAt)
   
   const timeline = []
-  let totalWorkTime = 0
+  let totalNetWorkTime = 0
   let totalBreakTime = 0
   let totalCigaretteTime = 0
   
@@ -187,15 +181,13 @@ const getSessionDetails = (session: any) => {
       
       // Add work end if exists
       if (endTime) {
-        // For display, subtract embedded breaks fully from the session duration
         const sessionDuration = endTime.getTime() - startTime.getTime()
         let netMs = sessionDuration
         if (Array.isArray((s as any).breaks) && (s as any).breaks.length > 0) {
           const embeddedBreakMs = (s as any).breaks.reduce((acc: number, b: any) => acc + ((b.endedAt - b.startedAt) || b.duration || 0), 0)
           netMs = Math.max(0, netMs - embeddedBreakMs)
         }
-        totalWorkTime += netMs
-        
+        totalNetWorkTime += netMs
         timeline.push({
           type: 'work_end',
           time: endTime,
@@ -235,8 +227,8 @@ const getSessionDetails = (session: any) => {
     }
   }
   
-  // Calculate actual work time (subtract breaks from work time)
-  const actualWorkTime = Math.max(0, totalWorkTime - totalBreakTime)
+  // actual work time is the sum of net work across sessions (breaks already subtracted)
+  const actualWorkTime = totalNetWorkTime
   
   return {
     date: sessionDate.toLocaleDateString('ro-RO', {
