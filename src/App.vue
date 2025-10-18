@@ -429,7 +429,7 @@ const loadBackupFiles = async () => {
       name: file.name,
       modificationTime: (file as any).modificationTime || Date.now()
     }))
-    alert(`Găsite ${files.length} backup-uri`)
+    alert(`Găsite ${files.length} backup-uri (căutate în Files/Download și Documente aplicație) `)
   } catch (error) {
     console.error('Failed to load backup files:', error)
     alert('Eroare la încărcarea backup-urilor')
