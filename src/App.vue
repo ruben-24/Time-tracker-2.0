@@ -50,16 +50,30 @@ const manualBreaks = ref<Array<{
 // Friendlier date/time inputs: separate date and time fields with direct typing
 const workStartDate = ref('')
 const workStartTime = ref('') // HH:MM
+const workStartH = ref('')
+const workStartM = ref('')
 const workEndDate = ref('')
 const workEndTime = ref('')
+const workEndH = ref('')
+const workEndM = ref('')
 const breakStartDate = ref('')
 const breakStartTime = ref('')
+const breakStartH = ref('')
+const breakStartM = ref('')
 const breakEndDate = ref('')
 const breakEndTime = ref('')
+const breakEndH = ref('')
+const breakEndM = ref('')
 
 const combineDateTime = (dateStr: string, timeStr: string): string => {
   if (!dateStr || !timeStr) return ''
   return `${dateStr}T${timeStr}`
+}
+
+const toHHMM = (h: string, m: string): string => {
+  const hh = h.padStart(2, '0')
+  const mm = m.padStart(2, '0')
+  return `${hh}:${mm}`
 }
 
 // When user edits date/time fields, update the combined ISO strings
@@ -76,6 +90,20 @@ watch([breakEndDate, breakEndTime], ([d, t]) => {
   manualBreakEnd.value = combineDateTime(d, t)
 })
 
+// Keep HH and MM in sync with the combined time strings
+watch([workStartH, workStartM], ([h, m]) => {
+  if (h !== '' && m !== '') workStartTime.value = toHHMM(h, m)
+})
+watch([workEndH, workEndM], ([h, m]) => {
+  if (h !== '' && m !== '') workEndTime.value = toHHMM(h, m)
+})
+watch([breakStartH, breakStartM], ([h, m]) => {
+  if (h !== '' && m !== '') breakStartTime.value = toHHMM(h, m)
+})
+watch([breakEndH, breakEndM], ([h, m]) => {
+  if (h !== '' && m !== '') breakEndTime.value = toHHMM(h, m)
+})
+
 // When programmatic changes happen (e.g., setCurrentTime), reflect back into fields
 const splitIso = (iso: string): { d: string; t: string } => {
   if (!iso || iso.length < 16) return { d: '', t: '' }
@@ -85,22 +113,50 @@ watch(manualWorkStart, (v) => {
   const { d, t } = splitIso(v)
   if (d) workStartDate.value = d
   if (t) workStartTime.value = t
+  if (t && t.length >= 5) {
+    workStartH.value = t.slice(0, 2)
+    workStartM.value = t.slice(3, 5)
+  }
 })
 watch(manualWorkEnd, (v) => {
   const { d, t } = splitIso(v)
   if (d) workEndDate.value = d
   if (t) workEndTime.value = t
+  if (t && t.length >= 5) {
+    workEndH.value = t.slice(0, 2)
+    workEndM.value = t.slice(3, 5)
+  }
 })
 watch(manualBreakStart, (v) => {
   const { d, t } = splitIso(v)
   if (d) breakStartDate.value = d
   if (t) breakStartTime.value = t
+  if (t && t.length >= 5) {
+    breakStartH.value = t.slice(0, 2)
+    breakStartM.value = t.slice(3, 5)
+  }
 })
 watch(manualBreakEnd, (v) => {
   const { d, t } = splitIso(v)
   if (d) breakEndDate.value = d
   if (t) breakEndTime.value = t
+  if (t && t.length >= 5) {
+    breakEndH.value = t.slice(0, 2)
+    breakEndM.value = t.slice(3, 5)
+  }
 })
+
+// Sanitize hour/minute inputs and clamp ranges
+const sanitizeHour = (v: string): string => {
+  const digits = (v || '').replace(/\D+/g, '').slice(0, 2)
+  const num = Math.min(23, Math.max(0, parseInt(digits || '0', 10)))
+  return num.toString().padStart(2, '0')
+}
+const sanitizeMinute = (v: string): string => {
+  const digits = (v || '').replace(/\D+/g, '').slice(0, 2)
+  const num = Math.min(59, Math.max(0, parseInt(digits || '0', 10)))
+  return num.toString().padStart(2, '0')
+}
 
 // Ongoing session
 const isOngoingSession = ref(false)
