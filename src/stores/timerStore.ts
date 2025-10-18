@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { Preferences } from '@capacitor/preferences'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
+import { Capacitor } from '@capacitor/core'
 
 export type SessionType = 'work' | 'break' | 'cigarette'
 
@@ -622,24 +623,37 @@ export const useTimerStore = defineStore('timer', {
           encoding: Encoding.UTF8
         })
 
-        // Check if iCloud backup is enabled
-        const settings = localStorage.getItem('backupSettings')
-        if (settings) {
-          const parsed = JSON.parse(settings)
-          if (parsed.useiCloud) {
-            // Save to iCloud Documents directory
-            try {
-              await Filesystem.writeFile({
-                path: `${backupDir}/${DATA_FILE}`,
-                data: jsonData,
-                directory: Directory.External,
-                encoding: Encoding.UTF8
-              })
-              console.log('Data also saved to iCloud')
-            } catch (error) {
-              console.log('iCloud save failed, continuing with local save')
-            }
+        // Also save to public Files location on Android (Download/<backupDir>) so user finds it in Files app
+        try {
+          const platform = Capacitor.getPlatform()
+          if (platform === 'android') {
+            // Ensure public Download/<backupDir> exists
+            await Filesystem.mkdir({
+              path: `Download/${backupDir}`,
+              directory: Directory.ExternalStorage,
+              recursive: true
+            })
+
+            // Write current data file
+            await Filesystem.writeFile({
+              path: `Download/${backupDir}/${DATA_FILE}`,
+              data: jsonData,
+              directory: Directory.ExternalStorage,
+              encoding: Encoding.UTF8
+            })
+
+            // Write timestamped backup
+            await Filesystem.writeFile({
+              path: `Download/${backupDir}/backup-${timestamp}.json`,
+              data: jsonData,
+              directory: Directory.ExternalStorage,
+              encoding: Encoding.UTF8
+            })
+
+            console.log('Data also saved to Android public Downloads folder')
           }
+        } catch (error) {
+          console.log('Saving to public Files location failed, continuing with local save only')
         }
 
         console.log('Data saved to file successfully')
@@ -667,11 +681,28 @@ export const useTimerStore = defineStore('timer', {
     async getBackupFiles() {
       try {
         const backupDir = getBackupDirectory()
+        const platform = Capacitor.getPlatform()
+
+        if (platform === 'android') {
+          // Prefer public Downloads folder if available
+          try {
+            const publicResult = await Filesystem.readdir({
+              path: `Download/${backupDir}`,
+              directory: Directory.ExternalStorage
+            })
+            return publicResult.files
+              .filter(file => file.name.endsWith('.json'))
+              .sort((a, b) => b.name.localeCompare(a.name))
+          } catch (e) {
+            // Fallback to app Documents
+          }
+        }
+
         const result = await Filesystem.readdir({
           path: backupDir,
           directory: Directory.Documents
         })
-        
+
         return result.files
           .filter(file => file.name.endsWith('.json'))
           .sort((a, b) => b.name.localeCompare(a.name))
@@ -684,16 +715,36 @@ export const useTimerStore = defineStore('timer', {
     async restoreFromBackup(filename: string) {
       try {
         const backupDir = getBackupDirectory()
-        const result = await Filesystem.readFile({
-          path: `${backupDir}/${filename}`,
-          directory: Directory.Documents,
-          encoding: Encoding.UTF8
-        })
-        
-        const data = JSON.parse(result.data as string) as TimerState
+        const platform = Capacitor.getPlatform()
+        let fileData: string | null = null
+
+        // Try public Downloads on Android first
+        if (platform === 'android') {
+          try {
+            const publicRes = await Filesystem.readFile({
+              path: `Download/${backupDir}/${filename}`,
+              directory: Directory.ExternalStorage,
+              encoding: Encoding.UTF8
+            })
+            fileData = publicRes.data as string
+          } catch (e) {
+            // Will fallback to app Documents
+          }
+        }
+
+        if (!fileData) {
+          const result = await Filesystem.readFile({
+            path: `${backupDir}/${filename}`,
+            directory: Directory.Documents,
+            encoding: Encoding.UTF8
+          })
+          fileData = result.data as string
+        }
+
+        const data = JSON.parse(fileData) as TimerState
         this.$patch(data)
         await this.persist()
-        
+
         return true
       } catch (error) {
         console.error('Failed to restore from backup:', error)

@@ -375,6 +375,17 @@ const exportAllData = async () => {
   }
 }
 
+// Export directly into iOS Files (Documents/TimeTracker)
+const exportToFilesIOS = async () => {
+  try {
+    await timer.saveToFile(timer.$state)
+    alert('Backup salvat în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
+  } catch (error) {
+    console.error('Export to Files error:', error)
+    alert('Eroare la salvarea în Files. Încearcă din nou.')
+  }
+}
+
 const importAllData = async () => {
   try {
     if (!importData.value.trim()) {
@@ -429,7 +440,7 @@ const loadBackupFiles = async () => {
       name: file.name,
       modificationTime: (file as any).modificationTime || Date.now()
     }))
-    alert(`Găsite ${files.length} backup-uri`)
+    alert(`Găsite ${files.length} backup-uri (căutate în Files/Download și Documente aplicație) `)
   } catch (error) {
     console.error('Failed to load backup files:', error)
     alert('Eroare la încărcarea backup-urilor')
@@ -919,6 +930,13 @@ const forceUpdateTotals = () => {
             class="btn btn-emerald w-full"
           >
             Exportă toate datele
+          </button>
+          <button
+            @click="exportToFilesIOS"
+            class="btn btn-blue w-full mt-3"
+            title="Salvează backup-ul în aplicația Files (iOS)"
+          >
+            Salvează în Files (iOS)
           </button>
         </div>
         

@@ -85,8 +85,21 @@ const dailyEarnings = computed(() => {
     session.endedAt >= todayStart
   )
   
-  const todayWorkMs = todaySessions.reduce((acc, session) => {
-    return acc + (session.endedAt! - session.startedAt)
+  // Use effective work time: if session has embedded breaks, endedAt-startedAt is already net
+  const todayWorkMs = todaySessions.reduce((acc, session: any) => {
+    const duration = session.endedAt! - session.startedAt
+    const hasEmbeddedBreaks = Array.isArray(session.breaks) && session.breaks.length > 0
+    if (hasEmbeddedBreaks) {
+      return acc + Math.max(0, duration)
+    }
+    // Fallback for legacy data: subtract standalone breaks overlapping this session
+    const sessionBreaks = timer.sessions.filter(s => 
+      (s.type === 'break' || s.type === 'cigarette') &&
+      s.startedAt >= session.startedAt &&
+      s.endedAt && s.endedAt <= session.endedAt
+    )
+    const totalBreakTime = sessionBreaks.reduce((bAcc, b) => bAcc + ((b.endedAt! - b.startedAt) || 0), 0)
+    return acc + Math.max(0, duration - totalBreakTime)
   }, 0)
   
   const todayWorkHours = todayWorkMs / 3600000
@@ -126,9 +139,20 @@ const weeklyEarnings = computed(() => {
     session.endedAt && 
     session.endedAt >= weekStart.getTime()
   )
-  
-  const weekWorkMs = weekSessions.reduce((acc, session) => {
-    return acc + (session.endedAt! - session.startedAt)
+
+  const weekWorkMs = weekSessions.reduce((acc, session: any) => {
+    const duration = session.endedAt! - session.startedAt
+    const hasEmbeddedBreaks = Array.isArray(session.breaks) && session.breaks.length > 0
+    if (hasEmbeddedBreaks) {
+      return acc + Math.max(0, duration)
+    }
+    const sessionBreaks = timer.sessions.filter(s => 
+      (s.type === 'break' || s.type === 'cigarette') &&
+      s.startedAt >= session.startedAt &&
+      s.endedAt && s.endedAt <= session.endedAt
+    )
+    const totalBreakTime = sessionBreaks.reduce((bAcc, b) => bAcc + ((b.endedAt! - b.startedAt) || 0), 0)
+    return acc + Math.max(0, duration - totalBreakTime)
   }, 0)
   
   const weekWorkHours = weekWorkMs / 3600000
@@ -166,9 +190,20 @@ const monthlyEarnings = computed(() => {
     session.endedAt && 
     session.endedAt >= monthStart.getTime()
   )
-  
-  const monthWorkMs = monthSessions.reduce((acc, session) => {
-    return acc + (session.endedAt! - session.startedAt)
+
+  const monthWorkMs = monthSessions.reduce((acc, session: any) => {
+    const duration = session.endedAt! - session.startedAt
+    const hasEmbeddedBreaks = Array.isArray(session.breaks) && session.breaks.length > 0
+    if (hasEmbeddedBreaks) {
+      return acc + Math.max(0, duration)
+    }
+    const sessionBreaks = timer.sessions.filter(s => 
+      (s.type === 'break' || s.type === 'cigarette') &&
+      s.startedAt >= session.startedAt &&
+      s.endedAt && s.endedAt <= session.endedAt
+    )
+    const totalBreakTime = sessionBreaks.reduce((bAcc, b) => bAcc + ((b.endedAt! - b.startedAt) || 0), 0)
+    return acc + Math.max(0, duration - totalBreakTime)
   }, 0)
   
   const monthWorkHours = monthWorkMs / 3600000

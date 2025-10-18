@@ -64,19 +64,25 @@ const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
     for (const session of workSessions) {
       if (session.endedAt) {
         const sessionDuration = session.endedAt - session.startedAt
-        // Find all breaks that occurred during this work session
-        const sessionBreaks = timer.sessions.filter(s => 
-          (s.type === 'break' || s.type === 'cigarette') &&
-          s.startedAt >= session.startedAt &&
-          s.endedAt && s.endedAt <= (session.endedAt || 0)
-        )
-        
-        const totalBreakTime = sessionBreaks.reduce((acc, breakSession) => {
-          return acc + (breakSession.endedAt ? breakSession.endedAt - breakSession.startedAt : 0)
-        }, 0)
-        
-        // Subtract break time from work time
-        totalWorkTime += Math.max(0, sessionDuration - totalBreakTime)
+        const hasEmbeddedBreaks = Array.isArray((session as any).breaks) && ((session as any).breaks.length > 0)
+
+        if (hasEmbeddedBreaks) {
+          // New logic: endedAt-startedAt already represents effective work time
+          totalWorkTime += Math.max(0, sessionDuration)
+        } else {
+          // Legacy data: subtract standalone break/cigarette sessions that overlap
+          const sessionBreaks = timer.sessions.filter(s => 
+            (s.type === 'break' || s.type === 'cigarette') &&
+            s.startedAt >= session.startedAt &&
+            s.endedAt && s.endedAt <= (session.endedAt || 0)
+          )
+          
+          const totalBreakTime = sessionBreaks.reduce((acc, breakSession) => {
+            return acc + (breakSession.endedAt ? (breakSession.endedAt - breakSession.startedAt) : 0)
+          }, 0)
+          
+          totalWorkTime += Math.max(0, sessionDuration - totalBreakTime)
+        }
       }
     }
     
@@ -93,15 +99,16 @@ const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
 
     return formatDuration(standalone + inSession)
   } else {
-    // For cigarettes only
-    const sessions = timer.sessions.filter(s => s.type === type)
-    const total = sessions.reduce((acc, session) => {
-      if (session.endedAt) {
-        return acc + (session.endedAt - session.startedAt)
-      }
-      return acc
-    }, 0)
-    return formatDuration(total)
+    // For cigarettes: include standalone sessions and in-session cigarette breaks
+    const standalone = timer.sessions
+      .filter(s => s.type === 'cigarette')
+      .reduce((acc, session) => acc + (session.endedAt ? (session.endedAt - session.startedAt) : 0), 0)
+
+    const inSession = timer.sessions
+      .filter(s => s.type === 'work' && Array.isArray((s as any).breaks))
+      .reduce((acc, s: any) => acc + (s.breaks?.reduce((bAcc: number, b: any) => bAcc + ((b.type === 'cigarette' ? (b.duration || 0) : 0)), 0) || 0), 0)
+
+    return formatDuration(standalone + inSession)
   }
 }
 
