@@ -8,44 +8,41 @@ const financial = useFinancialStore()
 const timer = useTimerStore()
 const breakdown = computed(() => financial.financialBreakdown)
 
-// Calculate actual earnings based on worked time
+// Calculate actual earnings based on worked time (exclude embedded and standalone breaks)
 const actualEarnings = computed(() => {
   const hourlyRate = financial.hourlyRate
-  
-  // Calculate total work time from all completed sessions (using effective work time)
+
   const workSessions = timer.sessions.filter(s => s.type === 'work' && s.endedAt)
   let totalWorkTimeMs = 0
-  
-  for (const session of workSessions) {
-    const sessionDuration = session.endedAt! - session.startedAt
-    // Find all breaks that occurred during this work session
-    const sessionBreaks = timer.sessions.filter(s => 
-      (s.type === 'break' || s.type === 'cigarette') &&
-      s.startedAt >= session.startedAt &&
-      s.endedAt && s.endedAt <= session.endedAt!
-    )
-    
-    const totalBreakTime = sessionBreaks.reduce((acc, breakSession) => {
-      return acc + (breakSession.endedAt! - breakSession.startedAt)
-    }, 0)
-    
-    // Add effective work time (session duration minus breaks)
-    totalWorkTimeMs += Math.max(0, sessionDuration - totalBreakTime)
+
+  for (const session of workSessions as any[]) {
+    const sessionStart = session.startedAt as number
+    const sessionEnd = session.endedAt as number
+    let netMs = sessionEnd - sessionStart
+
+    if (Array.isArray(session.breaks) && session.breaks.length > 0) {
+      const embeddedBreakMs = session.breaks.reduce((acc: number, b: any) => acc + ((b.endedAt - b.startedAt) || b.duration || 0), 0)
+      netMs = Math.max(0, netMs - embeddedBreakMs)
+    } else {
+      // Legacy: subtract standalone breaks overlapping the session
+      const overlappingBreaks = timer.sessions.filter(s =>
+        (s.type === 'break' || s.type === 'cigarette') && s.endedAt && s.startedAt < sessionEnd && s.endedAt > sessionStart
+      )
+      const overlappedBreakMs = overlappingBreaks.reduce((acc, s) => {
+        const bStart = Math.max(s.startedAt, sessionStart)
+        const bEnd = Math.min(s.endedAt!, sessionEnd)
+        return acc + Math.max(0, bEnd - bStart)
+      }, 0)
+      netMs = Math.max(0, netMs - overlappedBreakMs)
+    }
+
+    totalWorkTimeMs += netMs
   }
-  
-  // Add current session work time if active (only if not already completed)
-  if (timer.activeType === 'work' && timer.activeStartedAt) {
-    // Don't double count - current session is already included in totalWorkMs
-    // totalWorkMs already includes sessionWorkMs + current work time
-    totalWorkTimeMs += timer.totalWorkMs - timer.sessionWorkMs
-  }
-  
+
   const workTimeHours = totalWorkTimeMs / 3600000
-  
-  // Calculate gross earnings for actual work time
   const grossEarnings = workTimeHours * hourlyRate
-  
-  // Calculate net earnings using the same logic as financial store
+
+  // Taxes and net rate
   const yearlyGross = financial.hourlyRate * financial.weeklyHours * 52
   let incomeTax = 0
   if (yearlyGross > 10908) {
@@ -59,18 +56,10 @@ const actualEarnings = computed(() => {
   const socialContributions = yearlyGross * 0.20
   const solidaritySurcharge = incomeTax * 0.00825
   const totalTaxes = incomeTax + socialContributions + solidaritySurcharge
-  
-  // Calculate net hourly rate
   const netHourlyRate = financial.hourlyRate - (totalTaxes / (financial.weeklyHours * 52))
-  
-  // Calculate net earnings for actual work time
   const netEarnings = workTimeHours * netHourlyRate
-  
-  return {
-    gross: grossEarnings,
-    net: Math.max(0, netEarnings),
-    workTimeHours
-  }
+
+  return { gross: grossEarnings, net: Math.max(0, netEarnings), workTimeHours }
 })
 
 // Helper: compute effective work ms in a time range [startMs, endMs]
