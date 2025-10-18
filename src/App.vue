@@ -50,12 +50,12 @@ const manualBreaks = ref<Array<{
 // Friendlier date/time inputs: separate date and HH:MM, but set HH/MM via steppers
 const workStartDate = ref('')
 const workStartTime = ref('') // HH:MM
-const workStartH = ref('')
-const workStartM = ref('')
+const workStartH = ref('09')
+const workStartM = ref('00')
 const workEndDate = ref('')
 const workEndTime = ref('')
-const workEndH = ref('')
-const workEndM = ref('')
+const workEndH = ref('17')
+const workEndM = ref('00')
 const breakStartDate = ref('')
 const breakStartTime = ref('')
 const breakStartH = ref('')
@@ -243,6 +243,16 @@ onMounted(async () => {
       backupFolder.value = settings.customFolder || 'TimeTracker'
     }
     
+    // Initialize default manual entry fields for better UX
+    const today = new Date().toISOString().slice(0, 10)
+    if (!workStartDate.value) workStartDate.value = today
+    if (!workEndDate.value) workEndDate.value = today
+    if (!breakStartDate.value) breakStartDate.value = today
+    if (!breakEndDate.value) breakEndDate.value = today
+    // Seed initial HH:MM for work fields
+    workStartTime.value = toHHMM(workStartH.value || '00', workStartM.value || '00')
+    workEndTime.value = toHHMM(workEndH.value || '00', workEndM.value || '00')
+
     ticker = window.setInterval(() => {
       now.value = Date.now()
       forceUpdateTotals()
@@ -694,26 +704,57 @@ const selectBackupFolder = () => {
 
 const setCurrentTime = (type: 'work' | 'break') => {
   const now = new Date()
-  const timeString = now.toISOString().slice(0, 16) // Format for datetime-local input
+  const d = now.toISOString().slice(0, 10)
+  const hh = now.getHours().toString().padStart(2, '0')
+  const mm = now.getMinutes().toString().padStart(2, '0')
+  const t = `${hh}:${mm}`
   
   if (type === 'work') {
-    if (!manualWorkStart.value) {
-      manualWorkStart.value = timeString
-    } else if (!manualWorkEnd.value) {
-      manualWorkEnd.value = timeString
+    if (!workStartDate.value || !workStartTime.value) {
+      workStartDate.value = d
+      workStartH.value = hh
+      workStartM.value = mm
+      workStartTime.value = t
+      manualWorkStart.value = combineDateTime(d, t)
+    } else if (!workEndDate.value || !workEndTime.value) {
+      workEndDate.value = d
+      workEndH.value = hh
+      workEndM.value = mm
+      workEndTime.value = t
+      manualWorkEnd.value = combineDateTime(d, t)
     } else {
       // Reset and set start time
-      manualWorkStart.value = timeString
+      workStartDate.value = d
+      workStartH.value = hh
+      workStartM.value = mm
+      workStartTime.value = t
+      manualWorkStart.value = combineDateTime(d, t)
+      workEndDate.value = ''
+      workEndTime.value = ''
       manualWorkEnd.value = ''
     }
   } else {
-    if (!manualBreakStart.value) {
-      manualBreakStart.value = timeString
-    } else if (!manualBreakEnd.value) {
-      manualBreakEnd.value = timeString
+    if (!breakStartDate.value || !breakStartTime.value) {
+      breakStartDate.value = d
+      breakStartH.value = hh
+      breakStartM.value = mm
+      breakStartTime.value = t
+      manualBreakStart.value = combineDateTime(d, t)
+    } else if (!breakEndDate.value || !breakEndTime.value) {
+      breakEndDate.value = d
+      breakEndH.value = hh
+      breakEndM.value = mm
+      breakEndTime.value = t
+      manualBreakEnd.value = combineDateTime(d, t)
     } else {
       // Reset and set start time
-      manualBreakStart.value = timeString
+      breakStartDate.value = d
+      breakStartH.value = hh
+      breakStartM.value = mm
+      breakStartTime.value = t
+      manualBreakStart.value = combineDateTime(d, t)
+      breakEndDate.value = ''
+      breakEndTime.value = ''
       manualBreakEnd.value = ''
     }
   }
@@ -987,6 +1028,7 @@ const forceUpdateTotals = () => {
             </div>
             
             <button
+              type="button"
               @click="addBreakToSession"
               class="btn btn-amber w-full"
               :disabled="!manualBreakStart || !manualBreakEnd"
@@ -1043,6 +1085,7 @@ const forceUpdateTotals = () => {
           <!-- Action Buttons -->
           <div class="flex gap-3">
             <button
+              type="button"
               @click="addIntegratedWorkSession"
               class="btn btn-primary flex-1"
               :disabled="!manualWorkStart"
@@ -1050,6 +1093,7 @@ const forceUpdateTotals = () => {
               Adaugă Sesiune Completă
             </button>
             <button
+              type="button"
               @click="addOngoingWorkSession"
               class="btn btn-glass flex-1"
               :disabled="!manualWorkStart"
@@ -1135,6 +1179,7 @@ const forceUpdateTotals = () => {
           </div>
           
           <button
+            type="button"
             @click="addManualBreakSession"
             class="btn btn-rose w-full"
             :disabled="!manualBreakStart || !manualBreakEnd"
