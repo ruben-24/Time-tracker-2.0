@@ -299,13 +299,18 @@ const addIntegratedWorkSession = () => {
     return
   }
 
-  // Add work session with calculated end time
-  // Important: when breaks are provided, we store NET duration
-  // so the saved session equals efectivul lucrat (pauzele scăzute)
-  const workEndTime = (manualBreaks.value.length > 0)
-    ? (startTime + workTime)
-    : (endTime || (startTime + workTime))
-  timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
+  // Add work session, storing NET duration and embedding breaks
+  if (manualBreaks.value.length > 0) {
+    const breaks = manualBreaks.value.map(b => ({
+      start: new Date(b.start).getTime(),
+      end: new Date(b.end).getTime()
+    }))
+    const workEndTime = startTime + workTime
+    timer.addManualWorkWithBreaks(startTime, breaks, workEndTime, manualWorkNote.value)
+  } else {
+    const workEndTime = endTime || (startTime + workTime)
+    timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
+  }
   
   // Don't add breaks as separate sessions - they're part of the work session
   // The breaks are already calculated in the work time above

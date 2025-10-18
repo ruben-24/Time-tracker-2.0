@@ -430,6 +430,36 @@ export const useTimerStore = defineStore('timer', {
       this.sessions.unshift(session)
       void this.persist()
     },
+
+    // Utility: add manual work session with embedded breaks (net duration)
+    addManualWorkWithBreaks(startedAt: number, breaks: Array<{ start: number, end: number }>, endedAt: number | null, note?: string) {
+      const now = Date.now()
+      const end = endedAt ?? now
+      if (end <= startedAt) return
+
+      const totalBreakMs = breaks.reduce((acc, b) => acc + Math.max(0, b.end - b.start), 0)
+      const grossMs = end - startedAt
+      const netMs = Math.max(0, grossMs - totalBreakMs)
+
+      const session: Session = {
+        id: crypto.randomUUID(),
+        type: 'work',
+        startedAt,
+        endedAt: startedAt + netMs,
+        manual: true,
+        note,
+        address: this.currentAddress,
+        breaks: breaks.map(b => ({
+          id: crypto.randomUUID(),
+          type: 'break',
+          startedAt: b.start,
+          endedAt: b.end,
+          duration: Math.max(0, b.end - b.start)
+        }))
+      }
+      this.sessions.unshift(session)
+      void this.persist()
+    },
     updateDefaultAddress(newAddress: string) {
       this.defaultAddress = newAddress
       void this.persist()
