@@ -142,7 +142,7 @@ const getSessionDetails = (session: any) => {
     const startTime = new Date(s.startedAt)
     const endTime = s.endedAt ? new Date(s.endedAt) : null
     
-    if (s.type === 'work') {
+      if (s.type === 'work') {
       // Add work start
       timeline.push({
         type: 'work_start',
@@ -187,7 +187,12 @@ const getSessionDetails = (session: any) => {
       
       // Add work end if exists
       if (endTime) {
-        const sessionDuration = endTime.getTime() - startTime.getTime()
+        // If this work session has embedded breaks, subtract them for the day timeline
+        let sessionDuration = endTime.getTime() - startTime.getTime()
+        if (Array.isArray((s as any).breaks) && (s as any).breaks.length > 0) {
+          const embeddedBreakMs = (s as any).breaks.reduce((acc: number, b: any) => acc + (b.duration || 0), 0)
+          sessionDuration = Math.max(0, sessionDuration - embeddedBreakMs)
+        }
         totalWorkTime += sessionDuration
         
         timeline.push({
