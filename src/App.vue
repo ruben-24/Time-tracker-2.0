@@ -47,6 +47,61 @@ const manualBreaks = ref<Array<{
   note: string
 }>>([])
 
+// Friendlier date/time inputs: separate date and time fields with direct typing
+const workStartDate = ref('')
+const workStartTime = ref('') // HH:MM
+const workEndDate = ref('')
+const workEndTime = ref('')
+const breakStartDate = ref('')
+const breakStartTime = ref('')
+const breakEndDate = ref('')
+const breakEndTime = ref('')
+
+const combineDateTime = (dateStr: string, timeStr: string): string => {
+  if (!dateStr || !timeStr) return ''
+  return `${dateStr}T${timeStr}`
+}
+
+// When user edits date/time fields, update the combined ISO strings
+watch([workStartDate, workStartTime], ([d, t]) => {
+  manualWorkStart.value = combineDateTime(d, t)
+})
+watch([workEndDate, workEndTime], ([d, t]) => {
+  manualWorkEnd.value = combineDateTime(d, t)
+})
+watch([breakStartDate, breakStartTime], ([d, t]) => {
+  manualBreakStart.value = combineDateTime(d, t)
+})
+watch([breakEndDate, breakEndTime], ([d, t]) => {
+  manualBreakEnd.value = combineDateTime(d, t)
+})
+
+// When programmatic changes happen (e.g., setCurrentTime), reflect back into fields
+const splitIso = (iso: string): { d: string; t: string } => {
+  if (!iso || iso.length < 16) return { d: '', t: '' }
+  return { d: iso.slice(0, 10), t: iso.slice(11, 16) }
+}
+watch(manualWorkStart, (v) => {
+  const { d, t } = splitIso(v)
+  if (d) workStartDate.value = d
+  if (t) workStartTime.value = t
+})
+watch(manualWorkEnd, (v) => {
+  const { d, t } = splitIso(v)
+  if (d) workEndDate.value = d
+  if (t) workEndTime.value = t
+})
+watch(manualBreakStart, (v) => {
+  const { d, t } = splitIso(v)
+  if (d) breakStartDate.value = d
+  if (t) breakStartTime.value = t
+})
+watch(manualBreakEnd, (v) => {
+  const { d, t } = splitIso(v)
+  if (d) breakEndDate.value = d
+  if (t) breakEndTime.value = t
+})
+
 // Ongoing session
 const isOngoingSession = ref(false)
 
@@ -698,23 +753,43 @@ const forceUpdateTotals = () => {
             Sesiune de Lucru cu Pauze
           </h2>
           
-          <!-- Work Session Times -->
+          <!-- Work Session Times (separate date/time for easier input) -->
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label class="block text-sm font-medium text-white/80 mb-2">Început Lucru</label>
-              <input
-                v-model="manualWorkStart"
-                type="datetime-local"
-                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
-              />
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model="workStartDate"
+                  type="date"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
+                />
+                <input
+                  v-model="workStartTime"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="HH:MM"
+                  pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono"
+                />
+              </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit Lucru (opțional)</label>
-              <input
-                v-model="manualWorkEnd"
-                type="datetime-local"
-                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
-              />
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model="workEndDate"
+                  type="date"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
+                />
+                <input
+                  v-model="workEndTime"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="HH:MM"
+                  pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono"
+                />
+              </div>
             </div>
           </div>
           
@@ -739,19 +814,39 @@ const forceUpdateTotals = () => {
             <div class="grid grid-cols-2 gap-4 mb-3">
               <div>
                 <label class="block text-sm font-medium text-white/80 mb-2">Început Pauză</label>
-                <input
-                  v-model="manualBreakStart"
-                  type="datetime-local"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
-                />
+                <div class="grid grid-cols-2 gap-2">
+                  <input
+                    v-model="breakStartDate"
+                    type="date"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
+                  />
+                  <input
+                    v-model="breakStartTime"
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="HH:MM"
+                    pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono"
+                  />
+                </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit Pauză</label>
-                <input
-                  v-model="manualBreakEnd"
-                  type="datetime-local"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
-                />
+                <div class="grid grid-cols-2 gap-2">
+                  <input
+                    v-model="breakEndDate"
+                    type="date"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
+                  />
+                  <input
+                    v-model="breakEndTime"
+                    type="text"
+                    inputmode="numeric"
+                    placeholder="HH:MM"
+                    pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono"
+                  />
+                </div>
               </div>
             </div>
             
@@ -851,19 +946,39 @@ const forceUpdateTotals = () => {
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label class="block text-sm font-medium text-white/80 mb-2">Început</label>
-              <input
-                v-model="manualBreakStart"
-                type="datetime-local"
-                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
-              />
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model="breakStartDate"
+                  type="date"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none"
+                />
+                <input
+                  v-model="breakStartTime"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="HH:MM"
+                  pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono"
+                />
+              </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit</label>
-              <input
-                v-model="manualBreakEnd"
-                type="datetime-local"
-                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
-              />
+              <div class="grid grid-cols-2 gap-2">
+                <input
+                  v-model="breakEndDate"
+                  type="date"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none"
+                />
+                <input
+                  v-model="breakEndTime"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="HH:MM"
+                  pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono"
+                />
+              </div>
             </div>
           </div>
           
