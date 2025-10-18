@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "vue-tsc -b && vite build",
+    "postsync:ios": "node scripts/patch-ios-filesharing.js",
     "version:patch": "node scripts/increment-version.js",
     "precommit": "npm run version:patch"
   },
@@ -14,6 +15,7 @@
     "@capacitor/core": "^7.4.3",
     "@capacitor/filesystem": "^7.1.4",
     "@capacitor/haptics": "7.0.2",
+    "@capacitor/share": "^7.0.3",
     "@capacitor/ios": "^7.4.3",
     "@capacitor/local-notifications": "^7.0.3",
     "@capacitor/preferences": "^7.0.2",
