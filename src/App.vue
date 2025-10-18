@@ -819,14 +819,25 @@ const forceUpdateTotals = () => {
                   type="date"
                   class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
                 />
-                <input
-                  v-model="workStartTime"
-                  type="text"
-                  inputmode="numeric"
-                  placeholder="HH:MM"
-                  pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono"
-                />
+                <div class="flex items-center gap-2">
+                  <input
+                    v-model="workStartH"
+                    @input="workStartH = sanitizeHour(workStartH)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="HH"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
+                  />
+                  <span class="text-white/70">:</span>
+                  <input
+                    v-model="workStartM"
+                    @input="workStartM = sanitizeMinute(workStartM)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="MM"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
+                  />
+                </div>
               </div>
             </div>
             <div>
@@ -837,14 +848,25 @@ const forceUpdateTotals = () => {
                   type="date"
                   class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
                 />
-                <input
-                  v-model="workEndTime"
-                  type="text"
-                  inputmode="numeric"
-                  placeholder="HH:MM"
-                  pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono"
-                />
+                <div class="flex items-center gap-2">
+                  <input
+                    v-model="workEndH"
+                    @input="workEndH = sanitizeHour(workEndH)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="HH"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
+                  />
+                  <span class="text-white/70">:</span>
+                  <input
+                    v-model="workEndM"
+                    @input="workEndM = sanitizeMinute(workEndM)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="MM"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -876,14 +898,25 @@ const forceUpdateTotals = () => {
                     type="date"
                     class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
                   />
-                  <input
-                    v-model="breakStartTime"
-                    type="text"
-                    inputmode="numeric"
-                    placeholder="HH:MM"
-                    pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono"
-                  />
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model="breakStartH"
+                      @input="breakStartH = sanitizeHour(breakStartH)"
+                      type="tel"
+                      inputmode="numeric"
+                      placeholder="HH"
+                      class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
+                    />
+                    <span class="text-white/70">:</span>
+                    <input
+                      v-model="breakStartM"
+                      @input="breakStartM = sanitizeMinute(breakStartM)"
+                      type="tel"
+                      inputmode="numeric"
+                      placeholder="MM"
+                      class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
+                    />
+                  </div>
                 </div>
               </div>
               <div>
@@ -894,14 +927,25 @@ const forceUpdateTotals = () => {
                     type="date"
                     class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
                   />
-                  <input
-                    v-model="breakEndTime"
-                    type="text"
-                    inputmode="numeric"
-                    placeholder="HH:MM"
-                    pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono"
-                  />
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model="breakEndH"
+                      @input="breakEndH = sanitizeHour(breakEndH)"
+                      type="tel"
+                      inputmode="numeric"
+                      placeholder="HH"
+                      class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
+                    />
+                    <span class="text-white/70">:</span>
+                    <input
+                      v-model="breakEndM"
+                      @input="breakEndM = sanitizeMinute(breakEndM)"
+                      type="tel"
+                      inputmode="numeric"
+                      placeholder="MM"
+                      class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1008,14 +1052,25 @@ const forceUpdateTotals = () => {
                   type="date"
                   class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none"
                 />
-                <input
-                  v-model="breakStartTime"
-                  type="text"
-                  inputmode="numeric"
-                  placeholder="HH:MM"
-                  pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono"
-                />
+                <div class="flex items-center gap-2">
+                  <input
+                    v-model="breakStartH"
+                    @input="breakStartH = sanitizeHour(breakStartH)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="HH"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
+                  />
+                  <span class="text-white/70">:</span>
+                  <input
+                    v-model="breakStartM"
+                    @input="breakStartM = sanitizeMinute(breakStartM)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="MM"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
+                  />
+                </div>
               </div>
             </div>
             <div>
@@ -1026,14 +1081,25 @@ const forceUpdateTotals = () => {
                   type="date"
                   class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none"
                 />
-                <input
-                  v-model="breakEndTime"
-                  type="text"
-                  inputmode="numeric"
-                  placeholder="HH:MM"
-                  pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono"
-                />
+                <div class="flex items-center gap-2">
+                  <input
+                    v-model="breakEndH"
+                    @input="breakEndH = sanitizeHour(breakEndH)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="HH"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
+                  />
+                  <span class="text-white/70">:</span>
+                  <input
+                    v-model="breakEndM"
+                    @input="breakEndM = sanitizeMinute(breakEndM)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="MM"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
+                  />
+                </div>
               </div>
             </div>
           </div>
