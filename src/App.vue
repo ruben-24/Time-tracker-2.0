@@ -881,15 +881,15 @@ const forceUpdateTotals = () => {
                 class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
               />
               <div class="grid grid-cols-2 gap-2">
-                <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkStartHour">−</button>
-                  <div class="w-14 text-center font-mono text-lg">{{ workStartH || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkStartHour">+</button>
+                <div class="flex flex-col items-center gap-1">
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkStartHour" aria-label="Crește ora început">+</button>
+                  <div class="w-16 text-center font-mono text-xl select-none">{{ workStartH || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkStartHour" aria-label="Scade ora început">−</button>
                 </div>
-                <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkStartMinute">−</button>
-                  <div class="w-14 text-center font-mono text-lg">{{ workStartM || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkStartMinute">+</button>
+                <div class="flex flex-col items-center gap-1">
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkStartMinute" aria-label="Crește minute început">+</button>
+                  <div class="w-16 text-center font-mono text-xl select-none">{{ workStartM || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkStartMinute" aria-label="Scade minute început">−</button>
                 </div>
               </div>
             </div>
@@ -901,15 +901,15 @@ const forceUpdateTotals = () => {
                 class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
               />
               <div class="grid grid-cols-2 gap-2">
-                <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkEndHour">−</button>
-                  <div class="w-14 text-center font-mono text-lg">{{ workEndH || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkEndHour">+</button>
+                <div class="flex flex-col items-center gap-1">
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkEndHour" aria-label="Crește ora sfârșit">+</button>
+                  <div class="w-16 text-center font-mono text-xl select-none">{{ workEndH || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkEndHour" aria-label="Scade ora sfârșit">−</button>
                 </div>
-                <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkEndMinute">−</button>
-                  <div class="w-14 text-center font-mono text-lg">{{ workEndM || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkEndMinute">+</button>
+                <div class="flex flex-col items-center gap-1">
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkEndMinute" aria-label="Crește minute sfârșit">+</button>
+                  <div class="w-16 text-center font-mono text-xl select-none">{{ workEndM || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkEndMinute" aria-label="Scade minute sfârșit">−</button>
                 </div>
               </div>
             </div>
@@ -942,15 +942,15 @@ const forceUpdateTotals = () => {
                   class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
                 />
               <div class="grid grid-cols-2 gap-2">
-                <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakStartHour">−</button>
-                  <div class="w-14 text-center font-mono text-lg">{{ breakStartH || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakStartHour">+</button>
+                <div class="flex flex-col items-center gap-1">
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakStartHour" aria-label="Crește ora început pauză">+</button>
+                  <div class="w-16 text-center font-mono text-xl select-none">{{ breakStartH || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakStartHour" aria-label="Scade ora început pauză">−</button>
                 </div>
-                <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakStartMinute">−</button>
-                  <div class="w-14 text-center font-mono text-lg">{{ breakStartM || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakStartMinute">+</button>
+                <div class="flex flex-col items-center gap-1">
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakStartMinute" aria-label="Crește minute început pauză">+</button>
+                  <div class="w-16 text-center font-mono text-xl select-none">{{ breakStartM || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakStartMinute" aria-label="Scade minute început pauză">−</button>
                 </div>
               </div>
               </div>
@@ -962,15 +962,15 @@ const forceUpdateTotals = () => {
                   class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
                 />
               <div class="grid grid-cols-2 gap-2">
-                <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakEndHour">−</button>
-                  <div class="w-14 text-center font-mono text-lg">{{ breakEndH || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakEndHour">+</button>
+                <div class="flex flex-col items-center gap-1">
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakEndHour" aria-label="Crește ora sfârșit pauză">+</button>
+                  <div class="w-16 text-center font-mono text-xl select-none">{{ breakEndH || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakEndHour" aria-label="Scade ora sfârșit pauză">−</button>
                 </div>
-                <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakEndMinute">−</button>
-                  <div class="w-14 text-center font-mono text-lg">{{ breakEndM || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakEndMinute">+</button>
+                <div class="flex flex-col items-center gap-1">
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakEndMinute" aria-label="Crește minute sfârșit pauză">+</button>
+                  <div class="w-16 text-center font-mono text-xl select-none">{{ breakEndM || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakEndMinute" aria-label="Scade minute sfârșit pauză">−</button>
                 </div>
               </div>
               </div>

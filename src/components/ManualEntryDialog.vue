@@ -85,32 +85,32 @@ function submit() {
           <div>
             <label class="mb-1 block text-sm font-medium">Durată</label>
             <div class="flex items-center gap-3">
-              <div class="flex items-center gap-2">
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decDurationHour">−</button>
-                <div class="w-14 text-center font-mono text-lg">{{ pad2(durationHours) }}</div>
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incDurationHour">+</button>
+              <div class="flex flex-col items-center gap-1">
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incDurationHour" aria-label="Crește ore durată">+</button>
+                <div class="w-16 text-center font-mono text-xl select-none">{{ pad2(durationHours) }}</div>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decDurationHour" aria-label="Scade ore durată">−</button>
               </div>
               <span class="text-sm">:</span>
-              <div class="flex items-center gap-2">
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decDurationMinute">−</button>
-                <div class="w-14 text-center font-mono text-lg">{{ pad2(durationMinutes) }}</div>
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incDurationMinute">+</button>
+              <div class="flex flex-col items-center gap-1">
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incDurationMinute" aria-label="Crește minute durată">+</button>
+                <div class="w-16 text-center font-mono text-xl select-none">{{ pad2(durationMinutes) }}</div>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decDurationMinute" aria-label="Scade minute durată">−</button>
               </div>
             </div>
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium">Se termină la</label>
             <div class="flex items-center gap-3">
-              <div class="flex items-center gap-2">
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decEndHour">−</button>
-                <div class="w-14 text-center font-mono text-lg">{{ pad2(endHour) }}</div>
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incEndHour">+</button>
+              <div class="flex flex-col items-center gap-1">
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incEndHour" aria-label="Crește ora sfârșit">+</button>
+                <div class="w-16 text-center font-mono text-xl select-none">{{ pad2(endHour) }}</div>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decEndHour" aria-label="Scade ora sfârșit">−</button>
               </div>
               <span class="text-sm">:</span>
-              <div class="flex items-center gap-2">
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decEndMinute">−</button>
-                <div class="w-14 text-center font-mono text-lg">{{ pad2(endMinute) }}</div>
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incEndMinute">+</button>
+              <div class="flex flex-col items-center gap-1">
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incEndMinute" aria-label="Crește minute sfârșit">+</button>
+                <div class="w-16 text-center font-mono text-xl select-none">{{ pad2(endMinute) }}</div>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decEndMinute" aria-label="Scade minute sfârșit">−</button>
               </div>
             </div>
           </div>
