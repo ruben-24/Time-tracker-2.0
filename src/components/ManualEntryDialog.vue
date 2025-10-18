@@ -5,9 +5,8 @@ import { useTimerStore, type SessionType } from '../stores/timerStore'
 const open = defineModel<boolean>({ default: false })
 const type = ref<SessionType>('work')
 const date = ref<string>(new Date().toISOString().slice(0, 10))
-// Use minute precision for better mobile support (avoid seconds)
-const start = ref<string>('09:00')
-const end = ref<string>('17:00')
+const start = ref<string>('09:00:00')
+const end = ref<string>('17:00:00')
 const note = ref<string>('')
 
 const timer = useTimerStore()
@@ -41,11 +40,11 @@ function submit() {
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="mb-1 block text-sm font-medium">Start</label>
-            <input type="time" v-model="start" class="w-full rounded-lg border px-3 py-2" />
+            <input type="time" step="1" v-model="start" class="w-full rounded-lg border px-3 py-2" />
           </div>
           <div>
             <label class="mb-1 block text-sm font-medium">Sfârșit</label>
-            <input type="time" v-model="end" class="w-full rounded-lg border px-3 py-2" />
+            <input type="time" step="1" v-model="end" class="w-full rounded-lg border px-3 py-2" />
           </div>
         </div>
         <div>
