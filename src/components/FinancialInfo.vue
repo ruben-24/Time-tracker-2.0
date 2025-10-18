@@ -73,34 +73,58 @@ const actualEarnings = computed(() => {
   }
 })
 
+// Helper: compute effective work ms in a time range [startMs, endMs]
+const computeWorkMsInRange = (startMs: number, endMs: number) => {
+  // Sum effective work time from completed work sessions overlapping the range
+  const workSessions = timer.sessions.filter(s => s.type === 'work' && s.endedAt)
+  let totalWorkMs = 0
+
+  for (const rawSession of workSessions as any[]) {
+    const sessionStart = rawSession.startedAt as number
+    const sessionEnd = rawSession.endedAt as number
+    // Skip if no overlap with range
+    const overlapStart = Math.max(sessionStart, startMs)
+    const overlapEnd = Math.min(sessionEnd, endMs)
+    if (overlapEnd <= overlapStart) continue
+
+    // Base duration inside the range window
+    const overlappedDuration = overlapEnd - overlapStart
+
+    // If this session has embedded breaks, subtract only overlapping portions
+    const embeddedBreaks: any[] = Array.isArray(rawSession.breaks) ? rawSession.breaks : []
+    if (embeddedBreaks.length > 0) {
+      const overlappedBreakMs = embeddedBreaks.reduce((acc, b) => {
+        const bStart = Math.max(b.startedAt, overlapStart)
+        const bEnd = Math.min(b.endedAt, overlapEnd)
+        const d = Math.max(0, bEnd - bStart)
+        return acc + d
+      }, 0)
+      totalWorkMs += Math.max(0, overlappedDuration - overlappedBreakMs)
+      continue
+    }
+
+    // Legacy sessions without embedded breaks: subtract standalone break/cigarette sessions that overlap
+    const overlappingBreaks = timer.sessions.filter(s =>
+      (s.type === 'break' || s.type === 'cigarette') && s.endedAt && s.startedAt < overlapEnd && s.endedAt > overlapStart
+    )
+    const overlappedBreakMs = overlappingBreaks.reduce((acc, s) => {
+      const bStart = Math.max(s.startedAt, overlapStart)
+      const bEnd = Math.min(s.endedAt!, overlapEnd)
+      return acc + Math.max(0, bEnd - bStart)
+    }, 0)
+    totalWorkMs += Math.max(0, overlappedDuration - overlappedBreakMs)
+  }
+
+  return totalWorkMs
+}
+
 // Calculate daily earnings (today's work)
 const dailyEarnings = computed(() => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const todayStart = today.getTime()
-  
-  const todaySessions = timer.sessions.filter(session => 
-    session.type === 'work' && 
-    session.endedAt && 
-    session.endedAt >= todayStart
-  )
-  
-  // Use effective work time: if session has embedded breaks, endedAt-startedAt is already net
-  const todayWorkMs = todaySessions.reduce((acc, session: any) => {
-    const duration = session.endedAt! - session.startedAt
-    const hasEmbeddedBreaks = Array.isArray(session.breaks) && session.breaks.length > 0
-    if (hasEmbeddedBreaks) {
-      return acc + Math.max(0, duration)
-    }
-    // Fallback for legacy data: subtract standalone breaks overlapping this session
-    const sessionBreaks = timer.sessions.filter(s => 
-      (s.type === 'break' || s.type === 'cigarette') &&
-      s.startedAt >= session.startedAt &&
-      s.endedAt && s.endedAt <= session.endedAt
-    )
-    const totalBreakTime = sessionBreaks.reduce((bAcc, b) => bAcc + ((b.endedAt! - b.startedAt) || 0), 0)
-    return acc + Math.max(0, duration - totalBreakTime)
-  }, 0)
+  const start = today.getTime()
+  const end = start + 24 * 60 * 60 * 1000 - 1
+  const todayWorkMs = computeWorkMsInRange(start, end)
   
   const todayWorkHours = todayWorkMs / 3600000
   const hourlyRate = financial.hourlyRate
@@ -133,27 +157,10 @@ const weeklyEarnings = computed(() => {
   const weekStart = new Date(now)
   weekStart.setDate(now.getDate() - now.getDay())
   weekStart.setHours(0, 0, 0, 0)
-  
-  const weekSessions = timer.sessions.filter(session => 
-    session.type === 'work' && 
-    session.endedAt && 
-    session.endedAt >= weekStart.getTime()
-  )
 
-  const weekWorkMs = weekSessions.reduce((acc, session: any) => {
-    const duration = session.endedAt! - session.startedAt
-    const hasEmbeddedBreaks = Array.isArray(session.breaks) && session.breaks.length > 0
-    if (hasEmbeddedBreaks) {
-      return acc + Math.max(0, duration)
-    }
-    const sessionBreaks = timer.sessions.filter(s => 
-      (s.type === 'break' || s.type === 'cigarette') &&
-      s.startedAt >= session.startedAt &&
-      s.endedAt && s.endedAt <= session.endedAt
-    )
-    const totalBreakTime = sessionBreaks.reduce((bAcc, b) => bAcc + ((b.endedAt! - b.startedAt) || 0), 0)
-    return acc + Math.max(0, duration - totalBreakTime)
-  }, 0)
+  const start = weekStart.getTime()
+  const end = start + 7 * 24 * 60 * 60 * 1000 - 1
+  const weekWorkMs = computeWorkMsInRange(start, end)
   
   const weekWorkHours = weekWorkMs / 3600000
   const hourlyRate = financial.hourlyRate
@@ -184,27 +191,9 @@ const weeklyEarnings = computed(() => {
 const monthlyEarnings = computed(() => {
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-  
-  const monthSessions = timer.sessions.filter(session => 
-    session.type === 'work' && 
-    session.endedAt && 
-    session.endedAt >= monthStart.getTime()
-  )
-
-  const monthWorkMs = monthSessions.reduce((acc, session: any) => {
-    const duration = session.endedAt! - session.startedAt
-    const hasEmbeddedBreaks = Array.isArray(session.breaks) && session.breaks.length > 0
-    if (hasEmbeddedBreaks) {
-      return acc + Math.max(0, duration)
-    }
-    const sessionBreaks = timer.sessions.filter(s => 
-      (s.type === 'break' || s.type === 'cigarette') &&
-      s.startedAt >= session.startedAt &&
-      s.endedAt && s.endedAt <= session.endedAt
-    )
-    const totalBreakTime = sessionBreaks.reduce((bAcc, b) => bAcc + ((b.endedAt! - b.startedAt) || 0), 0)
-    return acc + Math.max(0, duration - totalBreakTime)
-  }, 0)
+  const start = monthStart.getTime()
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime() - 1
+  const monthWorkMs = computeWorkMsInRange(start, end)
   
   const monthWorkHours = monthWorkMs / 3600000
   const hourlyRate = financial.hourlyRate
