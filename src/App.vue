@@ -47,15 +47,15 @@ const manualBreaks = ref<Array<{
   note: string
 }>>([])
 
-// Friendlier date/time inputs: separate date and HH:MM, but set HH/MM via steppers
+// Friendlier date/time inputs: separate date and time fields with direct typing
 const workStartDate = ref('')
 const workStartTime = ref('') // HH:MM
-const workStartH = ref('09')
-const workStartM = ref('00')
+const workStartH = ref('')
+const workStartM = ref('')
 const workEndDate = ref('')
 const workEndTime = ref('')
-const workEndH = ref('17')
-const workEndM = ref('00')
+const workEndH = ref('')
+const workEndM = ref('')
 const breakStartDate = ref('')
 const breakStartTime = ref('')
 const breakStartH = ref('')
@@ -146,78 +146,16 @@ watch(manualBreakEnd, (v) => {
   }
 })
 
-// Stepper helpers for HH and MM (no direct typing)
-const wrap = (value: number, min: number, max: number): number => {
-  const range = max - min + 1
-  return ((value - min) % range + range) % range + min
+// Sanitize hour/minute inputs and clamp ranges
+const sanitizeHour = (v: string): string => {
+  const digits = (v || '').replace(/\D+/g, '').slice(0, 2)
+  const num = Math.min(23, Math.max(0, parseInt(digits || '0', 10)))
+  return num.toString().padStart(2, '0')
 }
-
-const incWorkStartHour = () => {
-  const n = Number.parseInt(workStartH.value || '0', 10)
-  workStartH.value = wrap(isNaN(n) ? 0 : n + 1, 0, 23).toString().padStart(2, '0')
-}
-const decWorkStartHour = () => {
-  const n = Number.parseInt(workStartH.value || '0', 10)
-  workStartH.value = wrap(isNaN(n) ? 0 : n - 1, 0, 23).toString().padStart(2, '0')
-}
-const incWorkStartMinute = () => {
-  const n = Number.parseInt(workStartM.value || '0', 10)
-  workStartM.value = wrap(isNaN(n) ? 0 : n + 1, 0, 59).toString().padStart(2, '0')
-}
-const decWorkStartMinute = () => {
-  const n = Number.parseInt(workStartM.value || '0', 10)
-  workStartM.value = wrap(isNaN(n) ? 0 : n - 1, 0, 59).toString().padStart(2, '0')
-}
-
-const incWorkEndHour = () => {
-  const n = Number.parseInt(workEndH.value || '0', 10)
-  workEndH.value = wrap(isNaN(n) ? 0 : n + 1, 0, 23).toString().padStart(2, '0')
-}
-const decWorkEndHour = () => {
-  const n = Number.parseInt(workEndH.value || '0', 10)
-  workEndH.value = wrap(isNaN(n) ? 0 : n - 1, 0, 23).toString().padStart(2, '0')
-}
-const incWorkEndMinute = () => {
-  const n = Number.parseInt(workEndM.value || '0', 10)
-  workEndM.value = wrap(isNaN(n) ? 0 : n + 1, 0, 59).toString().padStart(2, '0')
-}
-const decWorkEndMinute = () => {
-  const n = Number.parseInt(workEndM.value || '0', 10)
-  workEndM.value = wrap(isNaN(n) ? 0 : n - 1, 0, 59).toString().padStart(2, '0')
-}
-
-const incBreakStartHour = () => {
-  const n = Number.parseInt(breakStartH.value || '0', 10)
-  breakStartH.value = wrap(isNaN(n) ? 0 : n + 1, 0, 23).toString().padStart(2, '0')
-}
-const decBreakStartHour = () => {
-  const n = Number.parseInt(breakStartH.value || '0', 10)
-  breakStartH.value = wrap(isNaN(n) ? 0 : n - 1, 0, 23).toString().padStart(2, '0')
-}
-const incBreakStartMinute = () => {
-  const n = Number.parseInt(breakStartM.value || '0', 10)
-  breakStartM.value = wrap(isNaN(n) ? 0 : n + 1, 0, 59).toString().padStart(2, '0')
-}
-const decBreakStartMinute = () => {
-  const n = Number.parseInt(breakStartM.value || '0', 10)
-  breakStartM.value = wrap(isNaN(n) ? 0 : n - 1, 0, 59).toString().padStart(2, '0')
-}
-
-const incBreakEndHour = () => {
-  const n = Number.parseInt(breakEndH.value || '0', 10)
-  breakEndH.value = wrap(isNaN(n) ? 0 : n + 1, 0, 23).toString().padStart(2, '0')
-}
-const decBreakEndHour = () => {
-  const n = Number.parseInt(breakEndH.value || '0', 10)
-  breakEndH.value = wrap(isNaN(n) ? 0 : n - 1, 0, 23).toString().padStart(2, '0')
-}
-const incBreakEndMinute = () => {
-  const n = Number.parseInt(breakEndM.value || '0', 10)
-  breakEndM.value = wrap(isNaN(n) ? 0 : n + 1, 0, 59).toString().padStart(2, '0')
-}
-const decBreakEndMinute = () => {
-  const n = Number.parseInt(breakEndM.value || '0', 10)
-  breakEndM.value = wrap(isNaN(n) ? 0 : n - 1, 0, 59).toString().padStart(2, '0')
+const sanitizeMinute = (v: string): string => {
+  const digits = (v || '').replace(/\D+/g, '').slice(0, 2)
+  const num = Math.min(59, Math.max(0, parseInt(digits || '0', 10)))
+  return num.toString().padStart(2, '0')
 }
 
 // Ongoing session
@@ -243,16 +181,6 @@ onMounted(async () => {
       backupFolder.value = settings.customFolder || 'TimeTracker'
     }
     
-    // Initialize default manual entry fields for better UX
-    const today = new Date().toISOString().slice(0, 10)
-    if (!workStartDate.value) workStartDate.value = today
-    if (!workEndDate.value) workEndDate.value = today
-    if (!breakStartDate.value) breakStartDate.value = today
-    if (!breakEndDate.value) breakEndDate.value = today
-    // Seed initial HH:MM for work fields
-    workStartTime.value = toHHMM(workStartH.value || '00', workStartM.value || '00')
-    workEndTime.value = toHHMM(workEndH.value || '00', workEndM.value || '00')
-
     ticker = window.setInterval(() => {
       now.value = Date.now()
       forceUpdateTotals()
@@ -704,57 +632,26 @@ const selectBackupFolder = () => {
 
 const setCurrentTime = (type: 'work' | 'break') => {
   const now = new Date()
-  const d = now.toISOString().slice(0, 10)
-  const hh = now.getHours().toString().padStart(2, '0')
-  const mm = now.getMinutes().toString().padStart(2, '0')
-  const t = `${hh}:${mm}`
+  const timeString = now.toISOString().slice(0, 16) // Format for datetime-local input
   
   if (type === 'work') {
-    if (!workStartDate.value || !workStartTime.value) {
-      workStartDate.value = d
-      workStartH.value = hh
-      workStartM.value = mm
-      workStartTime.value = t
-      manualWorkStart.value = combineDateTime(d, t)
-    } else if (!workEndDate.value || !workEndTime.value) {
-      workEndDate.value = d
-      workEndH.value = hh
-      workEndM.value = mm
-      workEndTime.value = t
-      manualWorkEnd.value = combineDateTime(d, t)
+    if (!manualWorkStart.value) {
+      manualWorkStart.value = timeString
+    } else if (!manualWorkEnd.value) {
+      manualWorkEnd.value = timeString
     } else {
       // Reset and set start time
-      workStartDate.value = d
-      workStartH.value = hh
-      workStartM.value = mm
-      workStartTime.value = t
-      manualWorkStart.value = combineDateTime(d, t)
-      workEndDate.value = ''
-      workEndTime.value = ''
+      manualWorkStart.value = timeString
       manualWorkEnd.value = ''
     }
   } else {
-    if (!breakStartDate.value || !breakStartTime.value) {
-      breakStartDate.value = d
-      breakStartH.value = hh
-      breakStartM.value = mm
-      breakStartTime.value = t
-      manualBreakStart.value = combineDateTime(d, t)
-    } else if (!breakEndDate.value || !breakEndTime.value) {
-      breakEndDate.value = d
-      breakEndH.value = hh
-      breakEndM.value = mm
-      breakEndTime.value = t
-      manualBreakEnd.value = combineDateTime(d, t)
+    if (!manualBreakStart.value) {
+      manualBreakStart.value = timeString
+    } else if (!manualBreakEnd.value) {
+      manualBreakEnd.value = timeString
     } else {
       // Reset and set start time
-      breakStartDate.value = d
-      breakStartH.value = hh
-      breakStartM.value = mm
-      breakStartTime.value = t
-      manualBreakStart.value = combineDateTime(d, t)
-      breakEndDate.value = ''
-      breakEndTime.value = ''
+      manualBreakStart.value = timeString
       manualBreakEnd.value = ''
     }
   }
@@ -922,16 +819,22 @@ const forceUpdateTotals = () => {
                 class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
               />
               <div class="grid grid-cols-2 gap-2">
-                <div class="flex flex-col items-center gap-1">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkStartHour" aria-label="Crește ora început">+</button>
-                  <div class="w-16 text-center font-mono text-xl select-none">{{ workStartH || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkStartHour" aria-label="Scade ora început">−</button>
-                </div>
-                <div class="flex flex-col items-center gap-1">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkStartMinute" aria-label="Crește minute început">+</button>
-                  <div class="w-16 text-center font-mono text-xl select-none">{{ workStartM || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkStartMinute" aria-label="Scade minute început">−</button>
-                </div>
+                <input
+                  v-model="workStartH"
+                  @input="workStartH = sanitizeHour(workStartH)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="HH"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
+                />
+                <input
+                  v-model="workStartM"
+                  @input="workStartM = sanitizeMinute(workStartM)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="MM"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
+                />
               </div>
             </div>
             <div class="space-y-2">
@@ -942,16 +845,22 @@ const forceUpdateTotals = () => {
                 class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
               />
               <div class="grid grid-cols-2 gap-2">
-                <div class="flex flex-col items-center gap-1">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkEndHour" aria-label="Crește ora sfârșit">+</button>
-                  <div class="w-16 text-center font-mono text-xl select-none">{{ workEndH || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkEndHour" aria-label="Scade ora sfârșit">−</button>
-                </div>
-                <div class="flex flex-col items-center gap-1">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkEndMinute" aria-label="Crește minute sfârșit">+</button>
-                  <div class="w-16 text-center font-mono text-xl select-none">{{ workEndM || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkEndMinute" aria-label="Scade minute sfârșit">−</button>
-                </div>
+                <input
+                  v-model="workEndH"
+                  @input="workEndH = sanitizeHour(workEndH)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="HH"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
+                />
+                <input
+                  v-model="workEndM"
+                  @input="workEndM = sanitizeMinute(workEndM)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="MM"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
+                />
               </div>
             </div>
           </div>
@@ -982,18 +891,24 @@ const forceUpdateTotals = () => {
                   type="date"
                   class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
                 />
-              <div class="grid grid-cols-2 gap-2">
-                <div class="flex flex-col items-center gap-1">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakStartHour" aria-label="Crește ora început pauză">+</button>
-                  <div class="w-16 text-center font-mono text-xl select-none">{{ breakStartH || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakStartHour" aria-label="Scade ora început pauză">−</button>
+                <div class="grid grid-cols-2 gap-2">
+                  <input
+                    v-model="breakStartH"
+                    @input="breakStartH = sanitizeHour(breakStartH)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="HH"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
+                  />
+                  <input
+                    v-model="breakStartM"
+                    @input="breakStartM = sanitizeMinute(breakStartM)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="MM"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
+                  />
                 </div>
-                <div class="flex flex-col items-center gap-1">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakStartMinute" aria-label="Crește minute început pauză">+</button>
-                  <div class="w-16 text-center font-mono text-xl select-none">{{ breakStartM || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakStartMinute" aria-label="Scade minute început pauză">−</button>
-                </div>
-              </div>
               </div>
               <div class="space-y-2">
                 <label class="block text-sm font-medium text-white/80">Sfârșit Pauză</label>
@@ -1002,18 +917,24 @@ const forceUpdateTotals = () => {
                   type="date"
                   class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
                 />
-              <div class="grid grid-cols-2 gap-2">
-                <div class="flex flex-col items-center gap-1">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakEndHour" aria-label="Crește ora sfârșit pauză">+</button>
-                  <div class="w-16 text-center font-mono text-xl select-none">{{ breakEndH || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakEndHour" aria-label="Scade ora sfârșit pauză">−</button>
+                <div class="grid grid-cols-2 gap-2">
+                  <input
+                    v-model="breakEndH"
+                    @input="breakEndH = sanitizeHour(breakEndH)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="HH"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
+                  />
+                  <input
+                    v-model="breakEndM"
+                    @input="breakEndM = sanitizeMinute(breakEndM)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="MM"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
+                  />
                 </div>
-                <div class="flex flex-col items-center gap-1">
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakEndMinute" aria-label="Crește minute sfârșit pauză">+</button>
-                  <div class="w-16 text-center font-mono text-xl select-none">{{ breakEndM || '00' }}</div>
-                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakEndMinute" aria-label="Scade minute sfârșit pauză">−</button>
-                </div>
-              </div>
               </div>
             </div>
             
@@ -1028,7 +949,6 @@ const forceUpdateTotals = () => {
             </div>
             
             <button
-              type="button"
               @click="addBreakToSession"
               class="btn btn-amber w-full"
               :disabled="!manualBreakStart || !manualBreakEnd"
@@ -1085,7 +1005,6 @@ const forceUpdateTotals = () => {
           <!-- Action Buttons -->
           <div class="flex gap-3">
             <button
-              type="button"
               @click="addIntegratedWorkSession"
               class="btn btn-primary flex-1"
               :disabled="!manualWorkStart"
@@ -1093,7 +1012,6 @@ const forceUpdateTotals = () => {
               Adaugă Sesiune Completă
             </button>
             <button
-              type="button"
               @click="addOngoingWorkSession"
               class="btn btn-glass flex-1"
               :disabled="!manualWorkStart"
@@ -1124,7 +1042,7 @@ const forceUpdateTotals = () => {
               <div class="grid grid-cols-2 gap-2">
                 <input
                   v-model="breakStartH"
-                  @input.prevent
+                  @input="breakStartH = sanitizeHour(breakStartH)"
                   type="tel"
                   inputmode="numeric"
                   placeholder="HH"
@@ -1132,7 +1050,7 @@ const forceUpdateTotals = () => {
                 />
                 <input
                   v-model="breakStartM"
-                  @input.prevent
+                  @input="breakStartM = sanitizeMinute(breakStartM)"
                   type="tel"
                   inputmode="numeric"
                   placeholder="MM"
@@ -1150,7 +1068,7 @@ const forceUpdateTotals = () => {
               <div class="grid grid-cols-2 gap-2">
                 <input
                   v-model="breakEndH"
-                  @input.prevent
+                  @input="breakEndH = sanitizeHour(breakEndH)"
                   type="tel"
                   inputmode="numeric"
                   placeholder="HH"
@@ -1158,7 +1076,7 @@ const forceUpdateTotals = () => {
                 />
                 <input
                   v-model="breakEndM"
-                  @input.prevent
+                  @input="breakEndM = sanitizeMinute(breakEndM)"
                   type="tel"
                   inputmode="numeric"
                   placeholder="MM"
@@ -1179,7 +1097,6 @@ const forceUpdateTotals = () => {
           </div>
           
           <button
-            type="button"
             @click="addManualBreakSession"
             class="btn btn-rose w-full"
             :disabled="!manualBreakStart || !manualBreakEnd"
