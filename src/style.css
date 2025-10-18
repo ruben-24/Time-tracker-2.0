@@ -25,6 +25,7 @@ body {
   min-height: 100dvh;
   position: relative;
   overflow-x: hidden;
+  touch-action: manipulation; /* Prevent double-tap zoom */
 }
 
 /* Apply background to all pages */

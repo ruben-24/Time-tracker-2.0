@@ -882,14 +882,14 @@ const forceUpdateTotals = () => {
               />
               <div class="grid grid-cols-2 gap-2">
                 <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded border px-2 py-1" @click="decWorkStartHour">−</button>
-                  <div class="w-12 text-center font-mono">{{ workStartH || '00' }}</div>
-                  <button type="button" class="rounded border px-2 py-1" @click="incWorkStartHour">+</button>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkStartHour">−</button>
+                  <div class="w-14 text-center font-mono text-lg">{{ workStartH || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkStartHour">+</button>
                 </div>
                 <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded border px-2 py-1" @click="decWorkStartMinute">−</button>
-                  <div class="w-12 text-center font-mono">{{ workStartM || '00' }}</div>
-                  <button type="button" class="rounded border px-2 py-1" @click="incWorkStartMinute">+</button>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkStartMinute">−</button>
+                  <div class="w-14 text-center font-mono text-lg">{{ workStartM || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkStartMinute">+</button>
                 </div>
               </div>
             </div>
@@ -902,14 +902,14 @@ const forceUpdateTotals = () => {
               />
               <div class="grid grid-cols-2 gap-2">
                 <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded border px-2 py-1" @click="decWorkEndHour">−</button>
-                  <div class="w-12 text-center font-mono">{{ workEndH || '00' }}</div>
-                  <button type="button" class="rounded border px-2 py-1" @click="incWorkEndHour">+</button>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkEndHour">−</button>
+                  <div class="w-14 text-center font-mono text-lg">{{ workEndH || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkEndHour">+</button>
                 </div>
                 <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded border px-2 py-1" @click="decWorkEndMinute">−</button>
-                  <div class="w-12 text-center font-mono">{{ workEndM || '00' }}</div>
-                  <button type="button" class="rounded border px-2 py-1" @click="incWorkEndMinute">+</button>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decWorkEndMinute">−</button>
+                  <div class="w-14 text-center font-mono text-lg">{{ workEndM || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incWorkEndMinute">+</button>
                 </div>
               </div>
             </div>
@@ -943,14 +943,14 @@ const forceUpdateTotals = () => {
                 />
               <div class="grid grid-cols-2 gap-2">
                 <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded border px-2 py-1" @click="decBreakStartHour">−</button>
-                  <div class="w-12 text-center font-mono">{{ breakStartH || '00' }}</div>
-                  <button type="button" class="rounded border px-2 py-1" @click="incBreakStartHour">+</button>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakStartHour">−</button>
+                  <div class="w-14 text-center font-mono text-lg">{{ breakStartH || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakStartHour">+</button>
                 </div>
                 <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded border px-2 py-1" @click="decBreakStartMinute">−</button>
-                  <div class="w-12 text-center font-mono">{{ breakStartM || '00' }}</div>
-                  <button type="button" class="rounded border px-2 py-1" @click="incBreakStartMinute">+</button>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakStartMinute">−</button>
+                  <div class="w-14 text-center font-mono text-lg">{{ breakStartM || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakStartMinute">+</button>
                 </div>
               </div>
               </div>
@@ -963,14 +963,14 @@ const forceUpdateTotals = () => {
                 />
               <div class="grid grid-cols-2 gap-2">
                 <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded border px-2 py-1" @click="decBreakEndHour">−</button>
-                  <div class="w-12 text-center font-mono">{{ breakEndH || '00' }}</div>
-                  <button type="button" class="rounded border px-2 py-1" @click="incBreakEndHour">+</button>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakEndHour">−</button>
+                  <div class="w-14 text-center font-mono text-lg">{{ breakEndH || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakEndHour">+</button>
                 </div>
                 <div class="flex items-center gap-2 justify-center">
-                  <button type="button" class="rounded border px-2 py-1" @click="decBreakEndMinute">−</button>
-                  <div class="w-12 text-center font-mono">{{ breakEndM || '00' }}</div>
-                  <button type="button" class="rounded border px-2 py-1" @click="incBreakEndMinute">+</button>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decBreakEndMinute">−</button>
+                  <div class="w-14 text-center font-mono text-lg">{{ breakEndM || '00' }}</div>
+                  <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incBreakEndMinute">+</button>
                 </div>
               </div>
               </div>

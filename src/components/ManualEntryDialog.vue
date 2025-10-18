@@ -86,15 +86,15 @@ function submit() {
             <label class="mb-1 block text-sm font-medium">Durată</label>
             <div class="flex items-center gap-3">
               <div class="flex items-center gap-2">
-                <button type="button" class="rounded border px-2 py-1" @click="decDurationHour">−</button>
-                <div class="w-10 text-center font-mono">{{ pad2(durationHours) }}</div>
-                <button type="button" class="rounded border px-2 py-1" @click="incDurationHour">+</button>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decDurationHour">−</button>
+                <div class="w-14 text-center font-mono text-lg">{{ pad2(durationHours) }}</div>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incDurationHour">+</button>
               </div>
               <span class="text-sm">:</span>
               <div class="flex items-center gap-2">
-                <button type="button" class="rounded border px-2 py-1" @click="decDurationMinute">−</button>
-                <div class="w-10 text-center font-mono">{{ pad2(durationMinutes) }}</div>
-                <button type="button" class="rounded border px-2 py-1" @click="incDurationMinute">+</button>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decDurationMinute">−</button>
+                <div class="w-14 text-center font-mono text-lg">{{ pad2(durationMinutes) }}</div>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incDurationMinute">+</button>
               </div>
             </div>
           </div>
@@ -102,15 +102,15 @@ function submit() {
             <label class="mb-1 block text-sm font-medium">Se termină la</label>
             <div class="flex items-center gap-3">
               <div class="flex items-center gap-2">
-                <button type="button" class="rounded border px-2 py-1" @click="decEndHour">−</button>
-                <div class="w-10 text-center font-mono">{{ pad2(endHour) }}</div>
-                <button type="button" class="rounded border px-2 py-1" @click="incEndHour">+</button>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decEndHour">−</button>
+                <div class="w-14 text-center font-mono text-lg">{{ pad2(endHour) }}</div>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incEndHour">+</button>
               </div>
               <span class="text-sm">:</span>
               <div class="flex items-center gap-2">
-                <button type="button" class="rounded border px-2 py-1" @click="decEndMinute">−</button>
-                <div class="w-10 text-center font-mono">{{ pad2(endMinute) }}</div>
-                <button type="button" class="rounded border px-2 py-1" @click="incEndMinute">+</button>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decEndMinute">−</button>
+                <div class="w-14 text-center font-mono text-lg">{{ pad2(endMinute) }}</div>
+                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incEndMinute">+</button>
               </div>
             </div>
           </div>
