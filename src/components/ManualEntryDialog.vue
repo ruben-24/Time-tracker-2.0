@@ -1,65 +1,21 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useTimerStore, type SessionType } from '../stores/timerStore'
-import { pad2 } from '../utils/format'
 
 const open = defineModel<boolean>({ default: false })
 const type = ref<SessionType>('work')
 const date = ref<string>(new Date().toISOString().slice(0, 10))
-// New UX: duration steppers + end time steppers (no native inputs)
-const durationHours = ref<number>(8)
-const durationMinutes = ref<number>(0)
-const endHour = ref<number>(17)
-const endMinute = ref<number>(0)
+const start = ref<string>('09:00:00')
+const end = ref<string>('17:00:00')
 const note = ref<string>('')
 
 const timer = useTimerStore()
 
-function wrap(value: number, min: number, max: number): number {
-  const range = max - min + 1
-  return ((value - min) % range + range) % range + min
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value))
-}
-
-function incEndHour() { endHour.value = wrap(endHour.value + 1, 0, 23) }
-function decEndHour() { endHour.value = wrap(endHour.value - 1, 0, 23) }
-function incEndMinute() { endMinute.value = wrap(endMinute.value + 1, 0, 59) }
-function decEndMinute() { endMinute.value = wrap(endMinute.value - 1, 0, 59) }
-
-function incDurationHour() { durationHours.value = clamp(durationHours.value + 1, 0, 23) }
-function decDurationHour() { durationHours.value = clamp(durationHours.value - 1, 0, 23) }
-function incDurationMinute() {
-  if (durationMinutes.value >= 59) {
-    if (durationHours.value < 23) {
-      durationHours.value += 1
-      durationMinutes.value = 0
-    } else {
-      durationMinutes.value = 0
-    }
-  } else {
-    durationMinutes.value += 1
-  }
-}
-function decDurationMinute() {
-  if (durationMinutes.value <= 0) {
-    if (durationHours.value > 0) {
-      durationHours.value -= 1
-      durationMinutes.value = 59
-    } else {
-      durationMinutes.value = 0
-    }
-  } else {
-    durationMinutes.value -= 1
-  }
-}
-
 function submit() {
-  const endTs = new Date(`${date.value}T${pad2(endHour.value)}:${pad2(endMinute.value)}:00`).getTime()
-  const durationMs = (durationHours.value * 60 + durationMinutes.value) * 60 * 1000
-  const startTs = endTs - durationMs
+  const [sh, sm, ss = 0] = start.value.split(':').map(Number)
+  const [eh, em, es = 0] = end.value.split(':').map(Number)
+  const startTs = new Date(`${date.value}T${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`).getTime()
+  const endTs = new Date(`${date.value}T${String(eh).padStart(2,'0')}:${String(em).padStart(2,'0')}:${String(es).padStart(2,'0')}`).getTime()
   timer.addManualSession(type.value, startTs, endTs, note.value || undefined)
   open.value = false
 }
@@ -83,36 +39,12 @@ function submit() {
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="mb-1 block text-sm font-medium">Durată</label>
-            <div class="flex items-center gap-3">
-              <div class="flex flex-col items-center gap-1">
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incDurationHour" aria-label="Crește ore durată">+</button>
-                <div class="w-16 text-center font-mono text-xl select-none">{{ pad2(durationHours) }}</div>
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decDurationHour" aria-label="Scade ore durată">−</button>
-              </div>
-              <span class="text-sm">:</span>
-              <div class="flex flex-col items-center gap-1">
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incDurationMinute" aria-label="Crește minute durată">+</button>
-                <div class="w-16 text-center font-mono text-xl select-none">{{ pad2(durationMinutes) }}</div>
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decDurationMinute" aria-label="Scade minute durată">−</button>
-              </div>
-            </div>
+            <label class="mb-1 block text-sm font-medium">Start</label>
+            <input type="time" step="1" v-model="start" class="w-full rounded-lg border px-3 py-2" />
           </div>
           <div>
-            <label class="mb-1 block text-sm font-medium">Se termină la</label>
-            <div class="flex items-center gap-3">
-              <div class="flex flex-col items-center gap-1">
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incEndHour" aria-label="Crește ora sfârșit">+</button>
-                <div class="w-16 text-center font-mono text-xl select-none">{{ pad2(endHour) }}</div>
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decEndHour" aria-label="Scade ora sfârșit">−</button>
-              </div>
-              <span class="text-sm">:</span>
-              <div class="flex flex-col items-center gap-1">
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="incEndMinute" aria-label="Crește minute sfârșit">+</button>
-                <div class="w-16 text-center font-mono text-xl select-none">{{ pad2(endMinute) }}</div>
-                <button type="button" class="rounded-lg border px-4 py-3 text-lg active:scale-95" @click="decEndMinute" aria-label="Scade minute sfârșit">−</button>
-              </div>
-            </div>
+            <label class="mb-1 block text-sm font-medium">Sfârșit</label>
+            <input type="time" step="1" v-model="end" class="w-full rounded-lg border px-3 py-2" />
           </div>
         </div>
         <div>
