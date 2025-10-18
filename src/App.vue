@@ -47,117 +47,6 @@ const manualBreaks = ref<Array<{
   note: string
 }>>([])
 
-// Friendlier date/time inputs: separate date and time fields with direct typing
-const workStartDate = ref('')
-const workStartTime = ref('') // HH:MM
-const workStartH = ref('')
-const workStartM = ref('')
-const workEndDate = ref('')
-const workEndTime = ref('')
-const workEndH = ref('')
-const workEndM = ref('')
-const breakStartDate = ref('')
-const breakStartTime = ref('')
-const breakStartH = ref('')
-const breakStartM = ref('')
-const breakEndDate = ref('')
-const breakEndTime = ref('')
-const breakEndH = ref('')
-const breakEndM = ref('')
-
-const combineDateTime = (dateStr: string, timeStr: string): string => {
-  if (!dateStr || !timeStr) return ''
-  return `${dateStr}T${timeStr}`
-}
-
-const toHHMM = (h: string, m: string): string => {
-  const hh = h.padStart(2, '0')
-  const mm = m.padStart(2, '0')
-  return `${hh}:${mm}`
-}
-
-// When user edits date/time fields, update the combined ISO strings
-watch([workStartDate, workStartTime], ([d, t]) => {
-  manualWorkStart.value = combineDateTime(d, t)
-})
-watch([workEndDate, workEndTime], ([d, t]) => {
-  manualWorkEnd.value = combineDateTime(d, t)
-})
-watch([breakStartDate, breakStartTime], ([d, t]) => {
-  manualBreakStart.value = combineDateTime(d, t)
-})
-watch([breakEndDate, breakEndTime], ([d, t]) => {
-  manualBreakEnd.value = combineDateTime(d, t)
-})
-
-// Keep HH and MM in sync with the combined time strings
-watch([workStartH, workStartM], ([h, m]) => {
-  if (h !== '' && m !== '') workStartTime.value = toHHMM(h, m)
-})
-watch([workEndH, workEndM], ([h, m]) => {
-  if (h !== '' && m !== '') workEndTime.value = toHHMM(h, m)
-})
-watch([breakStartH, breakStartM], ([h, m]) => {
-  if (h !== '' && m !== '') breakStartTime.value = toHHMM(h, m)
-})
-watch([breakEndH, breakEndM], ([h, m]) => {
-  if (h !== '' && m !== '') breakEndTime.value = toHHMM(h, m)
-})
-
-// When programmatic changes happen (e.g., setCurrentTime), reflect back into fields
-const splitIso = (iso: string): { d: string; t: string } => {
-  if (!iso || iso.length < 16) return { d: '', t: '' }
-  return { d: iso.slice(0, 10), t: iso.slice(11, 16) }
-}
-watch(manualWorkStart, (v) => {
-  const { d, t } = splitIso(v)
-  if (d) workStartDate.value = d
-  if (t) workStartTime.value = t
-  if (t && t.length >= 5) {
-    workStartH.value = t.slice(0, 2)
-    workStartM.value = t.slice(3, 5)
-  }
-})
-watch(manualWorkEnd, (v) => {
-  const { d, t } = splitIso(v)
-  if (d) workEndDate.value = d
-  if (t) workEndTime.value = t
-  if (t && t.length >= 5) {
-    workEndH.value = t.slice(0, 2)
-    workEndM.value = t.slice(3, 5)
-  }
-})
-watch(manualBreakStart, (v) => {
-  const { d, t } = splitIso(v)
-  if (d) breakStartDate.value = d
-  if (t) breakStartTime.value = t
-  if (t && t.length >= 5) {
-    breakStartH.value = t.slice(0, 2)
-    breakStartM.value = t.slice(3, 5)
-  }
-})
-watch(manualBreakEnd, (v) => {
-  const { d, t } = splitIso(v)
-  if (d) breakEndDate.value = d
-  if (t) breakEndTime.value = t
-  if (t && t.length >= 5) {
-    breakEndH.value = t.slice(0, 2)
-    breakEndM.value = t.slice(3, 5)
-  }
-})
-
-// Sanitize hour/minute inputs and clamp ranges
-const sanitizeHour = (v: string): string => {
-  const digits = (v || '').replace(/\D+/g, '').slice(0, 2)
-  const num = Math.min(23, Math.max(0, parseInt(digits || '0', 10)))
-  return num.toString().padStart(2, '0')
-}
-const sanitizeMinute = (v: string): string => {
-  const digits = (v || '').replace(/\D+/g, '').slice(0, 2)
-  const num = Math.min(59, Math.max(0, parseInt(digits || '0', 10)))
-  return num.toString().padStart(2, '0')
-}
-
 // Ongoing session
 const isOngoingSession = ref(false)
 
@@ -410,17 +299,9 @@ const addIntegratedWorkSession = () => {
     return
   }
 
-  // Add work session, storing NET duration and embedding breaks
-  if (manualBreaks.value.length > 0) {
-    const breaks = manualBreaks.value.map(b => ({
-      start: new Date(b.start).getTime(),
-      end: new Date(b.end).getTime()
-    }))
-    timer.addManualWorkWithBreaks(startTime, breaks, endTime, manualWorkNote.value)
-  } else {
-    const workEndTime = endTime || (startTime + workTime)
-    timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
-  }
+  // Add work session with calculated end time
+  const workEndTime = endTime || (startTime + workTime)
+  timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
   
   // Don't add breaks as separate sessions - they're part of the work session
   // The breaks are already calculated in the work time above
@@ -494,17 +375,6 @@ const exportAllData = async () => {
   }
 }
 
-// Export directly into iOS Files (Documents/TimeTracker)
-const exportToFilesIOS = async () => {
-  try {
-    await timer.saveToFile(timer.$state)
-    alert('Backup salvat în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
-  } catch (error) {
-    console.error('Export to Files error:', error)
-    alert('Eroare la salvarea în Files. Încearcă din nou.')
-  }
-}
-
 const importAllData = async () => {
   try {
     if (!importData.value.trim()) {
@@ -559,7 +429,7 @@ const loadBackupFiles = async () => {
       name: file.name,
       modificationTime: (file as any).modificationTime || Date.now()
     }))
-    alert(`Găsite ${files.length} backup-uri (căutate în Files/Download și Documente aplicație) `)
+    alert(`Găsite ${files.length} backup-uri`)
   } catch (error) {
     console.error('Failed to load backup files:', error)
     alert('Eroare la încărcarea backup-urilor')
@@ -765,7 +635,7 @@ const forceUpdateTotals = () => {
       <!-- Floating Timer Controls - Always visible on main page -->
       <div class="fixed inset-x-0 bottom-0 z-50 safe-bottom">
         <div class="mx-auto max-w-[430px] px-4 pb-4">
-      <div class="rounded-2xl p-4 shadow-2xl">
+          <div class="glass-enhanced rounded-2xl p-4 shadow-2xl border border-white/20" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
             <TimerControls />
           </div>
         </div>
@@ -809,59 +679,23 @@ const forceUpdateTotals = () => {
             Sesiune de Lucru cu Pauze
           </h2>
           
-          <!-- Work Session Times (separate date/time for easier input) -->
+          <!-- Work Session Times -->
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="space-y-2">
-              <label class="block text-sm font-medium text-white/80">Început Lucru</label>
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Început Lucru</label>
               <input
-                v-model="workStartDate"
-                type="date"
-                class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
+                v-model="manualWorkStart"
+                type="datetime-local"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
               />
-              <div class="grid grid-cols-2 gap-2">
-                <input
-                  v-model="workStartH"
-                  @input="workStartH = sanitizeHour(workStartH)"
-                  type="tel"
-                  inputmode="numeric"
-                  placeholder="HH"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
-                />
-                <input
-                  v-model="workStartM"
-                  @input="workStartM = sanitizeMinute(workStartM)"
-                  type="tel"
-                  inputmode="numeric"
-                  placeholder="MM"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
-                />
-              </div>
             </div>
-            <div class="space-y-2">
-              <label class="block text-sm font-medium text-white/80">Sfârșit Lucru (opțional)</label>
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit Lucru (opțional)</label>
               <input
-                v-model="workEndDate"
-                type="date"
-                class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
+                v-model="manualWorkEnd"
+                type="datetime-local"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
               />
-              <div class="grid grid-cols-2 gap-2">
-                <input
-                  v-model="workEndH"
-                  @input="workEndH = sanitizeHour(workEndH)"
-                  type="tel"
-                  inputmode="numeric"
-                  placeholder="HH"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
-                />
-                <input
-                  v-model="workEndM"
-                  @input="workEndM = sanitizeMinute(workEndM)"
-                  type="tel"
-                  inputmode="numeric"
-                  placeholder="MM"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
-                />
-              </div>
             </div>
           </div>
           
@@ -884,57 +718,21 @@ const forceUpdateTotals = () => {
             </h3>
             
             <div class="grid grid-cols-2 gap-4 mb-3">
-              <div class="space-y-2">
-                <label class="block text-sm font-medium text-white/80">Început Pauză</label>
+              <div>
+                <label class="block text-sm font-medium text-white/80 mb-2">Început Pauză</label>
                 <input
-                  v-model="breakStartDate"
-                  type="date"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
+                  v-model="manualBreakStart"
+                  type="datetime-local"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
                 />
-                <div class="grid grid-cols-2 gap-2">
-                  <input
-                    v-model="breakStartH"
-                    @input="breakStartH = sanitizeHour(breakStartH)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="HH"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
-                  />
-                  <input
-                    v-model="breakStartM"
-                    @input="breakStartM = sanitizeMinute(breakStartM)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="MM"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
-                  />
-                </div>
               </div>
-              <div class="space-y-2">
-                <label class="block text-sm font-medium text-white/80">Sfârșit Pauză</label>
+              <div>
+                <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit Pauză</label>
                 <input
-                  v-model="breakEndDate"
-                  type="date"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
+                  v-model="manualBreakEnd"
+                  type="datetime-local"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
                 />
-                <div class="grid grid-cols-2 gap-2">
-                  <input
-                    v-model="breakEndH"
-                    @input="breakEndH = sanitizeHour(breakEndH)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="HH"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
-                  />
-                  <input
-                    v-model="breakEndM"
-                    @input="breakEndM = sanitizeMinute(breakEndM)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="MM"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
-                  />
-                </div>
               </div>
             </div>
             
@@ -1032,57 +830,21 @@ const forceUpdateTotals = () => {
           </p>
           
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="space-y-2">
-              <label class="block text-sm font-medium text-white/80">Început</label>
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Început</label>
               <input
-                v-model="breakStartDate"
-                type="date"
-                class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none"
+                v-model="manualBreakStart"
+                type="datetime-local"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
               />
-              <div class="grid grid-cols-2 gap-2">
-                <input
-                  v-model="breakStartH"
-                  @input="breakStartH = sanitizeHour(breakStartH)"
-                  type="tel"
-                  inputmode="numeric"
-                  placeholder="HH"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
-                />
-                <input
-                  v-model="breakStartM"
-                  @input="breakStartM = sanitizeMinute(breakStartM)"
-                  type="tel"
-                  inputmode="numeric"
-                  placeholder="MM"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
-                />
-              </div>
             </div>
-            <div class="space-y-2">
-              <label class="block text-sm font-medium text-white/80">Sfârșit</label>
+            <div>
+              <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit</label>
               <input
-                v-model="breakEndDate"
-                type="date"
-                class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none"
+                v-model="manualBreakEnd"
+                type="datetime-local"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
               />
-              <div class="grid grid-cols-2 gap-2">
-                <input
-                  v-model="breakEndH"
-                  @input="breakEndH = sanitizeHour(breakEndH)"
-                  type="tel"
-                  inputmode="numeric"
-                  placeholder="HH"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
-                />
-                <input
-                  v-model="breakEndM"
-                  @input="breakEndM = sanitizeMinute(breakEndM)"
-                  type="tel"
-                  inputmode="numeric"
-                  placeholder="MM"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
-                />
-              </div>
             </div>
           </div>
           
@@ -1157,13 +919,6 @@ const forceUpdateTotals = () => {
             class="btn btn-emerald w-full"
           >
             Exportă toate datele
-          </button>
-          <button
-            @click="exportToFilesIOS"
-            class="btn btn-blue w-full mt-3"
-            title="Salvează backup-ul în aplicația Files (iOS)"
-          >
-            Salvează în Files (iOS)
           </button>
         </div>
         
