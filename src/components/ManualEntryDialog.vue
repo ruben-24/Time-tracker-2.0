@@ -6,24 +6,60 @@ import { pad2 } from '../utils/format'
 const open = defineModel<boolean>({ default: false })
 const type = ref<SessionType>('work')
 const date = ref<string>(new Date().toISOString().slice(0, 10))
-// Use dropdowns for robust mobile entry (avoid native time inputs)
-const hours = Array.from({ length: 24 }, (_, i) => pad2(i))
-const minutes = Array.from({ length: 60 }, (_, i) => pad2(i))
-const startHour = ref<string>('09')
-const startMinute = ref<string>('00')
-const endHour = ref<string>('17')
-const endMinute = ref<string>('00')
+// New UX: duration steppers + end time steppers (no native inputs)
+const durationHours = ref<number>(8)
+const durationMinutes = ref<number>(0)
+const endHour = ref<number>(17)
+const endMinute = ref<number>(0)
 const note = ref<string>('')
 
 const timer = useTimerStore()
 
+function wrap(value: number, min: number, max: number): number {
+  const range = max - min + 1
+  return ((value - min) % range + range) % range + min
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
+}
+
+function incEndHour() { endHour.value = wrap(endHour.value + 1, 0, 23) }
+function decEndHour() { endHour.value = wrap(endHour.value - 1, 0, 23) }
+function incEndMinute() { endMinute.value = wrap(endMinute.value + 1, 0, 59) }
+function decEndMinute() { endMinute.value = wrap(endMinute.value - 1, 0, 59) }
+
+function incDurationHour() { durationHours.value = clamp(durationHours.value + 1, 0, 23) }
+function decDurationHour() { durationHours.value = clamp(durationHours.value - 1, 0, 23) }
+function incDurationMinute() {
+  if (durationMinutes.value >= 59) {
+    if (durationHours.value < 23) {
+      durationHours.value += 1
+      durationMinutes.value = 0
+    } else {
+      durationMinutes.value = 0
+    }
+  } else {
+    durationMinutes.value += 1
+  }
+}
+function decDurationMinute() {
+  if (durationMinutes.value <= 0) {
+    if (durationHours.value > 0) {
+      durationHours.value -= 1
+      durationMinutes.value = 59
+    } else {
+      durationMinutes.value = 0
+    }
+  } else {
+    durationMinutes.value -= 1
+  }
+}
+
 function submit() {
-  const sh = Number.parseInt(startHour.value, 10) || 0
-  const sm = Number.parseInt(startMinute.value, 10) || 0
-  const eh = Number.parseInt(endHour.value, 10) || 0
-  const em = Number.parseInt(endMinute.value, 10) || 0
-  const startTs = new Date(`${date.value}T${pad2(sh)}:${pad2(sm)}:00`).getTime()
-  const endTs = new Date(`${date.value}T${pad2(eh)}:${pad2(em)}:00`).getTime()
+  const endTs = new Date(`${date.value}T${pad2(endHour.value)}:${pad2(endMinute.value)}:00`).getTime()
+  const durationMs = (durationHours.value * 60 + durationMinutes.value) * 60 * 1000
+  const startTs = endTs - durationMs
   timer.addManualSession(type.value, startTs, endTs, note.value || undefined)
   open.value = false
 }
@@ -47,27 +83,35 @@ function submit() {
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="mb-1 block text-sm font-medium">Start</label>
-            <div class="flex items-center gap-2">
-              <select v-model="startHour" class="w-full rounded-lg border px-3 py-2" aria-label="Ora start">
-                <option v-for="h in hours" :key="`sh-${h}`" :value="h">{{ h }}</option>
-              </select>
+            <label class="mb-1 block text-sm font-medium">Durată</label>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
+                <button type="button" class="rounded border px-2 py-1" @click="decDurationHour">−</button>
+                <div class="w-10 text-center font-mono">{{ pad2(durationHours) }}</div>
+                <button type="button" class="rounded border px-2 py-1" @click="incDurationHour">+</button>
+              </div>
               <span class="text-sm">:</span>
-              <select v-model="startMinute" class="w-full rounded-lg border px-3 py-2" aria-label="Minute start">
-                <option v-for="m in minutes" :key="`sm-${m}`" :value="m">{{ m }}</option>
-              </select>
+              <div class="flex items-center gap-2">
+                <button type="button" class="rounded border px-2 py-1" @click="decDurationMinute">−</button>
+                <div class="w-10 text-center font-mono">{{ pad2(durationMinutes) }}</div>
+                <button type="button" class="rounded border px-2 py-1" @click="incDurationMinute">+</button>
+              </div>
             </div>
           </div>
           <div>
-            <label class="mb-1 block text-sm font-medium">Sfârșit</label>
-            <div class="flex items-center gap-2">
-              <select v-model="endHour" class="w-full rounded-lg border px-3 py-2" aria-label="Ora sfârșit">
-                <option v-for="h in hours" :key="`eh-${h}`" :value="h">{{ h }}</option>
-              </select>
+            <label class="mb-1 block text-sm font-medium">Se termină la</label>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
+                <button type="button" class="rounded border px-2 py-1" @click="decEndHour">−</button>
+                <div class="w-10 text-center font-mono">{{ pad2(endHour) }}</div>
+                <button type="button" class="rounded border px-2 py-1" @click="incEndHour">+</button>
+              </div>
               <span class="text-sm">:</span>
-              <select v-model="endMinute" class="w-full rounded-lg border px-3 py-2" aria-label="Minute sfârșit">
-                <option v-for="m in minutes" :key="`em-${m}`" :value="m">{{ m }}</option>
-              </select>
+              <div class="flex items-center gap-2">
+                <button type="button" class="rounded border px-2 py-1" @click="decEndMinute">−</button>
+                <div class="w-10 text-center font-mono">{{ pad2(endMinute) }}</div>
+                <button type="button" class="rounded border px-2 py-1" @click="incEndMinute">+</button>
+              </div>
             </div>
           </div>
         </div>
