@@ -1,0 +1,38 @@
+{
+  "activeType": null,
+  "activeStartedAt": null,
+  "sessions": [
+    {
+      "id": "4703b8ed-b03a-4856-87a8-ea806925e04b",
+      "type": "work",
+      "startedAt": 1760738400000,
+      "endedAt": 1760769000000,
+      "manual": true,
+      "note": "",
+      "address": "Wasserburger str 15a,83119,Obing",
+      "breaks": [
+        {
+          "id": "fe3c5e78-0110-4cad-9fec-e13dce7cd30a",
+          "type": "break",
+          "startedAt": 1760752800000,
+          "endedAt": 1760754600000,
+          "duration": 1800000
+        }
+      ]
+    }
+  ],
+  "currentWorkBreaks": [],
+  "defaultAddress": "Wasserburger str 15a,83119,Obing",
+  "customAddress": null,
+  "extraAddresses": [],
+  "selectedAddressId": null,
+  "currentSessionId": null,
+  "pausedAt": null,
+  "totalPausedMs": 0,
+  "breakStartedAt": null,
+  "breakSessionId": null,
+  "totalBreakTimeMs": 0,
+  "sessionWorkMs": 0,
+  "sessionBreakMs": 0,
+  "sessionCigaretteMs": 0
+}
