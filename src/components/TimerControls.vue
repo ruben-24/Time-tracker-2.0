@@ -7,79 +7,73 @@ import { Play, Pause, RotateCcw, Square } from 'lucide-vue-next'
 const timer = useTimerStore()
 const theme = useThemeStore()
 
-// All controls remain active; actions will end current session if needed
-const canStart = computed(() => true)
-const canPause = computed(() => true)
-const canResume = computed(() => true)
-const canEnd = computed(() => true)
+// State guards
+const canStart = computed(() => timer.activeType === null)
+const canPause = computed(() => timer.activeType === 'work' && !timer.isPaused)
+const canResume = computed(() => (timer.isOnBreak || (timer.isPaused && timer.activeType === 'work')))
+const canEnd = computed(() => timer.activeType !== null && !timer.isPaused)
 
-// Button classes based on theme
-const buttonClasses = computed(() => {
-  const baseClass = 'btn flex-col w-full'
+// Layout state
+const showStartOnly = computed(() => timer.activeType === null)
+const showResumeOnly = computed(() => timer.isOnBreak || (timer.isPaused && timer.activeType === 'work'))
+const showPauseEnd = computed(() => timer.activeType === 'work' && !timer.isPaused)
+
+// Common button base classes
+const buttonBase = computed(() => {
   const shapeClass = theme.settings.buttonStyle === 'pill' ? 'btn-pill' : 
                     theme.settings.buttonStyle === 'square' ? 'btn-square' : 
                     theme.settings.buttonStyle === 'glass' ? 'btn-glass' : 'btn-rounded'
-  
-  return `${baseClass} ${shapeClass}`
+  return `btn w-full py-5 ${shapeClass}`
 })
 </script>
 
 <template>
-  <div class="grid grid-cols-4 gap-3">
+  <!-- No active session: single large START button -->
+  <div v-if="showStartOnly" class="grid grid-cols-1">
     <button
-      :class="buttonClasses"
-      :style="theme.settings.buttonStyle === 'glass' ? { 
-        background: `linear-gradient(135deg, ${theme.settings.buttonColors.primary}20, ${theme.settings.buttonColors.secondary}10)`,
-        borderColor: `${theme.settings.buttonColors.primary}40`,
-        color: theme.settings.buttonColors.primary
-      } : {}"
+      :class="[buttonBase, 'btn-emerald text-base font-semibold py-6']"
       :disabled="!canStart"
       @click="timer.startWork()"
+      aria-label="Începe lucru"
     >
       <Play class="h-6 w-6" />
-      <span class="text-xs">Lucru</span>
+      <span class="ml-2">Începe lucru</span>
     </button>
+  </div>
 
+  <!-- Session running: PAUSE and END as two large buttons side by side -->
+  <div v-else-if="showPauseEnd" class="grid grid-cols-2 gap-3">
     <button
-      :class="buttonClasses"
-      :style="theme.settings.buttonStyle === 'glass' ? { 
-        background: `linear-gradient(135deg, #f59e0b20, #d9770610)`,
-        borderColor: `#f59e0b40`,
-        color: '#f59e0b'
-      } : {}"
+      :class="[buttonBase, 'btn-amber text-base font-semibold py-6']"
       :disabled="!canPause"
       @click="timer.startBreak()"
+      aria-label="Pauză"
     >
       <Pause class="h-6 w-6" />
-      <span class="text-xs">Pauză</span>
+      <span class="ml-2">Pauză</span>
     </button>
 
     <button
-      :class="buttonClasses"
-      :style="theme.settings.buttonStyle === 'glass' ? { 
-        background: `linear-gradient(135deg, #10b98120, #05966910)`,
-        borderColor: `#10b98140`,
-        color: '#10b981'
-      } : {}"
-      :disabled="!canResume"
-      @click="timer.resumeWork()"
-    >
-      <RotateCcw class="h-6 w-6" />
-      <span class="text-xs">Reia</span>
-    </button>
-
-    <button
-      :class="buttonClasses"
-      :style="theme.settings.buttonStyle === 'glass' ? { 
-        background: `linear-gradient(135deg, #ef444420, #dc262610)`,
-        borderColor: `#ef444440`,
-        color: '#ef4444'
-      } : {}"
+      :class="[buttonBase, 'btn-rose text-base font-semibold py-6']"
       :disabled="!canEnd"
       @click="timer.endCurrent()"
+      aria-label="Încheie lucru"
     >
       <Square class="h-6 w-6" />
-      <span class="text-xs">Încheie lucru</span>
+      <span class="ml-2">Încheie lucru</span>
+    </button>
+  </div>
+
+  <!-- On break: single large RESUME button -->
+  <div v-else-if="showResumeOnly" class="grid grid-cols-1">
+    <button
+      :class="[buttonBase, 'btn-primary text-base font-semibold py-6']"
+      :disabled="!canResume"
+      @click="timer.resumeWork()"
+      aria-label="Reia"
+    >
+      <RotateCcw class="h-6 w-6" />
+      <span class="ml-2">Reia</span>
     </button>
   </div>
 </template>
