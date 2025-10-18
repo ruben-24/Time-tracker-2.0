@@ -811,62 +811,56 @@ const forceUpdateTotals = () => {
           
           <!-- Work Session Times (separate date/time for easier input) -->
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Început Lucru</label>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-white/80">Început Lucru</label>
+              <input
+                v-model="workStartDate"
+                type="date"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
+              />
               <div class="grid grid-cols-2 gap-2">
                 <input
-                  v-model="workStartDate"
-                  type="date"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
+                  v-model="workStartH"
+                  @input="workStartH = sanitizeHour(workStartH)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="HH"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
                 />
-                <div class="flex items-center gap-2">
-                  <input
-                    v-model="workStartH"
-                    @input="workStartH = sanitizeHour(workStartH)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="HH"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
-                  />
-                  <span class="text-white/70">:</span>
-                  <input
-                    v-model="workStartM"
-                    @input="workStartM = sanitizeMinute(workStartM)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="MM"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
-                  />
-                </div>
+                <input
+                  v-model="workStartM"
+                  @input="workStartM = sanitizeMinute(workStartM)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="MM"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
+                />
               </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit Lucru (opțional)</label>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-white/80">Sfârșit Lucru (opțional)</label>
+              <input
+                v-model="workEndDate"
+                type="date"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
+              />
               <div class="grid grid-cols-2 gap-2">
                 <input
-                  v-model="workEndDate"
-                  type="date"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none"
+                  v-model="workEndH"
+                  @input="workEndH = sanitizeHour(workEndH)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="HH"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
                 />
-                <div class="flex items-center gap-2">
-                  <input
-                    v-model="workEndH"
-                    @input="workEndH = sanitizeHour(workEndH)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="HH"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
-                  />
-                  <span class="text-white/70">:</span>
-                  <input
-                    v-model="workEndM"
-                    @input="workEndM = sanitizeMinute(workEndM)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="MM"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
-                  />
-                </div>
+                <input
+                  v-model="workEndM"
+                  @input="workEndM = sanitizeMinute(workEndM)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="MM"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-blue-400 focus:outline-none font-mono text-center"
+                />
               </div>
             </div>
           </div>
@@ -890,62 +884,56 @@ const forceUpdateTotals = () => {
             </h3>
             
             <div class="grid grid-cols-2 gap-4 mb-3">
-              <div>
-                <label class="block text-sm font-medium text-white/80 mb-2">Început Pauză</label>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-white/80">Început Pauză</label>
+                <input
+                  v-model="breakStartDate"
+                  type="date"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
+                />
                 <div class="grid grid-cols-2 gap-2">
                   <input
-                    v-model="breakStartDate"
-                    type="date"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
+                    v-model="breakStartH"
+                    @input="breakStartH = sanitizeHour(breakStartH)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="HH"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
                   />
-                  <div class="flex items-center gap-2">
-                    <input
-                      v-model="breakStartH"
-                      @input="breakStartH = sanitizeHour(breakStartH)"
-                      type="tel"
-                      inputmode="numeric"
-                      placeholder="HH"
-                      class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
-                    />
-                    <span class="text-white/70">:</span>
-                    <input
-                      v-model="breakStartM"
-                      @input="breakStartM = sanitizeMinute(breakStartM)"
-                      type="tel"
-                      inputmode="numeric"
-                      placeholder="MM"
-                      class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
-                    />
-                  </div>
+                  <input
+                    v-model="breakStartM"
+                    @input="breakStartM = sanitizeMinute(breakStartM)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="MM"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
+                  />
                 </div>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit Pauză</label>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-white/80">Sfârșit Pauză</label>
+                <input
+                  v-model="breakEndDate"
+                  type="date"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
+                />
                 <div class="grid grid-cols-2 gap-2">
                   <input
-                    v-model="breakEndDate"
-                    type="date"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none"
+                    v-model="breakEndH"
+                    @input="breakEndH = sanitizeHour(breakEndH)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="HH"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
                   />
-                  <div class="flex items-center gap-2">
-                    <input
-                      v-model="breakEndH"
-                      @input="breakEndH = sanitizeHour(breakEndH)"
-                      type="tel"
-                      inputmode="numeric"
-                      placeholder="HH"
-                      class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
-                    />
-                    <span class="text-white/70">:</span>
-                    <input
-                      v-model="breakEndM"
-                      @input="breakEndM = sanitizeMinute(breakEndM)"
-                      type="tel"
-                      inputmode="numeric"
-                      placeholder="MM"
-                      class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
-                    />
-                  </div>
+                  <input
+                    v-model="breakEndM"
+                    @input="breakEndM = sanitizeMinute(breakEndM)"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="MM"
+                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-orange-400 focus:outline-none font-mono text-center"
+                  />
                 </div>
               </div>
             </div>
@@ -1044,62 +1032,56 @@ const forceUpdateTotals = () => {
           </p>
           
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Început</label>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-white/80">Început</label>
+              <input
+                v-model="breakStartDate"
+                type="date"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none"
+              />
               <div class="grid grid-cols-2 gap-2">
                 <input
-                  v-model="breakStartDate"
-                  type="date"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none"
+                  v-model="breakStartH"
+                  @input="breakStartH = sanitizeHour(breakStartH)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="HH"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
                 />
-                <div class="flex items-center gap-2">
-                  <input
-                    v-model="breakStartH"
-                    @input="breakStartH = sanitizeHour(breakStartH)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="HH"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
-                  />
-                  <span class="text-white/70">:</span>
-                  <input
-                    v-model="breakStartM"
-                    @input="breakStartM = sanitizeMinute(breakStartM)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="MM"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
-                  />
-                </div>
+                <input
+                  v-model="breakStartM"
+                  @input="breakStartM = sanitizeMinute(breakStartM)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="MM"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
+                />
               </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Sfârșit</label>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-white/80">Sfârșit</label>
+              <input
+                v-model="breakEndDate"
+                type="date"
+                class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none"
+              />
               <div class="grid grid-cols-2 gap-2">
                 <input
-                  v-model="breakEndDate"
-                  type="date"
-                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none"
+                  v-model="breakEndH"
+                  @input="breakEndH = sanitizeHour(breakEndH)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="HH"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
                 />
-                <div class="flex items-center gap-2">
-                  <input
-                    v-model="breakEndH"
-                    @input="breakEndH = sanitizeHour(breakEndH)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="HH"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
-                  />
-                  <span class="text-white/70">:</span>
-                  <input
-                    v-model="breakEndM"
-                    @input="breakEndM = sanitizeMinute(breakEndM)"
-                    type="tel"
-                    inputmode="numeric"
-                    placeholder="MM"
-                    class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
-                  />
-                </div>
+                <input
+                  v-model="breakEndM"
+                  @input="breakEndM = sanitizeMinute(breakEndM)"
+                  type="tel"
+                  inputmode="numeric"
+                  placeholder="MM"
+                  class="w-full rounded-lg border border-white/20 bg-white/20 px-3 py-3 text-white focus:border-rose-400 focus:outline-none font-mono text-center"
+                />
               </div>
             </div>
           </div>
