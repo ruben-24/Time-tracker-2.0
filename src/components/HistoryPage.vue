@@ -187,18 +187,19 @@ const getSessionDetails = (session: any) => {
       
       // Add work end if exists
       if (endTime) {
-        // If this work session has embedded breaks, subtract them for the day timeline
-        let sessionDuration = endTime.getTime() - startTime.getTime()
+        // For display, subtract embedded breaks fully from the session duration
+        const sessionDuration = endTime.getTime() - startTime.getTime()
+        let netMs = sessionDuration
         if (Array.isArray((s as any).breaks) && (s as any).breaks.length > 0) {
-          const embeddedBreakMs = (s as any).breaks.reduce((acc: number, b: any) => acc + (b.duration || 0), 0)
-          sessionDuration = Math.max(0, sessionDuration - embeddedBreakMs)
+          const embeddedBreakMs = (s as any).breaks.reduce((acc: number, b: any) => acc + ((b.endedAt - b.startedAt) || b.duration || 0), 0)
+          netMs = Math.max(0, netMs - embeddedBreakMs)
         }
-        totalWorkTime += sessionDuration
+        totalWorkTime += netMs
         
         timeline.push({
           type: 'work_end',
           time: endTime,
-          duration: sessionDuration,
+          duration: netMs,
           note: 'Program încheiat'
         })
       }

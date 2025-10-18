@@ -437,15 +437,13 @@ export const useTimerStore = defineStore('timer', {
       const end = endedAt ?? now
       if (end <= startedAt) return
 
-      const totalBreakMs = breaks.reduce((acc, b) => acc + Math.max(0, b.end - b.start), 0)
-      const grossMs = end - startedAt
-      const netMs = Math.max(0, grossMs - totalBreakMs)
-
+      // Store the actual timeline (gross): startedAt -> end, and embed breaks
+      // Net time will be computed everywhere by subtracting these breaks
       const session: Session = {
         id: crypto.randomUUID(),
         type: 'work',
         startedAt,
-        endedAt: startedAt + netMs,
+        endedAt: end,
         manual: true,
         note,
         address: this.currentAddress,

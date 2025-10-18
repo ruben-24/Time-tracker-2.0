@@ -305,8 +305,7 @@ const addIntegratedWorkSession = () => {
       start: new Date(b.start).getTime(),
       end: new Date(b.end).getTime()
     }))
-    const workEndTime = startTime + workTime
-    timer.addManualWorkWithBreaks(startTime, breaks, workEndTime, manualWorkNote.value)
+    timer.addManualWorkWithBreaks(startTime, breaks, endTime, manualWorkNote.value)
   } else {
     const workEndTime = endTime || (startTime + workTime)
     timer.addManualSession('work', startTime, workEndTime, manualWorkNote.value)
