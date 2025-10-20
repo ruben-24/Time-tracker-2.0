@@ -23,6 +23,10 @@ const getUpdater = (): any | null => {
   )
 }
 
+export function hasOtaSupport(): boolean {
+  return !!getUpdater()
+}
+
 export async function fetchManifest(manifestUrl: string): Promise<OtaManifest | null> {
   try {
     const res = await fetch(manifestUrl, { cache: 'no-store' })

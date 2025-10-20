@@ -11,7 +11,7 @@ import AddressSelector from './components/AddressSelector.vue'
 import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
-import { checkForOtaUpdate, applyOtaUpdate, rollbackOtaUpdate } from './utils/ota'
+import { checkForOtaUpdate, applyOtaUpdate, rollbackOtaUpdate, hasOtaSupport } from './utils/ota'
 import { ArrowLeft, Clock, Pause, Settings, X, Download, Upload, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
 
 const timer = useTimerStore()
@@ -34,6 +34,7 @@ const appVersion = ref('2.2.0')
 const latestVersion = ref<string | null>(null)
 const updateManifestUrl = 'https://time-tracker-e36f1.web.app/updates/stable/manifest.json'
 const isUpdateAvailable = ref(false)
+const canUseOta = ref(false)
 
 // Manual entry variables
 const manualWorkStart = ref('')
@@ -67,6 +68,9 @@ onMounted(async () => {
       setupBackgroundHandlers()
     ])
     
+    // Detect OTA support (native only)
+    canUseOta.value = hasOtaSupport()
+
     // Load backup settings
     const savedSettings = localStorage.getItem('backupSettings')
     if (savedSettings) {
@@ -162,6 +166,10 @@ const navigateTo = (page: string) => {
 }
 
 const applyUpdateNow = async () => {
+  if (!canUseOta.value) {
+    alert('Actualizările OTA sunt disponibile doar în aplicația instalată (iOS/Android).')
+    return
+  }
   const manifest = await checkForOtaUpdate(updateManifestUrl, appVersion.value)
   if (!manifest) {
     alert('Nu există update disponibil.')
@@ -173,6 +181,10 @@ const applyUpdateNow = async () => {
 }
 
 const rollbackUpdate = async () => {
+  if (!canUseOta.value) {
+    alert('Rollback OTA este disponibil doar în aplicația instalată (iOS/Android).')
+    return
+  }
   await rollbackOtaUpdate()
 }
 
@@ -606,8 +618,12 @@ const forceUpdateTotals = () => {
       <div v-if="isUpdateAvailable" class="mb-4 rounded-xl border border-blue-400/40 bg-blue-500/10 p-3 text-white flex items-center justify-between">
         <div class="text-sm">Update disponibil: {{ latestVersion }} (curent {{ appVersion }})</div>
         <div class="flex gap-2">
-          <button class="btn btn-primary px-3 py-1 text-xs" @click="applyUpdateNow">Aplică</button>
-          <button class="btn btn-glass px-3 py-1 text-xs" @click="rollbackUpdate">Rollback</button>
+          <button class="btn btn-primary px-3 py-1 text-xs" :disabled="!canUseOta" @click="applyUpdateNow" title="Disponibil doar în aplicația instalată">
+            Aplică
+          </button>
+          <button class="btn btn-glass px-3 py-1 text-xs" :disabled="!canUseOta" @click="rollbackUpdate" title="Disponibil doar în aplicația instalată">
+            Rollback
+          </button>
         </div>
       </div>
 
