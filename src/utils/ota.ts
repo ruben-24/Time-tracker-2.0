@@ -2,6 +2,7 @@
    Works with updater plugins (e.g., @capgo/capacitor-updater) if present.
    On web or missing plugin, it will no-op gracefully and inform the user.
 */
+import { Capacitor } from '@capacitor/core'
 
 export interface OtaManifest {
   version: string
@@ -11,13 +12,15 @@ export interface OtaManifest {
 }
 
 const getUpdater = (): any | null => {
+  // Ensure native environment
+  try {
+    if (typeof (Capacitor as any)?.isNativePlatform === 'function' && !Capacitor.isNativePlatform()) {
+      return null
+    }
+  } catch {}
   const w = window as any
-  const cap = w?.Capacitor
-  // Ensure we're on a native platform (not web) before accessing plugins
-  if (!cap || (typeof cap.isNativePlatform === 'function' && !cap.isNativePlatform())) return null
-  const plugins = cap?.Plugins
+  const plugins = w?.Capacitor?.Plugins
   if (!plugins) return null
-  // Try common plugin identifiers across ecosystems
   return (
     plugins.CapacitorUpdater ||
     plugins.Updater ||
