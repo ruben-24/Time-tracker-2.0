@@ -11,6 +11,7 @@ import AddressSelector from './components/AddressSelector.vue'
 import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
+import { checkForOtaUpdate, applyOtaUpdate, rollbackOtaUpdate } from './utils/ota'
 import { ArrowLeft, Clock, Pause, Settings, X, Download, Upload, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
 
 const timer = useTimerStore()
@@ -30,6 +31,9 @@ const totalBreakCount = computed(() => {
 
 // App version
 const appVersion = ref('2.2.0')
+const latestVersion = ref<string | null>(null)
+const updateManifestUrl = 'https://time-tracker-e36f1.web.app/updates/stable/manifest.json'
+const isUpdateAvailable = ref(false)
 
 // Manual entry variables
 const manualWorkStart = ref('')
@@ -70,6 +74,15 @@ onMounted(async () => {
       backupFolder.value = settings.customFolder || 'TimeTracker'
     }
     
+    // Check OTA updates (non-blocking)
+    try {
+      const manifest = await checkForOtaUpdate(updateManifestUrl, appVersion.value)
+      if (manifest) {
+        latestVersion.value = manifest.version
+        isUpdateAvailable.value = true
+      }
+    } catch {}
+
     ticker = window.setInterval(() => {
       now.value = Date.now()
       forceUpdateTotals()
@@ -146,6 +159,21 @@ const isOnBreak = computed(() => {
 
 const navigateTo = (page: string) => {
   currentPage.value = page
+}
+
+const applyUpdateNow = async () => {
+  const manifest = await checkForOtaUpdate(updateManifestUrl, appVersion.value)
+  if (!manifest) {
+    alert('Nu există update disponibil.')
+    isUpdateAvailable.value = false
+    return
+  }
+  const ok = await applyOtaUpdate(manifest)
+  if (!ok) return
+}
+
+const rollbackUpdate = async () => {
+  await rollbackOtaUpdate()
 }
 
 // Changelog data
@@ -573,6 +601,15 @@ const forceUpdateTotals = () => {
           <BurgerMenu @navigate="navigateTo" />
         </div>
       </header>
+
+      <!-- Update Banner -->
+      <div v-if="isUpdateAvailable" class="mb-4 rounded-xl border border-blue-400/40 bg-blue-500/10 p-3 text-white flex items-center justify-between">
+        <div class="text-sm">Update disponibil: {{ latestVersion }} (curent {{ appVersion }})</div>
+        <div class="flex gap-2">
+          <button class="btn btn-primary px-3 py-1 text-xs" @click="applyUpdateNow">Aplică</button>
+          <button class="btn btn-glass px-3 py-1 text-xs" @click="rollbackUpdate">Rollback</button>
+        </div>
+      </div>
 
       <!-- Main Timer Section -->
       <section class="card-glass card-hover p-8 mb-8" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
