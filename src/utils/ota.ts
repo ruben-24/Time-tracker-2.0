@@ -12,8 +12,19 @@ export interface OtaManifest {
 
 const getUpdater = (): any | null => {
   const w = window as any
-  if (!w || !w.Capacitor || !w.Capacitor.Plugins) return null
-  return w.Capacitor.Plugins.Updater || null
+  const plugins = w?.Capacitor?.Plugins
+  if (!plugins) return null
+  // Try common plugin identifiers across ecosystems
+  return (
+    plugins.CapacitorUpdater ||
+    plugins.Updater ||
+    plugins.capacitorUpdater ||
+    null
+  )
+}
+
+export function hasOtaSupport(): boolean {
+  return !!getUpdater()
 }
 
 export async function fetchManifest(manifestUrl: string): Promise<OtaManifest | null> {
@@ -45,12 +56,9 @@ export async function checkForOtaUpdate(manifestUrl: string, currentVersion: str
   const manifest = await fetchManifest(manifestUrl)
   if (!manifest) return null
   const remote = manifest.version
-  // Accept both vX.Y.Z and X.Y.Z comparisons
+  // If remote is not strictly newer (handles v-prefix), do not offer update
   const newer = isNewerVersion(remote, currentVersion)
-  if (!newer && remote !== currentVersion && remote !== `v${currentVersion}`) {
-    return null
-  }
-  return manifest
+  return newer ? manifest : null
 }
 
 export async function applyOtaUpdate(manifest: OtaManifest): Promise<boolean> {
@@ -60,15 +68,25 @@ export async function applyOtaUpdate(manifest: OtaManifest): Promise<boolean> {
     return false
   }
   try {
-    if (typeof updater.download === 'function') {
-      await updater.download({ url: manifest.url, version: manifest.version, checksum: manifest.sha256 })
+    const can = (fn: string) => typeof (updater as any)?.[fn] === 'function'
+
+    if (can('download')) {
+      // Support different parameter shapes across plugins
+      await updater.download({
+        url: manifest.url,
+        version: manifest.version,
+        id: manifest.version,
+        checksum: manifest.sha256,
+      })
     }
-    if (typeof updater.set === 'function') {
-      await updater.set({ id: manifest.version })
+    if (can('set')) {
+      await updater.set({ id: manifest.version, version: manifest.version })
     }
-    if (typeof updater.reload === 'function') {
+    if (can('reload')) {
       await updater.reload()
-    } else if (typeof updater.apply === 'function') {
+    } else if (can('restart')) {
+      await updater.restart()
+    } else if (can('apply')) {
       await updater.apply()
     }
     return true
@@ -86,15 +104,19 @@ export async function rollbackOtaUpdate(): Promise<boolean> {
     return false
   }
   try {
-    if (typeof updater.reset === 'function') {
+    const can = (fn: string) => typeof (updater as any)?.[fn] === 'function'
+
+    if (can('reset')) {
       await updater.reset()
-    } else if (typeof updater.remove === 'function') {
+    } else if (can('remove')) {
       await updater.remove()
-    } else if (typeof updater.set === 'function') {
+    } else if (can('set')) {
       await updater.set({ id: 'base' })
     }
-    if (typeof updater.reload === 'function') {
+    if (can('reload')) {
       await updater.reload()
+    } else if (can('restart')) {
+      await updater.restart()
     }
     return true
   } catch (e) {
