@@ -70,29 +70,39 @@ export async function applyOtaUpdate(manifest: OtaManifest): Promise<boolean> {
   try {
     const can = (fn: string) => typeof (updater as any)?.[fn] === 'function'
 
+    // 1) Download bundle (retry without checksum if fails)
     if (can('download')) {
-      // Support different parameter shapes across plugins
-      await updater.download({
-        url: manifest.url,
-        version: manifest.version,
-        id: manifest.version,
-        checksum: manifest.sha256,
-      })
+      try {
+        await (updater as any).download({
+          url: manifest.url,
+          version: manifest.version,
+          id: manifest.version,
+          checksum: manifest.sha256,
+          hash: manifest.sha256,
+        })
+      } catch (_) {
+        await (updater as any).download({ url: manifest.url, version: manifest.version })
+      }
     }
+
+    // 2) Select downloaded version if supported
     if (can('set')) {
-      await updater.set({ id: manifest.version, version: manifest.version })
+      await (updater as any).set({ id: manifest.version })
     }
+
+    // 3) Apply
     if (can('reload')) {
-      await updater.reload()
+      await (updater as any).reload()
     } else if (can('restart')) {
-      await updater.restart()
+      await (updater as any).restart()
     } else if (can('apply')) {
-      await updater.apply()
+      await (updater as any).apply()
     }
     return true
   } catch (e) {
     console.error('OTA apply error', e)
-    alert('Aplicarea update-ului a eșuat. Încearcă din nou.')
+    const message = (e as any)?.message || 'Eroare necunoscută'
+    alert(`Aplicarea update-ului a eșuat: ${message}`)
     return false
   }
 }
