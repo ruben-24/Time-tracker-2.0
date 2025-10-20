@@ -12,6 +12,7 @@ import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
 import { checkForOtaUpdate, applyOtaUpdate, rollbackOtaUpdate, hasOtaSupport } from './utils/ota'
+import { Preferences } from '@capacitor/preferences'
 import { ArrowLeft, Clock, Pause, Settings, X, Download, Upload, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
 
 const timer = useTimerStore()
@@ -80,8 +81,12 @@ onMounted(async () => {
     
     // Use stored app version if present (set after successful OTA)
     try {
-      const stored = localStorage.getItem('app_version')
-      if (stored) appVersion.value = stored
+      const pref = await Preferences.get({ key: 'app_version' })
+      if (pref.value) appVersion.value = pref.value
+      else {
+        const stored = localStorage.getItem('app_version')
+        if (stored) appVersion.value = stored
+      }
     } catch {}
 
     // Check OTA updates (non-blocking)

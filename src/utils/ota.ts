@@ -3,6 +3,7 @@
    On web or missing plugin, it will no-op gracefully and inform the user.
 */
 import { Capacitor } from '@capacitor/core'
+import { Preferences } from '@capacitor/preferences'
 
 export interface OtaManifest {
   version: string
@@ -99,9 +100,11 @@ export async function applyOtaUpdate(manifest: OtaManifest): Promise<boolean> {
       await (updater as any).set({ id: downloadId || manifest.version, version: downloadId || manifest.version })
     }
 
-    // 3) Persist new version so UI reflects it after reload
+    // 3) Persist new version so UI reflects it after reload (Preferences survives reloads)
     try {
-      localStorage.setItem('app_version', manifest.version.replace(/^v/i, ''))
+      const normalized = manifest.version.replace(/^v/i, '')
+      await Preferences.set({ key: 'app_version', value: normalized })
+      try { localStorage.setItem('app_version', normalized) } catch {}
     } catch {}
 
     // 4) Apply
