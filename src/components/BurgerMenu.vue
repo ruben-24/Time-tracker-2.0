@@ -95,7 +95,7 @@ const menuItems = [
           </button>
           
           <p class="text-white/60 text-sm text-center mt-4">
-            Time Tracker Pro v2.2.0
+            Time Tracker Pro v{{ appVersion }}
           </p>
         </div>
       </div>
