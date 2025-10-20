@@ -30,7 +30,7 @@ const totalBreakCount = computed(() => {
 })
 
 // App version
-const appVersion = ref('2.2.0')
+const appVersion = ref('2.3.1')
 const latestVersion = ref<string | null>(null)
 const updateManifestUrl = 'https://time-tracker-e36f1.web.app/updates/stable/manifest.json'
 const isUpdateAvailable = ref(false)

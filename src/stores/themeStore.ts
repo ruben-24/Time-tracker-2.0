@@ -22,11 +22,11 @@ export interface ThemeSettings {
 
 export const useThemeStore = defineStore('theme', () => {
   const settings = ref<ThemeSettings>({
-    backgroundStyle: 'gradient',
+    backgroundStyle: 'solid',
     backgroundColors: {
-      primary: '#0f0f23',
-      secondary: '#1a1a2e',
-      accent: '#16213e'
+      primary: '#ff0000',
+      secondary: '#ff0000',
+      accent: '#ff0000'
     },
     buttonStyle: 'rounded',
     buttonColors: {
