@@ -848,7 +848,7 @@ const resetTheme = () => {
       <div class="card-glass p-6">
         <div class="text-center">
           <h3 class="text-lg font-semibold text-white mb-2">Time Tracker Pro</h3>
-          <p class="text-white/70 text-sm">Versiunea 2.2.0</p>
+          <p class="text-white/70 text-sm">Versiunea {{ appVersion }}</p>
           <p class="text-white/60 text-xs mt-2">Dezvoltat cu ❤️ pentru productivitate</p>
           <div class="mt-4 flex justify-center gap-4">
             <button @click="emit('navigate', 'changelog')" class="btn btn-glass btn-rounded px-4 py-2 text-xs">

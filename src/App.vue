@@ -197,14 +197,14 @@ const rollbackUpdate = async () => {
 // Changelog data
 const changelog = ref([
   {
-    version: '2.2.0',
+    version: appVersion.value,
     date: '2024-12-19',
     changes: [
       'Mutare calcul financiar din pagina principală în burger menu',
       'Adăugare 12 culori noi pentru butoane (Ocean Blue, Cherry Pink, Lime Green, etc.)',
       'Îmbunătățire organizare interfață - pagina principală mai curată',
       'Rapoarte financiare accesibile din meniul principal',
-      'Actualizare versiune la 2.2.0'
+      `Actualizare versiune la ${appVersion.value}`
     ]
   },
   {
@@ -605,7 +605,7 @@ const forceUpdateTotals = () => {
       <header class="mb-8 flex items-center justify-between">
         <div class="flex-1">
           <h1 class="text-3xl font-bold tracking-tight mb-1" :class="theme.settings.textStyle === 'rainbow' ? 'text-gradient-rainbow' : theme.settings.textStyle === 'glow' ? 'text-gradient-glow' : 'text-gradient'">Time Tracker Pro</h1>
-          <p class="text-sm text-white/80 font-medium">Simplu. Rapid. Precis. v2.0.0</p>
+          <p class="text-sm text-white/80 font-medium">Simplu. Rapid. Precis. v{{ appVersion }}</p>
           <div class="flex items-center gap-2 mt-2">
             <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             <span class="text-xs text-white/60">Sistem activ</span>
