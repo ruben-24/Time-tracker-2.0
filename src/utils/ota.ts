@@ -12,7 +12,10 @@ export interface OtaManifest {
 
 const getUpdater = (): any | null => {
   const w = window as any
-  const plugins = w?.Capacitor?.Plugins
+  const cap = w?.Capacitor
+  // Ensure we're on a native platform (not web) before accessing plugins
+  if (!cap || (typeof cap.isNativePlatform === 'function' && !cap.isNativePlatform())) return null
+  const plugins = cap?.Plugins
   if (!plugins) return null
   // Try common plugin identifiers across ecosystems
   return (
