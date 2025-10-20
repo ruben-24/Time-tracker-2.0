@@ -30,7 +30,7 @@ const totalBreakCount = computed(() => {
 })
 
 // App version
-const appVersion = ref('2.3.1')
+const appVersion = ref('2.3.2')
 const latestVersion = ref<string | null>(null)
 const updateManifestUrl = 'https://time-tracker-e36f1.web.app/updates/stable/manifest.json'
 const isUpdateAvailable = ref(false)
@@ -78,6 +78,12 @@ onMounted(async () => {
       backupFolder.value = settings.customFolder || 'TimeTracker'
     }
     
+    // Use stored app version if present (set after successful OTA)
+    try {
+      const stored = localStorage.getItem('app_version')
+      if (stored) appVersion.value = stored
+    } catch {}
+
     // Check OTA updates (non-blocking)
     try {
       const manifest = await checkForOtaUpdate(updateManifestUrl, appVersion.value)

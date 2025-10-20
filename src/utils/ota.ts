@@ -99,7 +99,12 @@ export async function applyOtaUpdate(manifest: OtaManifest): Promise<boolean> {
       await (updater as any).set({ id: downloadId || manifest.version, version: downloadId || manifest.version })
     }
 
-    // 3) Apply
+    // 3) Persist new version so UI reflects it after reload
+    try {
+      localStorage.setItem('app_version', manifest.version.replace(/^v/i, ''))
+    } catch {}
+
+    // 4) Apply
     if (can('reload')) {
       await (updater as any).reload()
     } else if (can('restart')) {
