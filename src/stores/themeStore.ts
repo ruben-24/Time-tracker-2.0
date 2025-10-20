@@ -121,6 +121,12 @@ export const useThemeStore = defineStore('theme', () => {
       colors: { primary: '#667eea', secondary: '#764ba2', accent: '#f093fb' },
       style: 'gradient'
     }
+    ,
+    {
+      name: 'Sky Mint',
+      colors: { primary: '#38bdf8', secondary: '#22d3ee', accent: '#14b8a6' },
+      style: 'gradient'
+    }
   ])
 
   const buttonPresets = ref([
