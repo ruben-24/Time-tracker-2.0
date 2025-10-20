@@ -1,0 +1,7 @@
+{
+  "hosting": {
+    "site": "time-tracker-e36f1",
+    "public": "hosting",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+  }
+}
