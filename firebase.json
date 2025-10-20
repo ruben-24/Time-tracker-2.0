@@ -2,6 +2,15 @@
   "hosting": {
     "site": "time-tracker-e36f1",
     "public": "hosting",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "headers": [
+      {
+        "source": "/updates/**",
+        "headers": [
+          { "key": "Access-Control-Allow-Origin", "value": "*" },
+          { "key": "Cache-Control", "value": "no-store, max-age=0" }
+        ]
+      }
+    ]
   }
 }
