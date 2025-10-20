@@ -70,24 +70,27 @@ export async function applyOtaUpdate(manifest: OtaManifest): Promise<boolean> {
   try {
     const can = (fn: string) => typeof (updater as any)?.[fn] === 'function'
 
-    // 1) Download bundle (retry without checksum if fails)
+    // 1) Download bundle (capture returned id/version)
+    let downloadId: string | undefined
     if (can('download')) {
       try {
-        await (updater as any).download({
+        const res = await (updater as any).download({
           url: manifest.url,
           version: manifest.version,
           id: manifest.version,
           checksum: manifest.sha256,
           hash: manifest.sha256,
         })
+        downloadId = (res && (res.id || res.version)) || manifest.version
       } catch (_) {
-        await (updater as any).download({ url: manifest.url, version: manifest.version })
+        const res2 = await (updater as any).download({ url: manifest.url, version: manifest.version })
+        downloadId = (res2 && (res2.id || res2.version)) || manifest.version
       }
     }
 
-    // 2) Select downloaded version if supported
+    // 2) Select downloaded id/version if supported
     if (can('set')) {
-      await (updater as any).set({ id: manifest.version })
+      await (updater as any).set({ id: downloadId || manifest.version, version: downloadId || manifest.version })
     }
 
     // 3) Apply
