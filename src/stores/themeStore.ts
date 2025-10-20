@@ -42,7 +42,12 @@ export const useThemeStore = defineStore('theme', () => {
 
   const backgroundPresets = ref([
     {
-      name: 'OcDeep',
+      name: 'Roșu Aprins',
+      colors: { primary: '#ff0000', secondary: '#ff0000', accent: '#ff0000' },
+      style: 'solid'
+    },
+    {
+      name: 'Ocean Deep',
       colors: { primary: '#0f0f23', secondary: '#1a1a2e', accent: '#16213e' },
       style: 'gradient'
     },
