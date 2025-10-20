@@ -47,7 +47,7 @@ export async function checkForOtaUpdate(manifestUrl: string, currentVersion: str
   const remote = manifest.version
   // Accept both vX.Y.Z and X.Y.Z comparisons
   const newer = isNewerVersion(remote, currentVersion)
-  if (!newer && remote !== currentVersion && remote !== `v${currentVersion}`) {
+  if (!newer) {
     return null
   }
   return manifest
