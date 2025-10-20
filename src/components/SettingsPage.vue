@@ -8,6 +8,7 @@ import { ArrowLeft, Settings, Clock, DollarSign, MapPin, Bell, Trash2, Palette, 
 const emit = defineEmits<{
   navigate: [page: string]
 }>()
+defineProps<{ appVersion: string }>()
 
 const timer = useTimerStore()
 const financial = useFinancialStore()

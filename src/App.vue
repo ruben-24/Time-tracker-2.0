@@ -616,7 +616,7 @@ const forceUpdateTotals = () => {
             <div class="text-xs text-white/60">Status</div>
             <div class="text-sm font-semibold text-white">{{ stateLabel }}</div>
           </div>
-          <BurgerMenu @navigate="navigateTo" />
+          <BurgerMenu @navigate="navigateTo" :appVersion="appVersion" />
         </div>
       </header>
 
@@ -1133,7 +1133,7 @@ const forceUpdateTotals = () => {
     </div>
 
     <!-- Settings Page -->
-    <SettingsPage v-else-if="currentPage === 'settings'" @navigate="navigateTo" />
+    <SettingsPage v-else-if="currentPage === 'settings'" @navigate="navigateTo" :appVersion="appVersion" />
 
     <!-- Changelog Page -->
     <div v-else-if="currentPage === 'changelog'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">

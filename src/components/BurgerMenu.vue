@@ -6,6 +6,8 @@ const emit = defineEmits<{
   navigate: [page: string]
 }>()
 
+defineProps<{ appVersion: string }>()
+
 const isOpen = ref(false)
 
 const toggleMenu = () => {
