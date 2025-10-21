@@ -598,6 +598,20 @@ const downloadBackup = async (filename: string) => {
   }
 }
 
+// Quick template: add 8h vacation session with note "Concediu"
+const addVacationTemplate = () => {
+  try {
+    const nowTs = Date.now()
+    const eightHours = 8 * 60 * 60 * 1000
+    const start = nowTs - eightHours
+    timer.addManualSession('work', start, nowTs, 'Concediu')
+    alert('Șablon "Concediu" (8h) a fost adăugat!')
+  } catch (e) {
+    console.error('Vacation template error:', e)
+    alert('Nu s-a putut adăuga șablonul Concediu.')
+  }
+}
+
 const selectBackupFolder = () => {
   const newFolder = prompt('Introdu numele folderului pentru backup:', backupFolder.value)
   if (newFolder && newFolder.trim()) {
@@ -1012,6 +1026,12 @@ const forceUpdateTotals = () => {
             >
               <Pause class="h-6 w-6 mb-2" />
               <span class="text-sm">Folosește ora curentă pentru pauză</span>
+            </button>
+          </div>
+
+          <div class="mt-4">
+            <button @click="addVacationTemplate" class="btn btn-emerald w-full p-4">
+              Adaugă Șablon: Concediu (8h)
             </button>
           </div>
         </div>
