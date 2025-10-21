@@ -42,8 +42,33 @@ const defaultAddress = ref(timer.defaultAddress)
 const customBackgroundColor = ref(theme.settings.backgroundColors.primary)
 const customButtonColor = ref(theme.settings.buttonColors.primary)
 
+// Preset selectors
+const selectedBgPreset = ref<string>('')
+const selectedBtnPreset = ref<string>('')
+
+const syncSelectedPresets = () => {
+  // Try to find matching background preset by colors
+  const bg = theme.backgroundPresets.find(p =>
+    p.colors.primary === theme.settings.backgroundColors.primary &&
+    p.colors.secondary === theme.settings.backgroundColors.secondary &&
+    p.colors.accent === theme.settings.backgroundColors.accent &&
+    p.style === (theme.settings.backgroundStyle as any)
+  )
+  selectedBgPreset.value = bg ? bg.name : ''
+
+  // Try to find matching button preset by colors
+  const bp = theme.buttonPresets.find(p =>
+    p.colors.primary === theme.settings.buttonColors.primary &&
+    p.colors.secondary === theme.settings.buttonColors.secondary &&
+    p.colors.accent === theme.settings.buttonColors.accent &&
+    p.style === (theme.settings.buttonStyle as any)
+  )
+  selectedBtnPreset.value = bp ? bp.name : ''
+}
+
 onMounted(() => {
   theme.load()
+  syncSelectedPresets()
   
   // Load saved settings
   const savedNotifications = localStorage.getItem('notificationsEnabled')
@@ -269,70 +294,40 @@ const resetTheme = () => {
         </div>
         
         <div class="space-y-6">
-          <!-- Background Presets -->
+          <!-- Background Presets Dropdown -->
           <div>
             <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
               <Eye class="h-4 w-4" />
-              Preset-uri Background
+              Preset Background
             </h3>
-            <div class="grid grid-cols-2 gap-3">
-              <button
-                v-for="preset in theme.backgroundPresets"
-                :key="preset.name"
-                @click="applyBackgroundPreset(preset)"
-                class="p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105"
-                :class="theme.settings.backgroundColors.primary === preset.colors.primary ? 'border-pink-400 bg-pink-400/20' : 'border-white/20 bg-white/10 hover:border-white/40'"
-              >
-                <div class="flex items-center gap-2 mb-2">
-                  <div 
-                    class="w-4 h-4 rounded-full"
-                    :style="{ backgroundColor: preset.colors.primary }"
-                  ></div>
-                  <div 
-                    class="w-4 h-4 rounded-full"
-                    :style="{ backgroundColor: preset.colors.secondary }"
-                  ></div>
-                  <div 
-                    class="w-4 h-4 rounded-full"
-                    :style="{ backgroundColor: preset.colors.accent }"
-                  ></div>
-                </div>
-                <div class="text-xs text-white/70">{{ preset.name }}</div>
-              </button>
-            </div>
+            <select
+              v-model="selectedBgPreset"
+              @change="() => { const p = theme.backgroundPresets.find(x => x.name === selectedBgPreset); if (p) applyBackgroundPreset(p) }"
+              class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-pink-400 focus:outline-none"
+            >
+              <option value="" disabled>Selectează un preset</option>
+              <option v-for="preset in theme.backgroundPresets" :key="preset.name" :value="preset.name">
+                {{ preset.name }}
+              </option>
+            </select>
           </div>
 
-          <!-- Button Presets -->
+          <!-- Button Presets Dropdown -->
           <div>
             <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
               <Brush class="h-4 w-4" />
-              Preset-uri Butoane
+              Preset Butoane
             </h3>
-            <div class="grid grid-cols-2 gap-3">
-              <button
-                v-for="preset in theme.buttonPresets"
-                :key="preset.name"
-                @click="applyButtonPreset(preset)"
-                class="p-3 rounded-lg border-2 transition-all duration-200 hover:scale-105"
-                :class="theme.settings.buttonColors.primary === preset.colors.primary ? 'border-cyan-400 bg-cyan-400/20' : 'border-white/20 bg-white/10 hover:border-white/40'"
-              >
-                <div class="flex items-center gap-2 mb-2">
-                  <div 
-                    class="w-4 h-4 rounded-full"
-                    :style="{ backgroundColor: preset.colors.primary }"
-                  ></div>
-                  <div 
-                    class="w-4 h-4 rounded-full"
-                    :style="{ backgroundColor: preset.colors.secondary }"
-                  ></div>
-                  <div 
-                    class="w-4 h-4 rounded-full"
-                    :style="{ backgroundColor: preset.colors.accent }"
-                  ></div>
-                </div>
-                <div class="text-xs text-white/70">{{ preset.name }}</div>
-              </button>
-            </div>
+            <select
+              v-model="selectedBtnPreset"
+              @change="() => { const p = theme.buttonPresets.find(x => x.name === selectedBtnPreset); if (p) applyButtonPreset(p) }"
+              class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+            >
+              <option value="" disabled>Selectează un preset</option>
+              <option v-for="preset in theme.buttonPresets" :key="preset.name" :value="preset.name">
+                {{ preset.name }}
+              </option>
+            </select>
           </div>
 
           <!-- Custom Colors -->
