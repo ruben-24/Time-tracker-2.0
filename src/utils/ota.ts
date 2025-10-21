@@ -95,9 +95,10 @@ export async function applyOtaUpdate(manifest: OtaManifest): Promise<boolean> {
       }
     }
 
-    // 2) Select downloaded id/version if supported
+    // 2) Select downloaded id/version if supported (ensure both id and version)
+    const selectedId = (downloadId || manifest.version).replace(/^v/i, '')
     if (can('set')) {
-      await (updater as any).set({ id: downloadId || manifest.version, version: downloadId || manifest.version })
+      await (updater as any).set({ id: selectedId, version: selectedId })
     }
 
     // 3) Persist new version so UI reflects it after reload (Preferences survives reloads)
@@ -106,6 +107,9 @@ export async function applyOtaUpdate(manifest: OtaManifest): Promise<boolean> {
       await Preferences.set({ key: 'app_version', value: normalized })
       try { localStorage.setItem('app_version', normalized) } catch {}
     } catch {}
+
+    // Small delay to ensure native state is committed before reload
+    try { await new Promise(r => setTimeout(r, 200)); } catch {}
 
     // 4) Apply
     if (can('reload')) {

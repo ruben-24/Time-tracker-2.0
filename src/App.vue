@@ -30,8 +30,8 @@ const totalBreakCount = computed(() => {
   return standalone + inSession
 })
 
-// App version
-const appVersion = ref('2.3.2')
+// App version (default shown until Preferences load)
+const appVersion = ref('2.0.0')
 const latestVersion = ref<string | null>(null)
 const updateManifestUrl = 'https://time-tracker-e36f1.web.app/updates/stable/manifest.json'
 const isUpdateAvailable = ref(false)
@@ -83,11 +83,13 @@ onMounted(async () => {
     try {
       const pref = await Preferences.get({ key: 'app_version' })
       if (pref.value) appVersion.value = pref.value
-      else {
+    } catch {}
+    if (appVersion.value === '2.0.0') {
+      try {
         const stored = localStorage.getItem('app_version')
         if (stored) appVersion.value = stored
-      }
-    } catch {}
+      } catch {}
+    }
 
     // Check OTA updates (non-blocking)
     try {
