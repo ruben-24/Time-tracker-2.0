@@ -269,7 +269,7 @@ body {
 
 /* Button shapes */
 .btn-rounded { border-radius: 25px; }
-.btn-square { border-radius: 8px; }
+.btn-square { border-radius: 14px; }
 .btn-pill { border-radius: 50px; }
 
 /* Safe area padding for bottom bar */
