@@ -47,6 +47,11 @@ export const useThemeStore = defineStore('theme', () => {
       style: 'solid'
     },
     {
+      name: 'Curcubeu',
+      colors: { primary: '#ff0000', secondary: '#ffff00', accent: '#0000ff' },
+      style: 'gradient'
+    },
+    {
       name: 'Ocean Deep',
       colors: { primary: '#0f0f23', secondary: '#1a1a2e', accent: '#16213e' },
       style: 'gradient'
