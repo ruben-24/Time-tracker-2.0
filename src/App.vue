@@ -759,7 +759,7 @@ const forceUpdateTotals = () => {
       </section>
 
       <!-- Floating Timer Controls - Only buttons, no glass container -->
-      <div class="fixed inset-x-0 bottom-0 z-50 safe-bottom">
+      <div class="fixed inset-x-0 bottom-0 z-30 safe-bottom">
         <div class="mx-auto max-w-[430px] px-4 pb-4">
           <TimerControls />
         </div>
