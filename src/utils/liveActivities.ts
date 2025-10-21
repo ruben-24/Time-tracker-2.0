@@ -2,7 +2,8 @@
    If a Live Activities plugin is not available, falls back to
    time-sensitive Local Notifications with action buttons.
 */
-import { LocalNotifications, ScheduleOptions, ActionPerformed } from '@capacitor/local-notifications'
+import { LocalNotifications } from '@capacitor/local-notifications'
+import type { ScheduleOptions, ActionPerformed } from '@capacitor/local-notifications'
 
 let initialized = false
 const NOTIF_ID = 101 // single-slot replacement

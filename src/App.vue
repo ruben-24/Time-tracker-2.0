@@ -11,6 +11,7 @@ import AddressSelector from './components/AddressSelector.vue'
 import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
+import { setupLockScreenControls, showWorkingNotification, showBreakNotification, clearLockScreenNotification } from './utils/liveActivities'
 import { checkForOtaUpdate, applyOtaUpdate, rollbackOtaUpdate, hasOtaSupport, markOtaSuccessful } from './utils/ota'
 import { Preferences } from '@capacitor/preferences'
 import { ArrowLeft, Clock, Pause, Settings, X, Download, Upload, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
@@ -76,6 +77,14 @@ onMounted(async () => {
     // Load backup settings
     // Notify OTA system that app started successfully (avoid rollback)
     try { await markOtaSuccessful() } catch {}
+    // Setup Lock Screen controls (PAUSE/RESUME/END)
+    try {
+      await setupLockScreenControls((actionId) => {
+        if (actionId === 'PAUSE') timer.startBreak()
+        else if (actionId === 'RESUME') timer.resumeWork()
+        else if (actionId === 'END') timer.endCurrent()
+      })
+    } catch {}
     const savedSettings = localStorage.getItem('backupSettings')
     if (savedSettings) {
       const settings = JSON.parse(savedSettings)
@@ -158,6 +167,22 @@ const elapsed = computed(() => {
   
   return Math.max(0, totalTime - pausedTime)
 })
+
+// Update Lock Screen notification as state changes
+watch(() => ({ activeType: timer.activeType, pausedAt: timer.pausedAt, breakStartedAt: timer.breakStartedAt, t: now.value }), async () => {
+  try {
+    if (timer.activeType === 'work' && !timer.isPaused) {
+      const minutes = Math.floor(elapsed.value / 60000)
+      await showWorkingNotification(`${minutes} min lucrate`)
+    } else if (timer.pausedAt && timer.breakStartedAt) {
+      const breakMs = Date.now() - (timer.breakStartedAt || Date.now())
+      const minutes = Math.floor(breakMs / 60000)
+      await showBreakNotification(`${minutes} min pauză`)
+    } else {
+      await clearLockScreenNotification()
+    }
+  } catch {}
+}, { deep: true })
 
 const stateLabel = computed(() => {
   if (!timer.activeType) return 'Inactiv'
