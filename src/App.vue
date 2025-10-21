@@ -715,12 +715,10 @@ const forceUpdateTotals = () => {
 
       </section>
 
-      <!-- Floating Timer Controls - Always visible on main page -->
+      <!-- Floating Timer Controls - Only buttons, no glass container -->
       <div class="fixed inset-x-0 bottom-0 z-50 safe-bottom">
         <div class="mx-auto max-w-[430px] px-4 pb-4">
-          <div class="glass-enhanced rounded-2xl p-4 shadow-2xl border border-white/20" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
-            <TimerControls />
-          </div>
+          <TimerControls />
         </div>
       </div>
     </div>

@@ -28,8 +28,8 @@ const buttonBase = computed(() => {
 </script>
 
 <template>
-  <!-- No active session: single large START button -->
-  <div v-if="showStartOnly" class="grid grid-cols-1">
+  <!-- No active session: single large START button filling previous glass area -->
+  <div v-if="showStartOnly" class="grid grid-cols-1 rounded-2xl shadow-2xl">
     <button
       :class="[buttonBase, 'btn-emerald text-base font-semibold py-6']"
       :disabled="!canStart"
@@ -42,7 +42,7 @@ const buttonBase = computed(() => {
   </div>
 
   <!-- Session running: PAUSE and END as two large buttons side by side -->
-  <div v-else-if="showPauseEnd" class="grid grid-cols-2 gap-3">
+  <div v-else-if="showPauseEnd" class="grid grid-cols-2 gap-3 rounded-2xl shadow-2xl">
     <button
       :class="[buttonBase, 'btn-amber text-base font-semibold py-6']"
       :disabled="!canPause"
@@ -65,7 +65,7 @@ const buttonBase = computed(() => {
   </div>
 
   <!-- On break: single large RESUME button -->
-  <div v-else-if="showResumeOnly" class="grid grid-cols-1">
+  <div v-else-if="showResumeOnly" class="grid grid-cols-1 rounded-2xl shadow-2xl">
     <button
       :class="[buttonBase, 'btn-primary text-base font-semibold py-6']"
       :disabled="!canResume"
