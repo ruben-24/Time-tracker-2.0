@@ -612,6 +612,44 @@ const addVacationTemplate = () => {
   }
 }
 
+// Vacation range template: create 8h sessions for multiple days
+const vacationStart = ref('') // YYYY-MM-DD
+const vacationEnd = ref('')   // YYYY-MM-DD
+
+const addVacationRange = () => {
+  if (!vacationStart.value || !vacationEnd.value) {
+    alert('Selectează data de început și sfârșit!')
+    return
+  }
+  const startDate = new Date(vacationStart.value + 'T00:00:00')
+  const endDate = new Date(vacationEnd.value + 'T00:00:00')
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    alert('Date invalide!')
+    return
+  }
+  if (endDate < startDate) {
+    alert('Data de sfârșit trebuie să fie după data de început!')
+    return
+  }
+  let current = new Date(startDate)
+  let created = 0
+  while (current <= endDate) {
+    // 09:00 - 17:00 local time
+    const dayStart = new Date(current)
+    dayStart.setHours(9, 0, 0, 0)
+    const dayEnd = new Date(current)
+    dayEnd.setHours(17, 0, 0, 0)
+    timer.addManualSession('work', dayStart.getTime(), dayEnd.getTime(), 'Concediu')
+    created++
+    // next day
+    current.setDate(current.getDate() + 1)
+  }
+  alert(`Au fost adăugate ${created} zile de concediu (8h/zi).`)
+  // Reset selection
+  vacationStart.value = ''
+  vacationEnd.value = ''
+}
+
 const selectBackupFolder = () => {
   const newFolder = prompt('Introdu numele folderului pentru backup:', backupFolder.value)
   if (newFolder && newFolder.trim()) {
@@ -1032,6 +1070,35 @@ const forceUpdateTotals = () => {
           <div class="mt-4">
             <button @click="addVacationTemplate" class="btn btn-emerald w-full p-4">
               Adaugă Șablon: Concediu (8h)
+            </button>
+          </div>
+
+          <!-- Vacation range creator -->
+          <div class="mt-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm text-white/80 mb-2">Concediu de la</label>
+                <input
+                  v-model="vacationStart"
+                  type="date"
+                  class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white text-sm focus:border-purple-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-sm text-white/80 mb-2">până la</label>
+                <input
+                  v-model="vacationEnd"
+                  type="date"
+                  class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white text-sm focus:border-purple-400 focus:outline-none"
+                />
+              </div>
+            </div>
+            <button
+              class="btn btn-purple w-full mt-3"
+              :disabled="!vacationStart || !vacationEnd"
+              @click="addVacationRange"
+            >
+              Adaugă Concediu (8h/zi) pentru interval
             </button>
           </div>
         </div>
