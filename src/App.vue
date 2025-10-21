@@ -19,6 +19,7 @@ const timer = useTimerStore()
 const theme = useThemeStore()
 const now = ref(Date.now())
 const currentPage = ref('main')
+const pageHistory = ref<string[]>([])
 let ticker: number | undefined
 
 // Count of all breaks (standalone + in-session)
@@ -177,7 +178,49 @@ const isOnBreak = computed(() => {
 })
 
 const navigateTo = (page: string) => {
+  if (page && page !== currentPage.value) {
+    pageHistory.value.push(currentPage.value)
+  }
   currentPage.value = page
+}
+
+const goBack = () => {
+  if (pageHistory.value.length > 0) {
+    const prev = pageHistory.value.pop() as string
+    currentPage.value = prev
+  } else if (currentPage.value !== 'main') {
+    currentPage.value = 'main'
+  }
+}
+
+let touchStartX = 0
+let touchStartY = 0
+let touchStartTime = 0
+let touchActive = false
+
+const handleTouchStart = (e: TouchEvent) => {
+  if (currentPage.value === 'main') return
+  const t = e.touches && e.touches.length > 0 ? e.touches[0] : null
+  if (!t) return
+  touchStartX = t.clientX
+  touchStartY = t.clientY
+  touchStartTime = Date.now()
+  touchActive = true
+}
+
+const handleTouchEnd = (e: TouchEvent) => {
+  if (!touchActive || currentPage.value === 'main') return
+  const t = e.changedTouches && e.changedTouches.length > 0 ? e.changedTouches[0] : null
+  if (!t) return
+  const dx = t.clientX - touchStartX
+  const dy = Math.abs(t.clientY - touchStartY)
+  const dt = Date.now() - touchStartTime
+  touchActive = false
+  const startedOnLeftHalf = touchStartX <= window.innerWidth * 0.6
+  const isSwipeRight = dx > 70 && dy < 80 && dt < 800
+  if (startedOnLeftHalf && isSwipeRight) {
+    goBack()
+  }
 }
 
 const applyUpdateNow = async () => {
@@ -605,7 +648,7 @@ const forceUpdateTotals = () => {
 </script>
 
 <template>
-  <div class="relative min-h-dvh" :class="{ 'floating-particles': theme.settings.particles }">
+  <div class="relative min-h-dvh" :class="{ 'floating-particles': theme.settings.particles }" @touchstart.passive="handleTouchStart" @touchend.passive="handleTouchEnd">
     <div class="hero-gradient" />
     
     <!-- Main Page -->
