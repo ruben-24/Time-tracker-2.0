@@ -18,11 +18,11 @@ const showStartOnly = computed(() => timer.activeType === null)
 const showResumeOnly = computed(() => timer.isOnBreak || (timer.isPaused && timer.activeType === 'work'))
 const showPauseEnd = computed(() => timer.activeType === 'work' && !timer.isPaused)
 
-// Common button base classes
+// Common button base classes (never use glass style for timer controls)
 const buttonBase = computed(() => {
-  const shapeClass = theme.settings.buttonStyle === 'pill' ? 'btn-pill' : 
-                    theme.settings.buttonStyle === 'square' ? 'btn-square' : 
-                    theme.settings.buttonStyle === 'glass' ? 'btn-glass' : 'btn-rounded'
+  const shapeClass = theme.settings.buttonStyle === 'pill' ? 'btn-pill' :
+                    theme.settings.buttonStyle === 'square' ? 'btn-square' :
+                    /* force non-glass for these critical actions */ 'btn-rounded'
   return `btn w-full py-5 ${shapeClass}`
 })
 </script>
