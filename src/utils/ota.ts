@@ -95,8 +95,8 @@ export async function applyOtaUpdate(manifest: OtaManifest): Promise<boolean> {
       }
     }
 
-    // 2) Select downloaded id/version if supported (ensure both id and version)
-    const selectedId = (downloadId || manifest.version).replace(/^v/i, '')
+    // 2) Select downloaded id/version if supported (use exact id returned)
+    const selectedId = (downloadId || manifest.version)
     if (can('set')) {
       await (updater as any).set({ id: selectedId, version: selectedId })
     }
@@ -126,6 +126,22 @@ export async function applyOtaUpdate(manifest: OtaManifest): Promise<boolean> {
     alert(`Aplicarea update-ului a eșuat: ${message}`)
     return false
   }
+}
+
+// Call on app startup to mark update as successful (prevents rollback)
+export async function markOtaSuccessful(): Promise<void> {
+  const updater = getUpdater()
+  if (!updater) return
+  const can = (fn: string) => typeof (updater as any)?.[fn] === 'function'
+  try {
+    if (can('notifyAppReady')) {
+      await (updater as any).notifyAppReady()
+    } else if (can('ready')) {
+      await (updater as any).ready()
+    } else if (can('finish')) {
+      await (updater as any).finish()
+    }
+  } catch {}
 }
 
 export async function rollbackOtaUpdate(): Promise<boolean> {

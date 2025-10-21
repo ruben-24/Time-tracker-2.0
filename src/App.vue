@@ -11,7 +11,7 @@ import AddressSelector from './components/AddressSelector.vue'
 import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
 import { setupBackgroundHandlers } from './utils/background'
-import { checkForOtaUpdate, applyOtaUpdate, rollbackOtaUpdate, hasOtaSupport } from './utils/ota'
+import { checkForOtaUpdate, applyOtaUpdate, rollbackOtaUpdate, hasOtaSupport, markOtaSuccessful } from './utils/ota'
 import { Preferences } from '@capacitor/preferences'
 import { ArrowLeft, Clock, Pause, Settings, X, Download, Upload, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
 
@@ -73,6 +73,8 @@ onMounted(async () => {
     canUseOta.value = hasOtaSupport()
 
     // Load backup settings
+    // Notify OTA system that app started successfully (avoid rollback)
+    try { await markOtaSuccessful() } catch {}
     const savedSettings = localStorage.getItem('backupSettings')
     if (savedSettings) {
       const settings = JSON.parse(savedSettings)
