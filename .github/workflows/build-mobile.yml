@@ -1,0 +1,92 @@
+name: Build Mobile Apps
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  android:
+    name: Android Debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web assets
+        run: npm run build
+
+      - name: Capacitor sync Android
+        run: npx cap sync android
+
+      - name: Build Android debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+
+  ios:
+    name: iOS Build (unsigned)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web assets
+        run: npm run build
+
+      - name: Capacitor sync iOS
+        run: npx cap sync ios
+
+      - name: Install CocoaPods
+        run: |
+          cd ios/App
+          pod install --repo-update
+
+      - name: Build iOS app (unsigned)
+        run: |
+          set -e
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO build
+          echo "Listing products:"
+          ls -R ~/Library/Developer/Xcode/DerivedData || true
+
+      - name: Collect .app bundle
+        run: |
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -type d -path "*Build/Products/Release-iphoneos/*.app" | head -n1 || true)
+          if [ -z "$APP_PATH" ]; then echo "No .app found"; exit 1; fi
+          mkdir -p build-ios
+          cp -R "$APP_PATH" build-ios/
+          echo "Copied $APP_PATH to build-ios/"
+
+      - name: Upload iOS artifact (.app, unsigned)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app-unsigned
+          path: build-ios/*.app
+
+      # NOTE: For a signed IPA, add Apple certs/profiles as GitHub Secrets and run archive/export.
