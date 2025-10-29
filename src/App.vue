@@ -525,6 +525,13 @@ const exportChooseLocation = async () => {
     const filename = `time-tracker-export-${stamp}.json`
 
     if (Capacitor.isNativePlatform()) {
+      // If Share plugin is unavailable (OTA build without native plugin), fallback to saving in Files
+      if (!Capacitor.isPluginAvailable('Share')) {
+        await timer.saveToFile(timer.$state)
+        alert('Share indisponibil. Am salvat backup în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
+        return
+      }
+
       await Filesystem.writeFile({
         path: filename,
         data,
@@ -535,7 +542,7 @@ const exportChooseLocation = async () => {
       await Share.share({
         title: 'Exportă date Time Tracker',
         text: 'Salvează fișierul JSON în Files',
-        url: uri,
+        files: [uri],
         dialogTitle: 'Exportă date'
       })
       return
@@ -554,6 +561,14 @@ const exportChooseLocation = async () => {
     URL.revokeObjectURL(url)
   } catch (error) {
     console.error('Export choose location error:', error)
+    try {
+      // As a last resort on native, save to Files default folder
+      if (Capacitor.isNativePlatform()) {
+        await timer.saveToFile(timer.$state)
+        alert('Nu s-a putut deschide Share. Backup salvat în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
+        return
+      }
+    } catch {}
     alert('Eroare la exportul cu selectarea locației. Încearcă din nou.')
   }
 }

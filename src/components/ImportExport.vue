@@ -21,6 +21,13 @@ async function exportSaveAs() {
 
     // Native iOS/Android: write to cache and open share sheet (Save to Files lets user choose folder)
     if (Capacitor.isNativePlatform()) {
+      if (!Capacitor.isPluginAvailable('Share')) {
+        // Fallback: save in Files default folder
+        await timer.saveToFile(timer.$state)
+        alert('Share indisponibil. Backup salvat în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
+        return
+      }
+
       await Filesystem.writeFile({
         path: filename,
         data,
@@ -31,7 +38,7 @@ async function exportSaveAs() {
       await Share.share({
         title: 'Exportă date Time Tracker',
         text: 'Salvează fișierul JSON în Files',
-        url: uri,
+        files: [uri],
         dialogTitle: 'Exportă date'
       })
       return
@@ -48,6 +55,13 @@ async function exportSaveAs() {
     a.remove()
     URL.revokeObjectURL(url)
   } catch (e) {
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await timer.saveToFile(timer.$state)
+        alert('Nu s-a putut deschide Share. Backup salvat în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
+        return
+      }
+    } catch {}
     alert('Exportul a eșuat. Încearcă din nou.')
   }
 }
