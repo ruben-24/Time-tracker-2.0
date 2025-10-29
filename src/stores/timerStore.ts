@@ -130,7 +130,9 @@ export const useTimerStore = defineStore('timer', {
       const idx = this.sessions.findIndex(s => s.id === sessionId)
       if (idx === -1) return false
       const current = this.sessions[idx]
-      const next: Session = { ...current, ...updates }
+      // Avoid overriding id with possibly undefined from Partial
+      const { id: _omitId, ...rest } = updates as any
+      const next: Session = { ...current, ...(rest as Partial<Session>) }
 
       // Validate time bounds
       if (next.endedAt !== null && next.endedAt !== undefined && next.endedAt <= next.startedAt) {

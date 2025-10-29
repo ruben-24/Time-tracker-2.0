@@ -623,9 +623,7 @@ const cancelEdit = () => {
       </div>
     </div>
   </div>
-</template>
-
-<template>
+  
   <!-- Edit Modal -->
   <div v-if="isEditOpen" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
     <div class="card-glass w-full max-w-lg p-5">
