@@ -23,6 +23,11 @@ const buttonBase = computed(() => {
   const shapeClass = 'btn-square'
   return `btn w-full py-8 text-lg ${shapeClass}`
 })
+
+function confirmEnd() {
+  const ok = confirm('Ești sigur că vrei să închei programul?')
+  if (ok) timer.endCurrent()
+}
 </script>
 
 <template>
@@ -54,7 +59,7 @@ const buttonBase = computed(() => {
     <button
       :class="[buttonBase, 'btn-rose text-base font-semibold py-6']"
       :disabled="!canEnd"
-      @click="timer.endCurrent()"
+      @click="confirmEnd()"
       aria-label="Încheie lucru"
     >
       <Square class="h-8 w-8" />
