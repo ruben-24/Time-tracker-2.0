@@ -12,6 +12,8 @@ const timer = useTimerStore()
 const filterType = ref<'all' | 'work' | 'break' | 'cigarette'>('all')
 const showFilters = ref(false)
 const expandedSessions = ref<Set<string>>(new Set())
+const isEditOpen = ref(false)
+const editingSession = ref<any | null>(null)
 
 const filteredSessions = computed<Session[]>(() => {
   if (filterType.value === 'all') return timer.sessions
@@ -312,6 +314,91 @@ const formatTime = (date: Date) => {
     minute: '2-digit'
   })
 }
+
+const toInputValue = (ts: number) => {
+  const d = new Date(ts)
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`
+}
+
+const fromInputValue = (val: string): number => {
+  return new Date(val).getTime()
+}
+
+const openEdit = (session: Session) => {
+  const base: any = {
+    id: session.id,
+    type: session.type,
+    startedAtStr: toInputValue(session.startedAt),
+    endedAtStr: session.endedAt ? toInputValue(session.endedAt) : '',
+    note: session.note || ''
+  }
+  if (session.type === 'work') {
+    base.breaks = (session.breaks || []).map(b => ({
+      id: b.id,
+      type: b.type,
+      startStr: toInputValue(b.startedAt),
+      endStr: toInputValue(b.endedAt)
+    }))
+  }
+  editingSession.value = base
+  isEditOpen.value = true
+}
+
+const addEditBreak = () => {
+  if (!editingSession.value) return
+  const start = editingSession.value.startedAtStr
+  const end = editingSession.value.endedAtStr || editingSession.value.startedAtStr
+  editingSession.value.breaks = editingSession.value.breaks || []
+  editingSession.value.breaks.push({
+    id: crypto.randomUUID(),
+    type: 'break',
+    startStr: start,
+    endStr: end
+  })
+}
+
+const removeEditBreak = (idx: number) => {
+  if (!editingSession.value?.breaks) return
+  editingSession.value.breaks.splice(idx, 1)
+}
+
+const saveEdit = () => {
+  if (!editingSession.value) return
+  try {
+    const id = editingSession.value.id as string
+    const startedAt = fromInputValue(editingSession.value.startedAtStr)
+    const endedAt = editingSession.value.endedAtStr ? fromInputValue(editingSession.value.endedAtStr) : null
+    const note = (editingSession.value.note || '').trim()
+
+    const updates: any = { startedAt, endedAt, note }
+    const original = timer.sessions.find(s => s.id === id)
+    if (original?.type === 'work') {
+      const breaks = (editingSession.value.breaks || []).map((b: any) => ({
+        id: b.id,
+        type: b.type,
+        startedAt: fromInputValue(b.startStr),
+        endedAt: fromInputValue(b.endStr),
+        duration: 0 // will be normalized in store
+      }))
+      updates.breaks = breaks
+    }
+    timer.updateSession(id, updates)
+    isEditOpen.value = false
+    editingSession.value = null
+  } catch (e) {
+    alert((e as Error).message || 'Eroare la salvare')
+  }
+}
+
+const cancelEdit = () => {
+  isEditOpen.value = false
+  editingSession.value = null
+}
 </script>
 
 <template>
@@ -390,7 +477,7 @@ const formatTime = (date: Date) => {
               </div>
             </div>
             
-            <div class="text-right ml-4 flex items-center gap-3">
+              <div class="text-right ml-4 flex items-center gap-3">
               <div>
                 <div class="text-lg font-bold text-white">
                   {{ getSessionDuration(session) }}
@@ -402,6 +489,13 @@ const formatTime = (date: Date) => {
                   <Trash2 class="h-4 w-4" />
                 </button>
               </div>
+                <button 
+                  @click="openEdit(session)"
+                  class="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  title="Editează sesiunea"
+                >
+                  Edit
+                </button>
               <button 
                 @click="toggleSessionDetails(session.id)"
                 class="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
@@ -526,6 +620,65 @@ const formatTime = (date: Date) => {
         <Calendar class="h-16 w-16 mx-auto mb-4" />
         <p class="text-lg">Nu ai sesiuni</p>
         <p class="text-sm">Începe să lucrezi pentru a vedea istoricul</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template>
+  <!-- Edit Modal -->
+  <div v-if="isEditOpen" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div class="card-glass w-full max-w-lg p-5">
+      <h3 class="text-lg font-semibold text-white mb-4">Editează sesiunea</h3>
+      <div v-if="editingSession" class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Început</label>
+            <input type="datetime-local" v-model="editingSession.startedAtStr" class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Sfârșit</label>
+            <input type="datetime-local" v-model="editingSession.endedAtStr" class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-white/70 mb-1">Notițe</label>
+          <textarea v-model="editingSession.note" rows="2" class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white text-sm"></textarea>
+        </div>
+
+        <div v-if="editingSession.type === 'work'" class="pt-2">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-white/80 font-medium">Pauze în sesiune</span>
+            <button class="btn btn-amber px-3 py-1 text-xs" @click="addEditBreak">Adaugă pauză</button>
+          </div>
+          <div v-if="editingSession.breaks && editingSession.breaks.length > 0" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+            <div v-for="(b, idx) in editingSession.breaks" :key="b.id" class="grid grid-cols-2 gap-2 items-end bg-white/5 rounded-lg p-2">
+              <div>
+                <label class="block text-xs text-white/60 mb-1">Tip</label>
+                <select v-model="b.type" class="w-full rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white text-xs">
+                  <option value="break">Pauză</option>
+                  <option value="cigarette">Țigară</option>
+                </select>
+              </div>
+              <div class="text-right">
+                <button class="text-rose-400 text-xs" @click="removeEditBreak(idx)">Șterge</button>
+              </div>
+              <div>
+                <label class="block text-xs text-white/60 mb-1">Start</label>
+                <input type="datetime-local" v-model="b.startStr" class="w-full rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white text-xs" />
+              </div>
+              <div>
+                <label class="block text-xs text-white/60 mb-1">Stop</label>
+                <input type="datetime-local" v-model="b.endStr" class="w-full rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white text-xs" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button class="btn btn-primary flex-1" @click="saveEdit">Salvează</button>
+          <button class="btn btn-glass flex-1" @click="cancelEdit">Anulează</button>
+        </div>
       </div>
     </div>
   </div>

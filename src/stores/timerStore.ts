@@ -126,6 +126,34 @@ export const useTimerStore = defineStore('timer', {
     },
   },
   actions: {
+    updateSession(sessionId: string, updates: Partial<Session>) {
+      const idx = this.sessions.findIndex(s => s.id === sessionId)
+      if (idx === -1) return false
+      const current = this.sessions[idx]
+      const next: Session = { ...current, ...updates }
+
+      // Validate time bounds
+      if (next.endedAt !== null && next.endedAt !== undefined && next.endedAt <= next.startedAt) {
+        throw new Error('Sfârșitul trebuie să fie după început')
+      }
+
+      // Normalize breaks if provided
+      if (updates.breaks) {
+        const normalized: WorkBreak[] = (updates.breaks || []).map(b => ({
+          id: b.id || crypto.randomUUID(),
+          type: b.type,
+          startedAt: b.startedAt,
+          endedAt: b.endedAt,
+          duration: Math.max(0, (b.endedAt as number) - b.startedAt)
+        }))
+        next.breaks = normalized
+      }
+
+      // Replace and persist
+      this.sessions.splice(idx, 1, next)
+      void this.persist()
+      return true
+    },
     async load() {
       try {
         // Try to load from file first
