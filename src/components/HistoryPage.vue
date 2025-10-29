@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useTimerStore } from '../stores/timerStore'
+import { useTimerStore, type Session } from '../stores/timerStore'
 import { ArrowLeft, Trash2, Filter, Calendar, ChevronDown, ChevronUp, Clock } from 'lucide-vue-next'
 import { formatDuration } from '../utils/format'
 
@@ -13,9 +13,111 @@ const filterType = ref<'all' | 'work' | 'break' | 'cigarette'>('all')
 const showFilters = ref(false)
 const expandedSessions = ref<Set<string>>(new Set())
 
-const filteredSessions = computed(() => {
+const filteredSessions = computed<Session[]>(() => {
   if (filterType.value === 'all') return timer.sessions
   return timer.sessions.filter(session => session.type === filterType.value)
+})
+
+type MonthTotals = {
+  workMs: number
+  breakMs: number
+  cigaretteMs: number
+}
+
+type MonthGroup = {
+  key: string
+  label: string
+  sessions: Session[]
+  totals: MonthTotals
+}
+
+const getMonthKey = (ts: number): string => {
+  const d = new Date(ts)
+  const y = d.getFullYear()
+  const m = d.getMonth() + 1
+  return `${y}-${m.toString().padStart(2, '0')}`
+}
+
+const formatMonthLabel = (key: string): string => {
+  const [yStr, mStr] = key.split('-')
+  const y = Number(yStr)
+  const m = Number(mStr)
+  const date = new Date(y, m - 1, 1)
+  return date.toLocaleDateString('ro-RO', { month: 'long', year: 'numeric' })
+}
+
+const computeMonthTotals = (monthSessions: Session[]): MonthTotals => {
+  let workMs = 0
+  let breakMs = 0
+  let cigaretteMs = 0
+
+  const workSessions = monthSessions.filter(s => s.type === 'work') as Session[]
+  const standaloneBreaks = monthSessions.filter(s => s.type === 'break' || s.type === 'cigarette') as Session[]
+
+  // Work totals: sum net work time (subtract embedded breaks; fallback to overlapping standalone if no embedded)
+  for (const s of workSessions) {
+    if (!s.endedAt) continue
+    const gross = s.endedAt - s.startedAt
+    if (Array.isArray(s.breaks) && s.breaks.length > 0) {
+      const embedded = s.breaks.reduce((acc, b) => acc + (b.duration || Math.max(0, (b.endedAt || 0) - b.startedAt)), 0)
+      workMs += Math.max(0, gross - embedded)
+    } else {
+      // Legacy fallback: subtract overlapping standalone breaks in the same month
+      const overlapping = standaloneBreaks.filter(b => b.endedAt && b.startedAt < s.endedAt! && b.endedAt! > s.startedAt)
+      const overlapMs = overlapping.reduce((acc, b) => acc + Math.max(0, Math.min(b.endedAt!, s.endedAt!) - Math.max(b.startedAt, s.startedAt)), 0)
+      workMs += Math.max(0, gross - overlapMs)
+    }
+  }
+
+  // Break totals: standalone break + in-session breaks
+  const standaloneBreakMs = standaloneBreaks.reduce((acc, b) => acc + (b.endedAt ? Math.max(0, b.endedAt - b.startedAt) : 0), 0)
+  const inSessionBreakMs = workSessions.reduce((acc, s) => acc + (s.breaks?.reduce((bAcc, b) => bAcc + (b.duration || Math.max(0, (b.endedAt || 0) - b.startedAt)), 0) || 0), 0)
+  breakMs = standaloneBreakMs + inSessionBreakMs
+
+  // Cigarette totals: standalone cigarettes + in-session cigarette breaks
+  const standaloneCigaretteMs = monthSessions
+    .filter(s => s.type === 'cigarette')
+    .reduce((acc, c) => acc + (c.endedAt ? Math.max(0, c.endedAt - c.startedAt) : 0), 0)
+  const inSessionCigaretteMs = workSessions.reduce((acc, s) => acc + (s.breaks?.reduce((bAcc, b) => bAcc + (b.type === 'cigarette' ? (b.duration || Math.max(0, (b.endedAt || 0) - b.startedAt)) : 0), 0) || 0), 0)
+  cigaretteMs = standaloneCigaretteMs + inSessionCigaretteMs
+
+  return { workMs, breakMs, cigaretteMs }
+}
+
+const groupedMonths = computed<MonthGroup[]>(() => {
+  // Map of sessions to display (respects filter)
+  const displayMap = new Map<string, Session[]>()
+  for (const s of filteredSessions.value) {
+    const key = getMonthKey(s.startedAt)
+    const arr = displayMap.get(key)
+    if (arr) arr.push(s)
+    else displayMap.set(key, [s])
+  }
+
+  // Map of all sessions (for accurate per-month totals regardless of filter)
+  const allMap = new Map<string, Session[]>()
+  for (const s of timer.sessions) {
+    const key = getMonthKey(s.startedAt)
+    const arr = allMap.get(key)
+    if (arr) arr.push(s)
+    else allMap.set(key, [s])
+  }
+
+  const groups: MonthGroup[] = []
+  for (const [key, sessions] of displayMap.entries()) {
+    const sortedDisplay = [...sessions].sort((a, b) => (b.startedAt - a.startedAt))
+    const allForMonth = allMap.get(key) ?? []
+    groups.push({
+      key,
+      label: formatMonthLabel(key),
+      sessions: sortedDisplay,
+      totals: computeMonthTotals(allForMonth)
+    })
+  }
+
+  // Sort groups by year-month descending
+  groups.sort((a, b) => b.key.localeCompare(a.key))
+  return groups
 })
 
 const deleteSession = (sessionId: string) => {
@@ -63,48 +165,7 @@ const getSessionDuration = (session: any) => {
   return formatDuration(Math.max(0, gross - overlapMs))
 }
 
-const getTotalTime = (type: 'work' | 'break' | 'cigarette') => {
-  if (type === 'work') {
-    // Sum net work time (subtract embedded breaks or overlapping standalone breaks)
-    const workSessions = timer.sessions.filter(s => s.type === 'work')
-    let totalNetWorkMs = 0
-    for (const session of workSessions as any[]) {
-      if (!session.endedAt) continue
-      const gross = session.endedAt - session.startedAt
-      if (Array.isArray(session.breaks) && session.breaks.length > 0) {
-        const embedded = session.breaks.reduce((acc: number, b: any) => acc + ((b.endedAt - b.startedAt) || b.duration || 0), 0)
-        totalNetWorkMs += Math.max(0, gross - embedded)
-      } else {
-        const overlapping = timer.sessions.filter(s => (s.type === 'break' || s.type === 'cigarette') && s.endedAt && s.startedAt < session.endedAt && s.endedAt > session.startedAt)
-        const overlapMs = overlapping.reduce((acc, s) => acc + Math.max(0, Math.min(s.endedAt!, session.endedAt) - Math.max(s.startedAt, session.startedAt)), 0)
-        totalNetWorkMs += Math.max(0, gross - overlapMs)
-      }
-    }
-    return formatDuration(totalNetWorkMs)
-  } else if (type === 'break') {
-    // Include standalone break/cigarette sessions and in-session breaks
-    const standalone = timer.sessions
-      .filter(s => s.type === 'break' || s.type === 'cigarette')
-      .reduce((acc, session) => acc + (session.endedAt ? (session.endedAt - session.startedAt) : 0), 0)
-
-    const inSession = timer.sessions
-      .filter(s => s.type === 'work' && Array.isArray((s as any).breaks))
-      .reduce((acc, s: any) => acc + (s.breaks?.reduce((bAcc: number, b: any) => bAcc + (b.duration || 0), 0) || 0), 0)
-
-    return formatDuration(standalone + inSession)
-  } else {
-    // For cigarettes: include standalone sessions and in-session cigarette breaks
-    const standalone = timer.sessions
-      .filter(s => s.type === 'cigarette')
-      .reduce((acc, session) => acc + (session.endedAt ? (session.endedAt - session.startedAt) : 0), 0)
-
-    const inSession = timer.sessions
-      .filter(s => s.type === 'work' && Array.isArray((s as any).breaks))
-      .reduce((acc, s: any) => acc + (s.breaks?.reduce((bAcc: number, b: any) => bAcc + ((b.type === 'cigarette' ? (b.duration || 0) : 0)), 0) || 0), 0)
-
-    return formatDuration(standalone + inSession)
-  }
-}
+// Global totals replaced by per-month totals; keeping helper if needed in future
 
 const toggleSessionDetails = (sessionId: string) => {
   if (expandedSessions.value.has(sessionId)) {
@@ -269,19 +330,144 @@ const formatTime = (date: Date) => {
       </button>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-3 gap-4 mb-6">
-      <div class="card-glass p-4 text-center">
-        <div class="text-xl font-bold text-white">{{ getTotalTime('work') }}</div>
-        <div class="text-sm text-white/70">Total Lucru</div>
+    <!-- Monthly Groups with per-month totals (resets at each month) -->
+    <div v-for="group in groupedMonths" :key="group.key" class="mb-8">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xl font-bold text-white">{{ group.label }}</h2>
       </div>
-      <div class="card-glass p-4 text-center">
-        <div class="text-xl font-bold text-white">{{ getTotalTime('break') }}</div>
-        <div class="text-sm text-white/70">Total Pauză</div>
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <div class="card-glass p-4 text-center">
+          <div class="text-xl font-bold text-white">{{ formatDuration(group.totals.workMs) }}</div>
+          <div class="text-sm text-white/70">Total Lucru</div>
+        </div>
+        <div class="card-glass p-4 text-center">
+          <div class="text-xl font-bold text-white">{{ formatDuration(group.totals.breakMs) }}</div>
+          <div class="text-sm text-white/70">Total Pauză</div>
+        </div>
+        <div class="card-glass p-4 text-center">
+          <div class="text-xl font-bold text-orange-400">{{ formatDuration(group.totals.cigaretteMs) }}</div>
+          <div class="text-sm text-white/70">Pauze Țigară</div>
+        </div>
       </div>
-      <div class="card-glass p-4 text-center">
-        <div class="text-xl font-bold text-orange-400">{{ getTotalTime('cigarette') }}</div>
-        <div class="text-sm text-white/70">Pauze Țigară</div>
+
+      <!-- Sessions List for the month -->
+      <div class="space-y-3">
+        <div 
+          v-for="session in group.sessions" 
+          :key="session.id"
+          class="card-glass p-5"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <div 
+                  :class="[
+                    'w-3 h-3 rounded-full',
+                    session.type === 'work' ? 'bg-blue-500' : 
+                    session.type === 'break' ? 'bg-orange-500' : 'bg-red-500'
+                  ]"
+                ></div>
+                <span class="font-semibold text-white">
+                  {{ session.type === 'work' ? 'Lucru' : 
+                     session.type === 'break' ? 'Pauză' : 'Pauză țigară' }}
+                </span>
+                <span class="text-white/60 text-sm">
+                  {{ session.manual ? '(Manual)' : '' }}
+                </span>
+              </div>
+              
+              <div class="text-white/70 text-sm space-y-1">
+                <div class="flex items-center gap-2">
+                  <Calendar class="h-4 w-4" />
+                  <span>{{ formatDate(session.startedAt) }}</span>
+                </div>
+                <div v-if="session.address" class="text-xs">
+                  📍 {{ session.address }}
+                </div>
+                <div v-if="session.note" class="text-xs">
+                  📝 {{ session.note }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="text-right ml-4 flex items-center gap-3">
+              <div>
+                <div class="text-lg font-bold text-white">
+                  {{ getSessionDuration(session) }}
+                </div>
+                <button 
+                  @click="deleteSession(session.id)"
+                  class="text-red-400 hover:text-red-300 text-sm mt-1"
+                >
+                  <Trash2 class="h-4 w-4" />
+                </button>
+              </div>
+              <button 
+                @click="toggleSessionDetails(session.id)"
+                class="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <ChevronDown v-if="!expandedSessions.has(session.id)" class="h-5 w-5" />
+                <ChevronUp v-else class="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Session Details Dropdown -->
+          <div v-if="expandedSessions.has(session.id)" class="mt-4 pt-4 border-t border-white/20">
+            <div class="space-y-3">
+              <!-- Session Totals -->
+              <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="bg-blue-500/10 border border-blue-400/30 rounded-lg p-3 text-center">
+                  <div class="text-lg font-bold text-blue-400">{{ getSessionDetails(session).totals.workTime }}</div>
+                  <div class="text-xs text-white/70">Total Lucru</div>
+                </div>
+                <div class="bg-orange-500/10 border border-orange-400/30 rounded-lg p-3 text-center">
+                  <div class="text-lg font-bold text-orange-400">{{ getSessionDetails(session).totals.breakTime }}</div>
+                  <div class="text-xs text-white/70">Total Pauză</div>
+                </div>
+                <div class="bg-red-500/10 border border-red-400/30 rounded-lg p-3 text-center">
+                  <div class="text-lg font-bold text-red-400">{{ getSessionDetails(session).totals.cigaretteTime }}</div>
+                  <div class="text-xs text-white/70">Pauze Țigară</div>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2 mb-3">
+                <Clock class="h-4 w-4 text-blue-400" />
+                <span class="font-semibold text-white">Cronologia zilei {{ getSessionDetails(session).date }}</span>
+              </div>
+              
+              <div class="space-y-2">
+                <div 
+                  v-for="(event, index) in getSessionDetails(session).timeline" 
+                  :key="index"
+                  class="flex items-center gap-3 p-2 rounded-lg"
+                  :class="{
+                    // Work events - clearer blue with left accent
+                    'bg-blue-600/15 border border-blue-400/40 ring-1 ring-inset ring-blue-400/20 border-l-4 border-l-blue-400': event.type === 'work_start' || event.type === 'work_end',
+                    // Long breaks - strong amber/yellow theme
+                    'bg-amber-400/15 border border-amber-400/50 ring-1 ring-inset ring-amber-400/20 border-l-4 border-l-amber-400': (event.type === 'break_start' && event.breakType === 'break') || (event.type === 'break_end' && event.breakType === 'break'),
+                    // Cigarette breaks - strong rose/red theme
+                    'bg-rose-500/15 border border-rose-500/60 ring-1 ring-inset ring-rose-500/20 border-l-4 border-l-rose-500': (event.type === 'break_start' && event.breakType === 'cigarette') || (event.type === 'break_end' && event.breakType === 'cigarette')
+                  }"
+                >
+                  <div class="text-sm font-mono text-white/80 min-w-[60px]">
+                    {{ formatTime(event.time) }}
+                  </div>
+                  <div class="flex-1">
+                    <div class="text-sm text-white font-medium">{{ event.note }}</div>
+                    <div v-if="event.duration" class="text-xs text-white/60">
+                      Durată: {{ formatDuration(event.duration) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div v-if="getSessionDetails(session).timeline.length === 0" class="text-center py-4">
+                <div class="text-white/50 text-sm">Nu există evenimente pentru această zi</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -332,128 +518,10 @@ const formatTime = (date: Date) => {
       </div>
     </div>
 
-    <!-- Sessions List -->
-    <div class="space-y-3">
-      <div 
-        v-for="session in filteredSessions" 
-        :key="session.id"
-        class="card-glass p-5"
-      >
-        <div class="flex items-center justify-between">
-          <div class="flex-1">
-            <div class="flex items-center gap-3 mb-2">
-              <div 
-                :class="[
-                  'w-3 h-3 rounded-full',
-                  session.type === 'work' ? 'bg-blue-500' : 
-                  session.type === 'break' ? 'bg-orange-500' : 'bg-red-500'
-                ]"
-              ></div>
-              <span class="font-semibold text-white">
-                {{ session.type === 'work' ? 'Lucru' : 
-                   session.type === 'break' ? 'Pauză' : 'Pauză țigară' }}
-              </span>
-              <span class="text-white/60 text-sm">
-                {{ session.manual ? '(Manual)' : '' }}
-              </span>
-            </div>
-            
-            <div class="text-white/70 text-sm space-y-1">
-              <div class="flex items-center gap-2">
-                <Calendar class="h-4 w-4" />
-                <span>{{ formatDate(session.startedAt) }}</span>
-              </div>
-              <div v-if="session.address" class="text-xs">
-                📍 {{ session.address }}
-              </div>
-              <div v-if="session.note" class="text-xs">
-                📝 {{ session.note }}
-              </div>
-            </div>
-          </div>
-          
-          <div class="text-right ml-4 flex items-center gap-3">
-            <div>
-              <div class="text-lg font-bold text-white">
-                {{ getSessionDuration(session) }}
-              </div>
-              <button 
-                @click="deleteSession(session.id)"
-                class="text-red-400 hover:text-red-300 text-sm mt-1"
-              >
-                <Trash2 class="h-4 w-4" />
-              </button>
-            </div>
-            <button 
-              @click="toggleSessionDetails(session.id)"
-              class="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <ChevronDown v-if="!expandedSessions.has(session.id)" class="h-5 w-5" />
-              <ChevronUp v-else class="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Session Details Dropdown -->
-        <div v-if="expandedSessions.has(session.id)" class="mt-4 pt-4 border-t border-white/20">
-          <div class="space-y-3">
-            <!-- Session Totals -->
-            <div class="grid grid-cols-3 gap-3 mb-4">
-              <div class="bg-blue-500/10 border border-blue-400/30 rounded-lg p-3 text-center">
-                <div class="text-lg font-bold text-blue-400">{{ getSessionDetails(session).totals.workTime }}</div>
-                <div class="text-xs text-white/70">Total Lucru</div>
-              </div>
-              <div class="bg-orange-500/10 border border-orange-400/30 rounded-lg p-3 text-center">
-                <div class="text-lg font-bold text-orange-400">{{ getSessionDetails(session).totals.breakTime }}</div>
-                <div class="text-xs text-white/70">Total Pauză</div>
-              </div>
-              <div class="bg-red-500/10 border border-red-400/30 rounded-lg p-3 text-center">
-                <div class="text-lg font-bold text-red-400">{{ getSessionDetails(session).totals.cigaretteTime }}</div>
-                <div class="text-xs text-white/70">Pauze Țigară</div>
-              </div>
-            </div>
-            
-            <div class="flex items-center gap-2 mb-3">
-              <Clock class="h-4 w-4 text-blue-400" />
-              <span class="font-semibold text-white">Cronologia zilei {{ getSessionDetails(session).date }}</span>
-            </div>
-            
-            <div class="space-y-2">
-              <div 
-                v-for="(event, index) in getSessionDetails(session).timeline" 
-                :key="index"
-                class="flex items-center gap-3 p-2 rounded-lg"
-                :class="{
-                  // Work events - clearer blue with left accent
-                  'bg-blue-600/15 border border-blue-400/40 ring-1 ring-inset ring-blue-400/20 border-l-4 border-l-blue-400': event.type === 'work_start' || event.type === 'work_end',
-                  // Long breaks - strong amber/yellow theme
-                  'bg-amber-400/15 border border-amber-400/50 ring-1 ring-inset ring-amber-400/20 border-l-4 border-l-amber-400': (event.type === 'break_start' && event.breakType === 'break') || (event.type === 'break_end' && event.breakType === 'break'),
-                  // Cigarette breaks - strong rose/red theme
-                  'bg-rose-500/15 border border-rose-500/60 ring-1 ring-inset ring-rose-500/20 border-l-4 border-l-rose-500': (event.type === 'break_start' && event.breakType === 'cigarette') || (event.type === 'break_end' && event.breakType === 'cigarette')
-                }"
-              >
-                <div class="text-sm font-mono text-white/80 min-w-[60px]">
-                  {{ formatTime(event.time) }}
-                </div>
-                <div class="flex-1">
-                  <div class="text-sm text-white font-medium">{{ event.note }}</div>
-                  <div v-if="event.duration" class="text-xs text-white/60">
-                    Durată: {{ formatDuration(event.duration) }}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div v-if="getSessionDetails(session).timeline.length === 0" class="text-center py-4">
-              <div class="text-white/50 text-sm">Nu există evenimente pentru această zi</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- Empty State -->
-    <div v-if="filteredSessions.length === 0" class="text-center py-12">
+    <div v-if="groupedMonths.length === 0" class="text-center py-12">
       <div class="text-white/50 mb-4">
         <Calendar class="h-16 w-16 mx-auto mb-4" />
         <p class="text-lg">Nu ai sesiuni</p>
