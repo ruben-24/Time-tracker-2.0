@@ -14,6 +14,9 @@ import { setupBackgroundHandlers } from './utils/background'
 import { setupLockScreenControls, showWorkingNotification, showBreakNotification, clearLockScreenNotification } from './utils/liveActivities'
 import { checkForOtaUpdate, applyOtaUpdate, rollbackOtaUpdate, hasOtaSupport, markOtaSuccessful } from './utils/ota'
 import { Preferences } from '@capacitor/preferences'
+import { Capacitor } from '@capacitor/core'
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
+import { Share } from '@capacitor/share'
 import { ArrowLeft, Clock, Pause, Settings, X, Download, Upload, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
 
 const timer = useTimerStore()
@@ -510,6 +513,48 @@ const exportToFilesIOS = async () => {
   } catch (error) {
     console.error('Export to Files error:', error)
     alert('Eroare la salvarea în Files. Încearcă din nou.')
+  }
+}
+
+// Export with folder selection (iOS/Android) via native Share sheet
+const exportChooseLocation = async () => {
+  try {
+    const data = timer.exportData()
+    const now = new Date()
+    const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`
+    const filename = `time-tracker-export-${stamp}.json`
+
+    if (Capacitor.isNativePlatform()) {
+      await Filesystem.writeFile({
+        path: filename,
+        data,
+        directory: Directory.Cache,
+        encoding: Encoding.UTF8
+      })
+      const { uri } = await Filesystem.getUri({ path: filename, directory: Directory.Cache })
+      await Share.share({
+        title: 'Exportă date Time Tracker',
+        text: 'Salvează fișierul JSON în Files',
+        url: uri,
+        dialogTitle: 'Exportă date'
+      })
+      return
+    }
+
+    // Web fallback: trigger download
+    const blob = new Blob([data], { type: 'application/json;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.style.display = 'none'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Export choose location error:', error)
+    alert('Eroare la exportul cu selectarea locației. Încearcă din nou.')
   }
 }
 
@@ -1162,6 +1207,13 @@ const forceUpdateTotals = () => {
             title="Salvează backup-ul în aplicația Files (iOS)"
           >
             Salvează în Files (iOS)
+          </button>
+          <button
+            @click="exportChooseLocation"
+            class="btn btn-purple w-full mt-3"
+            title="Alege locația la salvare (iOS/Android)"
+          >
+            Salvează ca fișier… (Alege locația)
           </button>
         </div>
         
