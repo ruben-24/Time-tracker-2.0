@@ -129,13 +129,14 @@ export const useTimerStore = defineStore('timer', {
     updateSession(sessionId: string, updates: Partial<Session>) {
       const idx = this.sessions.findIndex(s => s.id === sessionId)
       if (idx === -1) return false
-      const current = this.sessions[idx]
+      const current = this.sessions[idx]!
       // Avoid overriding id with possibly undefined from Partial
-      const { id: _omitId, ...rest } = updates as any
-      const next: Session = { ...current, ...(rest as Partial<Session>) }
-
-      // Validate time bounds
-      if (next.endedAt !== null && next.endedAt !== undefined && next.endedAt <= next.startedAt) {
+      type SessionUpdate = Omit<Partial<Session>, 'id'>
+      const { id: _omitId, ...rest } = (updates || {}) as SessionUpdate & { id?: string }
+      // Validate time bounds against prospective values
+      const newStartedAt = (rest.startedAt as number | undefined) ?? current.startedAt
+      const newEndedAt = (rest.endedAt as number | null | undefined) ?? current.endedAt
+      if (newEndedAt !== null && newEndedAt !== undefined && newEndedAt <= newStartedAt) {
         throw new Error('Sfârșitul trebuie să fie după început')
       }
 
@@ -148,11 +149,18 @@ export const useTimerStore = defineStore('timer', {
           endedAt: b.endedAt,
           duration: Math.max(0, (b.endedAt as number) - b.startedAt)
         }))
-        next.breaks = normalized
+        current.breaks = normalized
       }
 
-      // Replace and persist
-      this.sessions.splice(idx, 1, next)
+      // Apply scalar updates
+      if (rest.type !== undefined) current.type = rest.type as SessionType
+      if (rest.startedAt !== undefined) current.startedAt = rest.startedAt as number
+      if (rest.endedAt !== undefined) current.endedAt = rest.endedAt as number | null
+      if (rest.manual !== undefined) current.manual = rest.manual as boolean
+      if (rest.note !== undefined) current.note = rest.note as string
+      if (rest.address !== undefined) current.address = rest.address as string
+
+      // Persist
       void this.persist()
       return true
     },
