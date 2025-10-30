@@ -98,7 +98,7 @@ const menuItems = [
           </button>
           
           <p class="text-white/60 text-sm text-center mt-4">
-            Time Tracker Pro v{{ appVersion }}
+            ChronoFlux v{{ appVersion }}
           </p>
         </div>
       </div>

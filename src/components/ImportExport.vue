@@ -24,7 +24,7 @@ async function exportSaveAs() {
       if (!Capacitor.isPluginAvailable('Share')) {
         // Fallback: save in Files default folder
         await timer.saveToFile(timer.$state)
-        alert('Share indisponibil. Backup salvat în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
+        alert('Share indisponibil. Backup salvat în Files → On My iPhone → ChronoFlux → TimeTracker')
         return
       }
 
@@ -36,7 +36,7 @@ async function exportSaveAs() {
       })
       const { uri } = await Filesystem.getUri({ path: filename, directory: Directory.Cache })
       await Share.share({
-        title: 'Exportă date Time Tracker',
+        title: 'Exportă date ChronoFlux',
         text: 'Salvează fișierul JSON în Files',
         files: [uri],
         dialogTitle: 'Exportă date'
@@ -58,7 +58,7 @@ async function exportSaveAs() {
     try {
       if (Capacitor.isNativePlatform()) {
         await timer.saveToFile(timer.$state)
-        alert('Nu s-a putut deschide Share. Backup salvat în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
+        alert('Nu s-a putut deschide Share. Backup salvat în Files → On My iPhone → ChronoFlux → TimeTracker')
         return
       }
     } catch {}

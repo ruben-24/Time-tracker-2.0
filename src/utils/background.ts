@@ -15,7 +15,7 @@ export async function setupBackgroundHandlers() {
           notifications: [
             {
               id: Date.now() % 2147483647,
-              title: 'Time Tracker 2.0',
+              title: 'ChronoFlux',
               body: 'Cronometrul rulează în fundal',
               schedule: { at: new Date(Date.now() + 1000) },
             },

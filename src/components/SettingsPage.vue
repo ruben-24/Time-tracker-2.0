@@ -843,7 +843,7 @@ const resetTheme = () => {
       <!-- App Info -->
       <div class="card-glass p-6">
         <div class="text-center">
-          <h3 class="text-lg font-semibold text-white mb-2">Time Tracker Pro</h3>
+          <h3 class="text-lg font-semibold text-white mb-2">ChronoFlux</h3>
           <p class="text-white/70 text-sm">Versiunea {{ appVersion }}</p>
           <p class="text-white/60 text-xs mt-2">Dezvoltat cu ❤️ pentru productivitate</p>
           <div class="mt-4 flex justify-center gap-4">

@@ -525,7 +525,7 @@ const exportAllData = async () => {
 const exportToFilesIOS = async () => {
   try {
     await timer.saveToFile(timer.$state)
-    alert('Backup salvat în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
+    alert('Backup salvat în Files → On My iPhone → ChronoFlux → TimeTracker')
   } catch (error) {
     console.error('Export to Files error:', error)
     alert('Eroare la salvarea în Files. Încearcă din nou.')
@@ -544,7 +544,7 @@ const exportChooseLocation = async () => {
       // If Share plugin is unavailable (OTA build without native plugin), fallback to saving in Files
       if (!Capacitor.isPluginAvailable('Share')) {
         await timer.saveToFile(timer.$state)
-        alert('Share indisponibil. Am salvat backup în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
+        alert('Share indisponibil. Am salvat backup în Files → On My iPhone → ChronoFlux → TimeTracker')
         return
       }
 
@@ -556,7 +556,7 @@ const exportChooseLocation = async () => {
       })
       const { uri } = await Filesystem.getUri({ path: filename, directory: Directory.Cache })
       await Share.share({
-        title: 'Exportă date Time Tracker',
+        title: 'Exportă date ChronoFlux',
         text: 'Salvează fișierul JSON în Files',
         files: [uri],
         dialogTitle: 'Exportă date'
@@ -581,7 +581,7 @@ const exportChooseLocation = async () => {
       // As a last resort on native, save to Files default folder
       if (Capacitor.isNativePlatform()) {
         await timer.saveToFile(timer.$state)
-        alert('Nu s-a putut deschide Share. Backup salvat în Files → On My iPhone → Time Tracker 2.0 → TimeTracker')
+        alert('Nu s-a putut deschide Share. Backup salvat în Files → On My iPhone → ChronoFlux → TimeTracker')
         return
       }
     } catch {}
@@ -809,7 +809,7 @@ const forceUpdateTotals = () => {
       <!-- Header with Burger Menu -->
       <header class="mb-8 flex items-center justify-between">
         <div class="flex-1">
-          <h1 class="text-3xl font-bold tracking-tight mb-1" :class="theme.settings.textStyle === 'rainbow' ? 'text-gradient-rainbow' : theme.settings.textStyle === 'glow' ? 'text-gradient-glow' : 'text-gradient'">Time Tracker Pro</h1>
+          <h1 class="text-3xl font-bold tracking-tight mb-1" :class="theme.settings.textStyle === 'rainbow' ? 'text-gradient-rainbow' : theme.settings.textStyle === 'glow' ? 'text-gradient-glow' : 'text-gradient'">ChronoFlux</h1>
           <p class="text-sm text-white/80 font-medium">Simplu. Rapid. Precis. v{{ appVersion }}</p>
           <div class="flex items-center gap-2 mt-2">
             <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
