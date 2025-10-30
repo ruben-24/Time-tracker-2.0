@@ -1,0 +1,52 @@
+name: Generate iOS App Icons
+
+on:
+  push:
+    branches: [ "**" ]
+    paths:
+      - 'resources/icon.svg'
+      - '.github/workflows/generate-ios-icons.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    branches: [ "**" ]
+    paths:
+      - 'resources/icon.svg'
+
+permissions:
+  contents: write
+
+jobs:
+  generate-ios-icons:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (npm ci)
+        run: npm ci
+
+      - name: Ensure iOS platform exists
+        run: npx cap add ios
+
+      - name: Generate iOS app icons via @capacitor/assets
+        run: npx @capacitor/assets generate --platform ios --force
+
+      - name: Commit changes (if any)
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add ios/**/Assets.xcassets/AppIcon.appiconset || true
+            git add ios/**/Assets.xcassets || true
+            git add ios || true
+            git commit -m "chore(ios): regenerate app icons from resources/icon.svg"
+            git push
+          else
+            echo "No changes to commit."
+          fi
