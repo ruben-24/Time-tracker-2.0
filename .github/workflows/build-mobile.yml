@@ -25,11 +25,17 @@ jobs:
       - name: Build web assets
         run: npm run build
 
+      - name: Prepare iOS icons/splashes
+        run: npx capacitor-assets generate --ios --iconBackgroundColor "#000000" --splashBackgroundColor "#000000"
+
       - name: Capacitor sync iOS
         run: npx cap sync ios
 
       - name: Patch iOS Info.plist (Files visibility)
         run: node scripts/patch-ios-filesharing.cjs
+
+      - name: Patch LaunchScreen.storyboard (brand label)
+        run: node scripts/patch-ios-launchscreen.cjs
 
       - name: Install CocoaPods
         run: |
