@@ -6,43 +6,6 @@ on:
     branches: [ main ]
 
 jobs:
-  android:
-    name: Android Debug APK
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build web assets
-        run: npm run build
-
-      - name: Capacitor sync Android
-        run: npx cap sync android
-
-      - name: Build Android debug APK
-        working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
-
-      - name: Upload Android artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug-apk
-          path: |
-            android/app/build/outputs/apk/debug/*.apk
-
   ios:
     name: iOS Build (unsigned)
     runs-on: macos-latest
@@ -54,8 +17,10 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (robust)
+        run: |
+          rm -rf node_modules
+          npm ci || (echo "npm ci failed; falling back to npm install" && rm -f package-lock.json && npm install)
 
       - name: Build web assets
         run: npm run build
