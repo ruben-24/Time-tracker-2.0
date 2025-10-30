@@ -7,6 +7,7 @@ import BurgerMenu from './components/BurgerMenu.vue'
 import HistoryPage from './components/HistoryPage.vue'
 import AddressesPage from './components/AddressesPage.vue'
 import FinancialInfo from './components/FinancialInfo.vue'
+import OvertimePage from './components/OvertimePage.vue'
 import AddressSelector from './components/AddressSelector.vue'
 import SettingsPage from './components/SettingsPage.vue'
 import { formatDuration } from './utils/format'
@@ -920,6 +921,9 @@ const forceUpdateTotals = () => {
       </div>
       <FinancialInfo />
     </div>
+
+    <!-- Overtime Page -->
+    <OvertimePage v-else-if="currentPage === 'overtime'" @navigate="navigateTo" />
 
 
     <!-- Manual Entry Page -->

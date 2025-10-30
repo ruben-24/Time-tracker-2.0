@@ -50,6 +50,10 @@ export interface TimerState {
   sessionWorkMs: number
   sessionBreakMs: number
   sessionCigaretteMs: number
+  // Overtime tracking
+  dailyTargetHours: number
+  overtimeGlobalOffsetMs: number
+  overtimeAdjustments: Record<string, number>
 }
 
 const STORAGE_KEY = 'tt2_state_v1'
@@ -85,6 +89,9 @@ export const useTimerStore = defineStore('timer', {
     sessionWorkMs: 0,
     sessionBreakMs: 0,
     sessionCigaretteMs: 0,
+    dailyTargetHours: 8,
+    overtimeGlobalOffsetMs: 0,
+    overtimeAdjustments: {},
   }),
   getters: {
     isRunning: (s): boolean => s.activeType !== null && s.pausedAt === null,
@@ -228,6 +235,9 @@ export const useTimerStore = defineStore('timer', {
         sessionWorkMs: this.sessionWorkMs,
         sessionBreakMs: this.sessionBreakMs,
         sessionCigaretteMs: this.sessionCigaretteMs,
+        dailyTargetHours: this.dailyTargetHours,
+        overtimeGlobalOffsetMs: this.overtimeGlobalOffsetMs,
+        overtimeAdjustments: this.overtimeAdjustments,
       }
       
       // Save to both preferences and file
@@ -592,6 +602,9 @@ export const useTimerStore = defineStore('timer', {
           sessionWorkMs: this.sessionWorkMs,
           sessionBreakMs: this.sessionBreakMs,
           sessionCigaretteMs: this.sessionCigaretteMs,
+          dailyTargetHours: this.dailyTargetHours,
+          overtimeGlobalOffsetMs: this.overtimeGlobalOffsetMs,
+          overtimeAdjustments: this.overtimeAdjustments,
           // Address data
           defaultAddress: this.defaultAddress,
           customAddress: this.customAddress,
@@ -634,6 +647,9 @@ export const useTimerStore = defineStore('timer', {
         if ((state as any).sessionWorkMs !== undefined) this.sessionWorkMs = (state as any).sessionWorkMs
         if ((state as any).sessionBreakMs !== undefined) this.sessionBreakMs = (state as any).sessionBreakMs
         if ((state as any).sessionCigaretteMs !== undefined) this.sessionCigaretteMs = (state as any).sessionCigaretteMs
+        if ((state as any).dailyTargetHours !== undefined) this.dailyTargetHours = (state as any).dailyTargetHours
+        if ((state as any).overtimeGlobalOffsetMs !== undefined) this.overtimeGlobalOffsetMs = (state as any).overtimeGlobalOffsetMs
+        if ((state as any).overtimeAdjustments !== undefined) this.overtimeAdjustments = (state as any).overtimeAdjustments
         
         // Import address data
         if ((state as any).defaultAddress !== undefined) this.defaultAddress = (state as any).defaultAddress
@@ -653,6 +669,26 @@ export const useTimerStore = defineStore('timer', {
         const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută'
         throw new Error(`Eroare la importarea datelor: ${errorMessage}`)
       }
+    },
+    // Overtime helpers
+    setDailyTargetHours(hours: number) {
+      const clamped = Math.max(0, Math.min(16, Math.floor(hours)))
+      this.dailyTargetHours = clamped
+      void this.persist()
+    },
+    setOvertimeGlobalOffset(ms: number) {
+      this.overtimeGlobalOffsetMs = Math.trunc(ms)
+      void this.persist()
+    },
+    setOvertimeAdjustment(dateStr: string, ms: number) {
+      // dateStr format: YYYY-MM-DD
+      if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(dateStr)) return
+      const adj = Math.trunc(ms)
+      const copy = { ...(this.overtimeAdjustments || {}) }
+      if (!adj) delete copy[dateStr]
+      else copy[dateStr] = adj
+      this.overtimeAdjustments = copy
+      void this.persist()
     },
 
     // File system methods
