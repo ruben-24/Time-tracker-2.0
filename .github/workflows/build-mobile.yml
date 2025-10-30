@@ -28,6 +28,10 @@ jobs:
       - name: Prepare iOS icons/splashes
         run: npx capacitor-assets generate --ios --iconBackgroundColor "#000000" --splashBackgroundColor "#000000"
 
+      - name: Add iOS platform if missing
+        run: |
+          test -d ios || npx cap add ios
+
       - name: Capacitor sync iOS
         run: npx cap sync ios
 
