@@ -1,0 +1,22 @@
+{
+  "ios": {
+    "icon": {
+      "sources": ["resources/icon.svg"],
+      "background": "#ffffff"
+    },
+    "splash": {
+      "sources": ["resources/icon.svg"],
+      "backgroundColor": "#ffffff"
+    }
+  },
+  "android": {
+    "icon": {
+      "sources": ["resources/icon.svg"],
+      "background": "#ffffff"
+    },
+    "splash": {
+      "sources": ["resources/icon.svg"],
+      "backgroundColor": "#ffffff"
+    }
+  }
+}

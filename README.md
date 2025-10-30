@@ -26,6 +26,13 @@ npm run dev
 npm run build
 ```
 
+## Comenzi Utile
+```bash
+npm run generate:icons  # Generează iconițe iOS din resources/icon.svg
+npm run sync:ios        # Sincronizează Capacitor cu iOS
+npm run version:patch   # Incrementează versiunea aplicației
+```
+
 ## iOS (sideload)
 1. Build web:
    ```bash
@@ -40,6 +47,14 @@ npm run build
    npx cap open ios
    ```
 4. Configurează semnarea în Xcode și rulează pe dispozitiv.
+
+### Schimbarea iconiței aplicației
+Pentru a schimba iconița aplicației iOS **fără acces la Xcode sau macOS** (direct din GitHub), consultă ghidul detaliat: [SCHIMBARE-ICONITA.md](./SCHIMBARE-ICONITA.md)
+
+**Proces rapid:**
+1. Înlocuiește `resources/icon.svg` cu noua ta iconița SVG pe GitHub
+2. GitHub Actions va genera automat toate dimensiunile necesare pentru iOS
+3. Modificările vor fi commit-ate automat înapoi în repository
 
 ## Import/Export
 - Export: butonul "Exportă date" generează JSON.

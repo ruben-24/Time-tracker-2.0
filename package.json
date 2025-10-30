@@ -7,7 +7,9 @@
     "build": "vue-tsc -b && vite build",
     "postsync:ios": "node scripts/patch-ios-filesharing.cjs",
     "version:patch": "node scripts/increment-version.js",
-    "precommit": "npm run version:patch"
+    "precommit": "npm run version:patch",
+    "generate:icons": "npx capacitor-assets generate --ios",
+    "sync:ios": "npx cap sync ios && npm run postsync:ios"
   },
   "dependencies": {
     "@capacitor/app": "^7.1.0",
