@@ -28,6 +28,25 @@ body {
   touch-action: manipulation; /* Prevent double-tap zoom */
 }
 
+/* AMOLED override: force pure black background across pages */
+body.theme-amoled {
+  background: #000 !important;
+  animation: none !important;
+}
+
+body.theme-amoled .min-h-screen {
+  background: #000 !important;
+  animation: none !important;
+}
+
+body.theme-amoled .card-glass,
+body.theme-amoled .glass-enhanced,
+body.theme-amoled .glass-morphism {
+  background: #000 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
+}
+
 /* Apply background to all pages */
 .min-h-screen {
   background: 

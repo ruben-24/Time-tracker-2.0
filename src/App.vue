@@ -146,6 +146,20 @@ watch(() => theme.settings.backgroundColors, (newColors) => {
   root.style.setProperty('--bg-accent', newColors.accent)
 }, { deep: true, immediate: true })
 
+// Apply AMOLED theme (pure black) to body when selected
+const isAmoled = computed(() => {
+  const s = theme.settings
+  const solid = s.backgroundStyle === 'solid'
+  const p = (s.backgroundColors.primary || '').toLowerCase()
+  const se = (s.backgroundColors.secondary || '').toLowerCase()
+  const a = (s.backgroundColors.accent || '').toLowerCase()
+  return solid && p === '#000000' && se === '#000000' && a === '#000000'
+})
+
+watch(isAmoled, (enabled) => {
+  try { document.body.classList.toggle('theme-amoled', !!enabled) } catch {}
+}, { immediate: true })
+
 // Watch for button color changes
 watch(() => theme.settings.buttonColors, (newColors) => {
   const root = document.documentElement
@@ -156,6 +170,7 @@ watch(() => theme.settings.buttonColors, (newColors) => {
 
 onBeforeUnmount(() => {
   if (ticker) window.clearInterval(ticker)
+  try { document.body.classList.remove('theme-amoled') } catch {}
 })
 
 const elapsed = computed(() => {
