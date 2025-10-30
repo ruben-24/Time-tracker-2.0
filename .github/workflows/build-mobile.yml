@@ -63,6 +63,9 @@ jobs:
       - name: Capacitor sync iOS
         run: npx cap sync ios
 
+      - name: Patch iOS Info.plist (Files visibility)
+        run: node scripts/patch-ios-filesharing.cjs
+
       - name: Install CocoaPods
         run: |
           cd ios/App
