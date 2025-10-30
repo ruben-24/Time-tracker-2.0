@@ -1,8 +1,10 @@
 import { createApp } from 'vue'
+import { SplashScreen } from '@capacitor/splash-screen'
 import { createPinia } from 'pinia'
 import './style.css'
 import App from './App.vue'
 
+try { SplashScreen.hide() } catch {}
 const app = createApp(App)
 app.use(createPinia())
 app.mount('#app')
