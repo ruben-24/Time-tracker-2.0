@@ -22,8 +22,10 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install deps
-        run: npm ci
+      - name: Install deps (with fallback for npm optional deps bug)
+        run: |
+          rm -rf node_modules
+          npm ci || (echo "npm ci failed; falling back to npm install without lock" && rm -f package-lock.json && npm install)
 
       - name: Build app
         run: npm run build
