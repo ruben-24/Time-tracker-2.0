@@ -83,10 +83,27 @@ jobs:
           cp -R "$APP_PATH" build-ios/
           echo "Copied $APP_PATH to build-ios/"
 
+      - name: Package unsigned IPA
+        run: |
+          set -e
+          APP_PATH=$(ls -d build-ios/*.app | head -n1)
+          [ -d "$APP_PATH" ] || (echo "No .app for packaging" && exit 1)
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -qry build-ios/app-unsigned.ipa Payload
+          rm -rf Payload
+          echo "IPA created at build-ios/app-unsigned.ipa"
+
       - name: Upload iOS artifact (.app, unsigned)
         uses: actions/upload-artifact@v4
         with:
           name: ios-app-unsigned
           path: build-ios/*.app
+
+      - name: Upload iOS IPA (unsigned)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa-unsigned
+          path: build-ios/*.ipa
 
       # NOTE: For a signed IPA, add Apple certs/profiles as GitHub Secrets and run archive/export.
