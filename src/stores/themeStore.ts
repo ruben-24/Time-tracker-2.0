@@ -42,6 +42,11 @@ export const useThemeStore = defineStore('theme', () => {
 
   const backgroundPresets = ref([
     {
+      name: 'AMOLED',
+      colors: { primary: '#000000', secondary: '#000000', accent: '#000000' },
+      style: 'solid'
+    },
+    {
       name: 'Roșu Aprins',
       colors: { primary: '#ff0000', secondary: '#ff0000', accent: '#ff0000' },
       style: 'solid'
