@@ -36,8 +36,10 @@ const totalBreakCount = computed(() => {
   return standalone + inSession
 })
 
-// App version (default shown until Preferences load)
-const appVersion = ref('2.0.0')
+// App version (default from build-time, can be overridden by OTA)
+// @ts-ignore - injected by Vite
+const DEFAULT_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '2.0.0'
+const appVersion = ref(DEFAULT_VERSION)
 const latestVersion = ref<string | null>(null)
 const updateManifestUrl = 'https://time-tracker-e36f1.web.app/updates/stable/manifest.json'
 const isUpdateAvailable = ref(false)
@@ -100,7 +102,8 @@ onMounted(async () => {
       const pref = await Preferences.get({ key: 'app_version' })
       if (pref.value) appVersion.value = pref.value
     } catch {}
-    if (appVersion.value === '2.0.0') {
+    // If no version was loaded from Preferences, try localStorage
+    if (appVersion.value === DEFAULT_VERSION) {
       try {
         const stored = localStorage.getItem('app_version')
         if (stored) appVersion.value = stored
