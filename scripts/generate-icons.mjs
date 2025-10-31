@@ -13,7 +13,7 @@ async function ensureDir(filePath) {
 async function createIcon(target, size) {
   await ensureDir(target);
   await sharp(source)
-    .resize(size, size, { fit: 'contain', background })
+    .resize(size, size, { fit: 'cover', position: 'centre', background })
     .png({ compressionLevel: 9 })
     .toFile(target);
 }
@@ -32,7 +32,7 @@ async function writeSvg(target, buffer) {
 
 async function main() {
   const master = await sharp(source)
-    .resize(1024, 1024, { fit: 'contain', background })
+    .resize(1024, 1024, { fit: 'cover', position: 'centre', background })
     .png({ compressionLevel: 9 })
     .toBuffer();
 
