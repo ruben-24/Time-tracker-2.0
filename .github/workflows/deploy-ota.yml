@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+      - 'ota-v*'
   workflow_dispatch:
 
 jobs:
@@ -35,15 +36,17 @@ jobs:
           HOST: https://time-tracker-e36f1.web.app
         run: |
           VERSION="${GITHUB_REF_NAME:-v0.0.0}"
+          # Remove 'ota-' prefix if present (e.g., ota-v2.3.38 -> v2.3.38)
+          VERSION_CLEAN="${VERSION#ota-}"
           mkdir -p hosting/updates/stable
           cd dist
-          zip -r ../hosting/updates/stable/app-${VERSION}.zip .
+          zip -r ../hosting/updates/stable/app-${VERSION_CLEAN}.zip .
           cd ..
-          SHA256=$(shasum -a 256 hosting/updates/stable/app-${VERSION}.zip | awk '{print $1}')
+          SHA256=$(shasum -a 256 hosting/updates/stable/app-${VERSION_CLEAN}.zip | awk '{print $1}')
           cat > hosting/updates/stable/manifest.json <<EOF
           {
-            "version": "${VERSION}",
-            "url": "${HOST}/updates/stable/app-${VERSION}.zip",
+            "version": "${VERSION_CLEAN}",
+            "url": "${HOST}/updates/stable/app-${VERSION_CLEAN}.zip",
             "sha256": "${SHA256}",
             "createdAt": "$(date -u +%FT%TZ)"
           }
