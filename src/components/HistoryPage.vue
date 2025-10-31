@@ -474,7 +474,7 @@ const cancelEdit = () => {
               <div class="text-sm text-white/70">Total Pauză</div>
             </div>
             <div class="card-glass p-4 text-center">
-              <div class="text-xl font-bold text-orange-400">{{ formatDuration(group.totals.cigaretteMs) }}</div>
+              <div class="text-xl font-bold text-white">{{ formatDuration(group.totals.cigaretteMs) }}</div>
               <div class="text-sm text-white/70">Pauze Țigară</div>
             </div>
           </div>
@@ -551,16 +551,16 @@ const cancelEdit = () => {
               <div v-if="expandedSessions.has(session.id)" class="mt-4 pt-4 border-t border-white/20">
                 <div class="space-y-3">
                   <div class="grid grid-cols-3 gap-3 mb-4">
-                    <div class="bg-blue-500/10 border border-blue-400/30 rounded-lg p-3 text-center">
-                      <div class="text-lg font-bold text-blue-400">{{ getSessionDetails(session).totals.workTime }}</div>
+                    <div class="card-glass p-3 text-center">
+                      <div class="text-lg font-bold text-white">{{ getSessionDetails(session).totals.workTime }}</div>
                       <div class="text-xs text-white/70">Total Lucru</div>
                     </div>
-                    <div class="bg-orange-500/10 border border-orange-400/30 rounded-lg p-3 text-center">
-                      <div class="text-lg font-bold text-orange-400">{{ getSessionDetails(session).totals.breakTime }}</div>
+                    <div class="card-glass p-3 text-center">
+                      <div class="text-lg font-bold text-white">{{ getSessionDetails(session).totals.breakTime }}</div>
                       <div class="text-xs text-white/70">Total Pauză</div>
                     </div>
-                    <div class="bg-red-500/10 border border-red-400/30 rounded-lg p-3 text-center">
-                      <div class="text-lg font-bold text-red-400">{{ getSessionDetails(session).totals.cigaretteTime }}</div>
+                    <div class="card-glass p-3 text-center">
+                      <div class="text-lg font-bold text-white">{{ getSessionDetails(session).totals.cigaretteTime }}</div>
                       <div class="text-xs text-white/70">Pauze Țigară</div>
                     </div>
                   </div>
