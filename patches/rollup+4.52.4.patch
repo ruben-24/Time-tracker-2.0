@@ -1,0 +1,38 @@
+diff --git a/node_modules/rollup/dist/native.js b/node_modules/rollup/dist/native.js
+index c5a65c3..071fc8d 100644
+--- a/node_modules/rollup/dist/native.js
++++ b/node_modules/rollup/dist/native.js
+@@ -60,6 +60,7 @@ const msvcLinkFilenameByArch = {
+ 
+ const packageBase = getPackageBase();
+ const localName = `./rollup.${packageBase}.node`;
++const wasmFallbackId = '@rollup/wasm-node/dist/native.js';
+ const requireWithFriendlyError = id => {
+ 	try {
+ 		return require(id);
+@@ -89,9 +90,22 @@ const requireWithFriendlyError = id => {
+ 	}
+ };
+ 
+-const { parse, parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 } = requireWithFriendlyError(
+-	existsSync(path.join(__dirname, localName)) ? localName : `@rollup/rollup-${packageBase}`
+-);
++const nativeModuleId = existsSync(path.join(__dirname, localName)) ? localName : `@rollup/rollup-${packageBase}`;
++const bindings = loadBindings(nativeModuleId);
++
++const { parse, parseAsync, xxhashBase64Url, xxhashBase36, xxhashBase16 } = bindings;
++
++function loadBindings(id) {
++	try {
++		return requireWithFriendlyError(id);
++	} catch (error) {
++		try {
++			return require(wasmFallbackId);
++		} catch {
++			throw error;
++		}
++	}
++}
+ 
+ function getPackageBase() {
+ 	const imported = bindingsByPlatformAndArch[platform]?.[arch];
