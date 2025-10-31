@@ -26,7 +26,9 @@ jobs:
       - name: Install deps (with fallback for npm optional deps bug)
         run: |
           rm -rf node_modules package-lock.json
-          npm install
+          npm install --force
+          # Ensure rollup native binaries are installed
+          npm install @rollup/rollup-linux-x64-gnu @rollup/rollup-darwin-arm64 @rollup/rollup-darwin-x64 @rollup/rollup-win32-x64-msvc --save-dev --force || true
 
       - name: Build app
         run: npm run build
