@@ -57,6 +57,9 @@ const manualWorkDurationMinutes = ref<number>(0)
 const manualWorkEndDate = ref<string>(todayDate)
 const manualWorkEndTime = ref<string>('17:00')
 const manualWorkNote = ref('')
+const minusAdjustmentDate = ref<string>(todayDate)
+const minusAdjustmentHours = ref<number>(0)
+const minusAdjustmentMinutes = ref<number>(15)
 
 const sessionBreakDate = ref<string>(todayDate)
 const sessionBreakStartTime = ref<string>('12:00')
@@ -139,6 +142,12 @@ function sanitizeTimeInput(raw: string): string {
 const manualWorkDurationTotalMinutes = computed(() => {
   const hours = Number.isFinite(manualWorkDurationHours.value) ? manualWorkDurationHours.value : 0
   const minutes = Number.isFinite(manualWorkDurationMinutes.value) ? manualWorkDurationMinutes.value : 0
+  return clampMinutes(hours * 60 + minutes)
+})
+
+const minusAdjustmentTotalMinutes = computed(() => {
+  const hours = Number.isFinite(minusAdjustmentHours.value) ? minusAdjustmentHours.value : 0
+  const minutes = Number.isFinite(minusAdjustmentMinutes.value) ? minusAdjustmentMinutes.value : 0
   return clampMinutes(hours * 60 + minutes)
 })
 
@@ -255,6 +264,14 @@ const adjustStandaloneBreakDuration = (deltaMinutes: number) => {
   standaloneBreakDurationMinutes.value = total
 }
 
+const canApplyMinusAdjustment = computed(() => {
+  return (
+    minusAdjustmentDate.value.length === 10 &&
+    /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(minusAdjustmentDate.value) &&
+    minusAdjustmentTotalMinutes.value > 0
+  )
+})
+
 const timeRefs = [
   manualWorkStartTime,
   manualWorkEndTime,
@@ -272,6 +289,25 @@ timeRefs.forEach(refValue => {
     }
   })
 })
+
+const applyMinusAdjustment = () => {
+  if (!canApplyMinusAdjustment.value) {
+    alert('Selectează o dată și introdu cel puțin un minut.')
+    return
+  }
+
+  const dateKey = minusAdjustmentDate.value
+  const totalMs = minusAdjustmentTotalMinutes.value * MS_PER_MINUTE
+  const existing = timer.overtimeAdjustments?.[dateKey] ?? 0
+  const newValue = existing - totalMs
+
+  timer.setOvertimeAdjustment(dateKey, newValue)
+
+  alert(`Ajustare aplicată: -${formatDuration(totalMs)} pentru ${dateKey}.`)
+
+  minusAdjustmentHours.value = 0
+  minusAdjustmentMinutes.value = 0
+}
 
 watch(manualWorkDate, (newVal, oldVal) => {
   if (manualWorkMode.value === 'duration') {
@@ -1720,6 +1756,54 @@ const forceUpdateTotals = () => {
               Adaugă Șablon: Concediu (8h)
             </button>
           </div>
+
+            <div class="mt-6 border-t border-white/20 pt-4">
+              <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
+                <Clock class="h-4 w-4 text-emerald-400" />
+                Ajustare Ore în Minus
+              </h3>
+              <p class="text-xs text-white/60 mb-3">
+                Scade ore din calculele de ore suplimentare pentru o anumită zi (ex: plecări mai devreme).
+              </p>
+              <div class="grid gap-3 sm:grid-cols-3">
+                <div>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data</label>
+                  <input
+                    v-model="minusAdjustmentDate"
+                    type="date"
+                    class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-emerald-400 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ore</label>
+                  <input
+                    v-model.number="minusAdjustmentHours"
+                    type="number"
+                    min="0"
+                    max="12"
+                    class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-emerald-400 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Minute</label>
+                  <input
+                    v-model.number="minusAdjustmentMinutes"
+                    type="number"
+                    min="0"
+                    max="59"
+                    step="5"
+                    class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-emerald-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <button
+                class="btn btn-emerald w-full mt-3"
+                :disabled="!canApplyMinusAdjustment"
+                @click="applyMinusAdjustment"
+              >
+                Aplică ajustare (-{{ formatDuration(minusAdjustmentTotalMinutes * MS_PER_MINUTE) }})
+              </button>
+            </div>
 
           <!-- Vacation range creator -->
           <div class="mt-4">
