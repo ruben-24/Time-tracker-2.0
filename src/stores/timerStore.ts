@@ -54,6 +54,7 @@ export interface TimerState {
   dailyTargetHours: number
   overtimeGlobalOffsetMs: number
   overtimeAdjustments: Record<string, number>
+  overtimeTargetOverrides: Record<string, number>
 }
 
 const STORAGE_KEY = 'tt2_state_v1'
@@ -91,7 +92,8 @@ export const useTimerStore = defineStore('timer', {
     sessionCigaretteMs: 0,
     dailyTargetHours: 8,
     overtimeGlobalOffsetMs: 0,
-    overtimeAdjustments: {},
+      overtimeAdjustments: {},
+      overtimeTargetOverrides: {},
   }),
   getters: {
     isRunning: (s): boolean => s.activeType !== null && s.pausedAt === null,
@@ -238,6 +240,7 @@ export const useTimerStore = defineStore('timer', {
         dailyTargetHours: this.dailyTargetHours,
         overtimeGlobalOffsetMs: this.overtimeGlobalOffsetMs,
         overtimeAdjustments: this.overtimeAdjustments,
+        overtimeTargetOverrides: this.overtimeTargetOverrides,
       }
       
       // Save to both preferences and file
@@ -604,7 +607,8 @@ export const useTimerStore = defineStore('timer', {
           sessionCigaretteMs: this.sessionCigaretteMs,
           dailyTargetHours: this.dailyTargetHours,
           overtimeGlobalOffsetMs: this.overtimeGlobalOffsetMs,
-          overtimeAdjustments: this.overtimeAdjustments,
+            overtimeAdjustments: this.overtimeAdjustments,
+            overtimeTargetOverrides: this.overtimeTargetOverrides,
           // Address data
           defaultAddress: this.defaultAddress,
           customAddress: this.customAddress,
@@ -649,7 +653,8 @@ export const useTimerStore = defineStore('timer', {
         if ((state as any).sessionCigaretteMs !== undefined) this.sessionCigaretteMs = (state as any).sessionCigaretteMs
         if ((state as any).dailyTargetHours !== undefined) this.dailyTargetHours = (state as any).dailyTargetHours
         if ((state as any).overtimeGlobalOffsetMs !== undefined) this.overtimeGlobalOffsetMs = (state as any).overtimeGlobalOffsetMs
-        if ((state as any).overtimeAdjustments !== undefined) this.overtimeAdjustments = (state as any).overtimeAdjustments
+          if ((state as any).overtimeAdjustments !== undefined) this.overtimeAdjustments = (state as any).overtimeAdjustments
+          if ((state as any).overtimeTargetOverrides !== undefined) this.overtimeTargetOverrides = (state as any).overtimeTargetOverrides
         
         // Import address data
         if ((state as any).defaultAddress !== undefined) this.defaultAddress = (state as any).defaultAddress
@@ -690,6 +695,17 @@ export const useTimerStore = defineStore('timer', {
       this.overtimeAdjustments = copy
       void this.persist()
     },
+      setOvertimeTargetOverride(dateStr: string, ms: number | null) {
+        if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(dateStr)) return
+        const copy = { ...(this.overtimeTargetOverrides || {}) }
+        if (ms === null || Number.isNaN(ms) || ms < 0) {
+          delete copy[dateStr]
+        } else {
+          copy[dateStr] = Math.trunc(ms)
+        }
+        this.overtimeTargetOverrides = copy
+        void this.persist()
+      },
 
     // File system methods
     async saveToFile(data: TimerState) {

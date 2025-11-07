@@ -8,6 +8,7 @@ const emit = defineEmits<{ navigate: [page: string] }>()
 const timer = useTimerStore()
 
 const dailyTargetMs = computed(() => Math.max(0, timer.dailyTargetHours) * 3600_000)
+const targetOverrides = computed(() => timer.overtimeTargetOverrides || {})
 
 const toDateKey = (ts: number): string => {
   const d = new Date(ts)
@@ -47,16 +48,18 @@ const dailyNetMs = computed<Record<string, number>>(() => {
 const allDates = computed<string[]>(() => {
   const set = new Set<string>(Object.keys(dailyNetMs.value))
   Object.keys(timer.overtimeAdjustments || {}).forEach(k => set.add(k))
+  Object.keys(targetOverrides.value || {}).forEach(k => set.add(k))
   return Array.from(set).sort((a, b) => b.localeCompare(a))
 })
 
 const dailyOvertime = computed(() => {
-  const res: Array<{ date: string, net: number, overtime: number, adjustment: number }> = []
+  const res: Array<{ date: string, net: number, target: number, overtime: number, adjustment: number }> = []
   for (const date of allDates.value) {
     const net = dailyNetMs.value[date] || 0
     const adj = (timer.overtimeAdjustments || {})[date] || 0
-    const overtime = (net - dailyTargetMs.value) + adj
-    res.push({ date, net, overtime, adjustment: adj })
+    const target = targetOverrides.value[date] ?? dailyTargetMs.value
+    const overtime = (net - target) + adj
+    res.push({ date, net, target, overtime, adjustment: adj })
   }
   return res
 })
@@ -76,6 +79,29 @@ const addAdjustment = () => {
   const existing = (timer.overtimeAdjustments || {})[adjDate.value] || 0
   timer.setOvertimeAdjustment(adjDate.value, existing + signedMs)
   adjHours.value = 0; adjMinutes.value = 0
+}
+
+const targetOverrideDate = ref<string>('')
+const targetOverrideHours = ref<number>(0)
+const targetOverrideMinutes = ref<number>(0)
+const targetOverrideTotalMs = computed(() => {
+  const minutes = ((targetOverrideHours.value || 0) * 60) + (targetOverrideMinutes.value || 0)
+  return Math.max(0, minutes * 60_000)
+})
+const canSaveTargetOverride = computed(() =>
+  !!targetOverrideDate.value &&
+  /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(targetOverrideDate.value)
+)
+const saveTargetOverride = () => {
+  if (!canSaveTargetOverride.value) {
+    alert('Alege o dată pentru ținta personalizată.')
+    return
+  }
+  timer.setOvertimeTargetOverride(targetOverrideDate.value, targetOverrideTotalMs.value)
+  alert(`Ținta pentru ${targetOverrideDate.value} a fost setată la ${formatDuration(targetOverrideTotalMs.value)}.`)
+}
+const clearTargetOverride = (date: string) => {
+  timer.setOvertimeTargetOverride(date, null)
 }
 
 const targetInput = ref<number>(timer.dailyTargetHours)
@@ -146,30 +172,61 @@ const saveOffset = () => {
       </div>
     </div>
 
-    <!-- Add manual adjustment -->
-    <div class="card-glass p-4 mb-6">
-      <div class="text-white font-semibold mb-3">Adaugă ajustare manuală</div>
-      <div class="flex flex-wrap items-center gap-2">
-        <input type="date" v-model="adjDate" class="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" />
-        <select v-model="adjSign" class="rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white">
-          <option value="+">+</option>
-          <option value="-">-</option>
-        </select>
-        <input type="number" min="0" v-model.number="adjHours" class="w-20 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="ore" />
-        <input type="number" min="0" max="59" v-model.number="adjMinutes" class="w-24 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="minute" />
-        <button class="btn btn-emerald" @click="addAdjustment"><Plus class="h-4 w-4" />Adaugă</button>
+      <div class="grid gap-4 mb-6 md:grid-cols-2">
+        <!-- Add manual adjustment -->
+        <div class="card-glass p-4">
+          <div class="text-white font-semibold mb-3">Adaugă ajustare manuală</div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="date" v-model="adjDate" class="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" />
+            <select v-model="adjSign" class="rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white">
+              <option value="+">+</option>
+              <option value="-">-</option>
+            </select>
+            <input type="number" min="0" v-model.number="adjHours" class="w-20 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="ore" />
+            <input type="number" min="0" max="59" v-model.number="adjMinutes" class="w-24 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="minute" />
+            <button class="btn btn-emerald" @click="addAdjustment"><Plus class="h-4 w-4" />Adaugă</button>
+          </div>
+        </div>
+
+        <!-- Target override -->
+        <div class="card-glass p-4">
+          <div class="text-white font-semibold mb-3">Țintă personalizată pe zi</div>
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="date" v-model="targetOverrideDate" class="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" />
+            <input type="number" min="0" v-model.number="targetOverrideHours" class="w-20 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="ore" />
+            <input type="number" min="0" max="59" v-model.number="targetOverrideMinutes" class="w-24 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="minute" />
+            <button class="btn btn-primary" :disabled="!canSaveTargetOverride" @click="saveTargetOverride">
+              Salvează ({{ formatDuration(targetOverrideTotalMs) }})
+            </button>
+          </div>
+          <p class="text-xs text-white/60 mt-2">
+            Pentru zile fără cerință, lasă orele/minutele la 0 și salvează.
+          </p>
+        </div>
       </div>
-    </div>
 
     <!-- Daily list -->
     <div class="space-y-3">
-      <div v-for="d in dailyOvertime" :key="d.date" class="card-glass p-4 flex items-center justify-between">
+        <div v-for="d in dailyOvertime" :key="d.date" class="card-glass p-4 flex items-center justify-between gap-4">
         <div>
           <div class="text-white font-semibold">{{ new Date(d.date).toLocaleDateString('ro-RO') }}</div>
-          <div class="text-xs text-white/60">Net lucru: {{ formatDuration(d.net) }} | Țintă: {{ formatDuration(dailyTargetMs) }}</div>
+            <div class="text-xs text-white/60">
+              Net lucru: {{ formatDuration(d.net) }} |
+              Țintă: {{ formatDuration(d.target) }}
+              <span v-if="targetOverrides[d.date]" class="text-emerald-300 ml-1">(personalizată)</span>
+            </div>
           <div v-if="d.adjustment" class="text-xs text-white/60">Ajustare: {{ signed(d.adjustment) }}</div>
         </div>
-        <div :class="d.overtime >= 0 ? 'text-emerald-400' : 'text-rose-400'" class="text-lg font-bold">{{ signed(d.overtime) }}</div>
+          <div class="flex items-center gap-3">
+            <div :class="d.overtime >= 0 ? 'text-emerald-400' : 'text-rose-400'" class="text-lg font-bold">{{ signed(d.overtime) }}</div>
+            <button
+              v-if="targetOverrides[d.date]"
+              class="btn btn-rose text-xs px-3 py-1"
+              @click="clearTargetOverride(d.date)"
+            >
+              Resetează ținta
+            </button>
+          </div>
       </div>
       <div v-if="dailyOvertime.length === 0" class="text-center text-white/60 py-8">Nu există încă zile calculate.</div>
     </div>
