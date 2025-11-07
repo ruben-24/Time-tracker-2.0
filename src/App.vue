@@ -126,6 +126,16 @@ function clampMinutes(value: number, max = Infinity) {
   return clamped
 }
 
+function sanitizeTimeInput(raw: string): string {
+  if (!raw) return ''
+  const digitsOnly = raw.replace(/[^\d]/g, '').slice(0, 4)
+  if (digitsOnly.length <= 2) return digitsOnly
+  const hours = digitsOnly.slice(0, 2)
+  const minutes = digitsOnly.slice(2)
+  if (!minutes.length) return `${hours}:`
+  return `${hours}:${minutes}`
+}
+
 const manualWorkDurationTotalMinutes = computed(() => {
   const hours = Number.isFinite(manualWorkDurationHours.value) ? manualWorkDurationHours.value : 0
   const minutes = Number.isFinite(manualWorkDurationMinutes.value) ? manualWorkDurationMinutes.value : 0
@@ -244,6 +254,24 @@ const adjustStandaloneBreakDuration = (deltaMinutes: number) => {
   const total = clampMinutes(standaloneBreakDurationMinutes.value + deltaMinutes)
   standaloneBreakDurationMinutes.value = total
 }
+
+const timeRefs = [
+  manualWorkStartTime,
+  manualWorkEndTime,
+  sessionBreakStartTime,
+  sessionBreakEndTime,
+  standaloneBreakStartTime,
+  standaloneBreakEndTime,
+]
+
+timeRefs.forEach(refValue => {
+  watch(refValue, (value) => {
+    const sanitized = sanitizeTimeInput(value)
+    if (sanitized !== value) {
+      refValue.value = sanitized
+    }
+  })
+})
 
 watch(manualWorkDate, (newVal, oldVal) => {
   if (manualWorkMode.value === 'duration') {
@@ -1251,34 +1279,36 @@ const forceUpdateTotals = () => {
       
         <div class="space-y-6">
           <!-- Integrated Work Session with Breaks -->
-          <div class="card-glass p-6">
-            <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <div class="card-glass p-6">
+              <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Clock class="h-5 w-5 text-blue-400" />
               Sesiune de Lucru cu Pauze
             </h2>
 
-            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="grid gap-3 sm:grid-cols-2">
               <div>
-                <label class="block text-sm font-medium text-white/80 mb-2">Data sesiune</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data sesiune</label>
                 <input
                   v-model="manualWorkDate"
                   type="date"
-                  class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+                    class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-white/80 mb-2">Ora început</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora început</label>
                 <input
                   v-model="manualWorkStartTime"
-                  type="time"
-                  step="60"
-                  class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="5"
+                    placeholder="HH:MM"
+                    class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
                 />
               </div>
             </div>
 
             <div class="mt-4">
-              <label class="block text-sm font-medium text-white/80 mb-2">Completare timp</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Completare timp</label>
               <div class="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -1299,25 +1329,25 @@ const forceUpdateTotals = () => {
               </div>
             </div>
 
-            <div v-if="manualWorkMode === 'duration'" class="mt-4 grid gap-4 sm:grid-cols-2">
+              <div v-if="manualWorkMode === 'duration'" class="mt-4 grid gap-3 sm:grid-cols-2">
               <div>
-                <label class="block text-sm font-medium text-white/80 mb-2">Durată (ore)</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Durată (ore)</label>
                 <input
                   v-model.number="manualWorkDurationHours"
                   type="number"
                   min="0"
-                  class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+                    class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-white/80 mb-2">Durată (minute)</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Durată (minute)</label>
                 <input
                   v-model.number="manualWorkDurationMinutes"
                   type="number"
                   min="0"
                   max="59"
                   step="5"
-                  class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+                    class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
                 />
               </div>
               <div class="sm:col-span-2 flex flex-wrap gap-2">
@@ -1352,74 +1382,78 @@ const forceUpdateTotals = () => {
               </div>
             </div>
 
-            <div v-else class="mt-4 grid gap-4 sm:grid-cols-2">
+              <div v-else class="mt-4 grid gap-3 sm:grid-cols-2">
               <div>
-                <label class="block text-sm font-medium text-white/80 mb-2">Data sfârșit</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data sfârșit</label>
                 <input
                   v-model="manualWorkEndDate"
                   type="date"
-                  class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+                    class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-white/80 mb-2">Ora sfârșit</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora sfârșit</label>
                 <input
                   v-model="manualWorkEndTime"
-                  type="time"
-                  step="60"
-                  class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-blue-400 focus:outline-none"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="5"
+                    placeholder="HH:MM"
+                    class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-blue-400 focus:outline-none"
                 />
               </div>
             </div>
 
-            <div class="mt-4 grid gap-4 sm:grid-cols-2">
-              <div class="rounded-lg bg-white/10 p-4 text-sm text-white/80">
-                <div class="font-semibold text-white mb-2">Rezumat sesiune</div>
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                <div class="rounded-lg bg-white/10 p-4 text-xs text-white/70 space-y-1">
+                  <div class="text-sm font-semibold text-white">Rezumat sesiune</div>
                 <div>Început: <span class="text-white/90">{{ manualWorkSummary.startLabel }}</span></div>
                 <div>Sfârșit: <span class="text-white/90">{{ manualWorkSummary.endLabel }}</span></div>
                 <div>Durată lucru: <span class="text-white/90">{{ manualWorkSummary.durationLabel }}</span></div>
                 <div>Pauze atașate: <span class="text-white/90">{{ manualBreaks.length }} ({{ manualWorkSummary.breaksLabel }})</span></div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-white/80 mb-2">Observații sesiune</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Observații sesiune</label>
                 <textarea
                   v-model="manualWorkNote"
                   placeholder="Adaugă observații despre sesiunea de lucru..."
-                  class="h-full w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-blue-400 focus:outline-none resize-none"
+                    class="h-full w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/50 focus:border-blue-400 focus:outline-none resize-none"
                   rows="3"
                 ></textarea>
               </div>
             </div>
 
             <!-- Break Form -->
-            <div class="mt-6 border-t border-white/20 pt-4">
-              <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
+              <div class="mt-6 border-t border-white/20 pt-4">
+                <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
                 <Pause class="h-4 w-4 text-orange-400" />
                 Adaugă Pauză în Sesiune
               </h3>
 
-              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label class="block text-sm font-medium text-white/80 mb-2">Data pauză</label>
+                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data pauză</label>
                   <input
                     v-model="sessionBreakDate"
                     type="date"
-                    class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
+                      class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-orange-400 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-white/80 mb-2">Ora început</label>
+                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora început</label>
                   <input
                     v-model="sessionBreakStartTime"
-                    type="time"
-                    step="60"
-                    class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="5"
+                      placeholder="HH:MM"
+                      class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-orange-400 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div class="mt-3">
-                <label class="block text-sm font-medium text-white/80 mb-2">Durată sau sfârșit</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Durată sau sfârșit</label>
                 <div class="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -1441,13 +1475,13 @@ const forceUpdateTotals = () => {
               </div>
 
               <div v-if="sessionBreakMode === 'duration'" class="mt-3">
-                <label class="block text-sm font-medium text-white/80 mb-2">Durată pauză (minute)</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Durată pauză (minute)</label>
                 <div class="flex items-center gap-3">
                   <input
                     v-model.number="sessionBreakDurationMinutes"
                     type="number"
                     min="1"
-                    class="w-32 rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
+                      class="w-32 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-orange-400 focus:outline-none"
                   />
                   <div class="flex items-center gap-2">
                     <button type="button" class="btn btn-glass px-3 py-2 text-xs" @click="adjustSessionBreakDuration(5)">+5</button>
@@ -1456,32 +1490,34 @@ const forceUpdateTotals = () => {
                   </div>
                 </div>
               </div>
-              <div v-else class="mt-3 grid gap-4 sm:grid-cols-2">
+                <div v-else class="mt-3 grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label class="block text-sm font-medium text-white/80 mb-2">Data sfârșit pauză</label>
+                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data sfârșit pauză</label>
                   <input
                     v-model="sessionBreakEndDate"
                     type="date"
-                    class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
+                      class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-orange-400 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-white/80 mb-2">Ora sfârșit pauză</label>
+                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora sfârșit pauză</label>
                   <input
                     v-model="sessionBreakEndTime"
-                    type="time"
-                    step="60"
-                    class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-orange-400 focus:outline-none"
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="5"
+                      placeholder="HH:MM"
+                      class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-orange-400 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div class="mt-3">
-                <label class="block text-sm font-medium text-white/80 mb-2">Observații pauză</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Observații pauză</label>
                 <textarea
                   v-model="sessionBreakNote"
                   placeholder="Ex: Pauză masă sau pauză scurtă"
-                  class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-orange-400 focus:outline-none resize-none"
+                  class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/50 focus:border-orange-400 focus:outline-none resize-none"
                   rows="2"
                 ></textarea>
               </div>
@@ -1548,7 +1584,7 @@ const forceUpdateTotals = () => {
           </div>
         
         <!-- Individual Break Session (for standalone breaks) -->
-        <div class="card-glass p-6">
+          <div class="card-glass p-6">
           <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <Pause class="h-5 w-5 text-rose-400" />
             Pauză Individuală
@@ -1557,28 +1593,30 @@ const forceUpdateTotals = () => {
             Pentru pauze care nu fac parte dintr-o sesiune de lucru
           </p>
 
-          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-3 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Data pauză</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data pauză</label>
               <input
                 v-model="standaloneBreakDate"
                 type="date"
-                class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
+                  class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-rose-400 focus:outline-none"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Ora început</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora început</label>
               <input
                 v-model="standaloneBreakStartTime"
-                type="time"
-                step="60"
-                class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="5"
+                  placeholder="HH:MM"
+                  class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-rose-400 focus:outline-none"
               />
             </div>
           </div>
 
           <div class="mt-3">
-            <label class="block text-sm font-medium text-white/80 mb-2">Durată sau sfârșit</label>
+            <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Durată sau sfârșit</label>
             <div class="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -1604,7 +1642,7 @@ const forceUpdateTotals = () => {
               v-model.number="standaloneBreakDurationMinutes"
               type="number"
               min="1"
-              class="w-32 rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
+                class="w-32 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-rose-400 focus:outline-none"
             />
             <div class="flex items-center gap-2">
               <button type="button" class="btn btn-glass px-3 py-2 text-xs" @click="adjustStandaloneBreakDuration(5)">+5</button>
@@ -1612,32 +1650,34 @@ const forceUpdateTotals = () => {
               <button type="button" class="btn btn-glass px-3 py-2 text-xs" @click="adjustStandaloneBreakDuration(15)">+15</button>
             </div>
           </div>
-          <div v-else class="mt-3 grid gap-4 sm:grid-cols-2">
+            <div v-else class="mt-3 grid gap-3 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Data sfârșit</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data sfârșit</label>
               <input
                 v-model="standaloneBreakEndDate"
                 type="date"
-                class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
+                  class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-rose-400 focus:outline-none"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Ora sfârșit</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora sfârșit</label>
               <input
                 v-model="standaloneBreakEndTime"
-                type="time"
-                step="60"
-                class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-rose-400 focus:outline-none"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="5"
+                  placeholder="HH:MM"
+                  class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:border-rose-400 focus:outline-none"
               />
             </div>
           </div>
 
           <div class="mt-4">
-            <label class="block text-sm font-medium text-white/80 mb-2">Observații pauză</label>
+              <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Observații pauză</label>
             <textarea
               v-model="standaloneBreakNote"
               placeholder="Adaugă observații despre pauză..."
-              class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/50 focus:border-rose-400 focus:outline-none resize-none"
+                class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/50 focus:border-rose-400 focus:outline-none resize-none"
               rows="2"
             ></textarea>
           </div>
