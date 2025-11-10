@@ -61,6 +61,7 @@ const HEADER_MAP: Record<string, CanonicalKey> = {
   'comentariu': 'note',
   'comment': 'note',
   'address': 'address',
+  'adress': 'address',
   'adresa': 'address',
   'locatie': 'address',
   'loc': 'address',
@@ -411,7 +412,9 @@ function parseDateTimeValue(value: unknown): number | null {
 
 function parseOptionalString(value: unknown): string | undefined {
   if (value == null) return undefined
-  const text = String(value).trim()
+  let text = String(value).trim()
+  if (!text) return undefined
+  text = text.replace(/\uFEFF/g, '').replace(/\uFFFD/g, '').trim()
   return text.length > 0 ? text : undefined
 }
 
