@@ -8,6 +8,7 @@ import { parseSpreadsheetRows } from '../utils/importSpreadsheet'
 
 const timer = useTimerStore()
 const exportText = ref<string>('')
+const isNativeApp = Capacitor.isNativePlatform()
 
 const SPREADSHEET_EXTENSIONS = new Set(['xlsx', 'xls', 'csv'])
 const SPREADSHEET_MIME_TYPES = new Set([
@@ -79,7 +80,14 @@ async function doImport(evt: Event) {
   const input = evt.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
+  try {
+    await importFile(file)
+  } finally {
+    input.value = ''
+  }
+}
 
+async function importFile(file: File) {
   const extension = file.name.split('.').pop()?.toLowerCase() ?? ''
   const isJson = extension === 'json' || file.type === 'application/json'
   const isSpreadsheet =
@@ -98,8 +106,6 @@ async function doImport(evt: Event) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Importul a eșuat.'
     alert(message)
-  } finally {
-    input.value = ''
   }
 }
 
@@ -166,6 +172,103 @@ async function importSpreadsheetFile(file: File) {
     throw new Error(message)
   }
 }
+
+async function openNativeImport() {
+  try {
+    const file = await pickNativeFile()
+    if (!file) return
+    await importFile(file)
+  } catch (error) {
+    if (isPickerCancelled(error)) return
+    const message = error instanceof Error ? error.message : 'Importul a eșuat.'
+    alert(message)
+  }
+}
+
+async function pickNativeFile(): Promise<File | null> {
+  try {
+    const { FilePicker } = await import('@capawesome/capacitor-file-picker')
+    const result = await FilePicker.pickFiles({
+      types: [
+        'public.json',
+        'public.text',
+        'public.data',
+        'public.comma-separated-values-text',
+        'org.openxmlformats.spreadsheetml.sheet',
+        'com.microsoft.excel.xls'
+      ],
+      readData: true,
+      limit: 1
+    })
+    const fileInfo = result.files?.[0]
+    if (!fileInfo) return null
+
+    let base64Data = fileInfo.data
+    if (!base64Data && fileInfo.path) {
+      try {
+        const readRes = await Filesystem.readFile({ path: fileInfo.path })
+        base64Data = readRes.data as string
+      } catch {}
+    }
+    if (!base64Data) {
+      throw new Error('Nu am putut citi conținutul fișierului selectat.')
+    }
+
+    const mimeType = fileInfo.mimeType || guessMimeType(fileInfo.name)
+    const blob = base64ToBlob(base64Data, mimeType)
+    const filename = fileInfo.name || `import-${Date.now()}`
+
+    if (typeof File !== 'undefined') {
+      return new File([blob], filename, { type: mimeType })
+    }
+    const fallback: any = blob
+    fallback.name = filename
+    fallback.lastModified = Date.now()
+    return fallback as File
+  } catch (error) {
+    if (isPickerCancelled(error)) return null
+    throw error
+  }
+}
+
+function base64ToBlob(base64: string, mimeType: string): Blob {
+  const cleaned = base64.includes(',')
+    ? base64.split(',').pop()!.trim()
+    : base64.trim()
+  if (typeof atob !== 'function') {
+    throw new Error('Decodarea fișierului a eșuat: funcția base64 indisponibilă.')
+  }
+  const binaryString = atob(cleaned)
+  const len = binaryString.length
+  const bytes = new Uint8Array(len)
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+  return new Blob([bytes], { type: mimeType || 'application/octet-stream' })
+}
+
+function guessMimeType(filename?: string | null): string {
+  if (!filename) return 'application/octet-stream'
+  const ext = filename.split('.').pop()?.toLowerCase()
+  switch (ext) {
+    case 'json':
+      return 'application/json'
+    case 'csv':
+      return 'text/csv'
+    case 'xlsx':
+      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    case 'xls':
+      return 'application/vnd.ms-excel'
+    default:
+      return 'application/octet-stream'
+  }
+}
+
+function isPickerCancelled(error: unknown): boolean {
+  if (!error) return false
+  const message = error instanceof Error ? error.message : String(error)
+  return /cancel/i.test(message)
+}
 </script>
 
 <template>
@@ -179,10 +282,21 @@ async function importSpreadsheetFile(file: File) {
     </div>
     <div>
       <label class="mb-2 block text-sm font-medium">Importă din fișier (JSON / Excel / CSV)</label>
-      <input
-        type="file"
-        @change="doImport"
-      />
+      <template v-if="isNativeApp">
+        <button
+          class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          type="button"
+          @click="openNativeImport"
+        >
+          Alege din Files…
+        </button>
+      </template>
+      <template v-else>
+        <input
+          type="file"
+          @change="doImport"
+        />
+      </template>
       <p class="mt-2 text-xs text-gray-500">
         Pentru Excel/CSV folosește coloanele: <strong>Date</strong>, <strong>Start</strong>, <strong>End</strong>,
         opțional <strong>Type</strong> (work/break/cigarette), <strong>Note</strong>, <strong>Address</strong>.
