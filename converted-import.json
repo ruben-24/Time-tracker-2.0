@@ -1,0 +1,844 @@
+{
+  "exportedAt": "2025-11-10T17:56:38.713Z",
+  "version": "2.3.49",
+  "state": {
+    "activeType": null,
+    "activeStartedAt": null,
+    "sessions": [
+      {
+        "id": "9a55c12d-807c-445e-9808-d397f1be03f8",
+        "type": "work",
+        "startedAt": 1740828240000,
+        "endedAt": 1740859200000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "62b00e54-3095-44c1-8091-7f01a2f1d9f7",
+        "type": "break",
+        "startedAt": 1740834660000,
+        "endedAt": 1740835020000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "27bbdabb-f450-4077-95d6-76049da07e33",
+        "type": "break",
+        "startedAt": 1740842940000,
+        "endedAt": 1740844560000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "b318c80c-115b-4ced-b097-1de04893a3c3",
+        "type": "break",
+        "startedAt": 1740848760000,
+        "endedAt": 1740849960000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "c24c2cc0-6cb9-4d2b-9b7d-2eb7a0802123",
+        "type": "break",
+        "startedAt": 1740854760000,
+        "endedAt": 1740855120000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "3837c142-6bca-4b08-8fcc-49388da7e5db",
+        "type": "work",
+        "startedAt": 1740981180000,
+        "endedAt": 1741012080000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "3b214f2d-f0c8-4892-bed2-fa18e0327a35",
+        "type": "break",
+        "startedAt": 1740985020000,
+        "endedAt": 1740985260000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "e3b99e0c-3f60-459e-ba2b-af61e0e3ff2b",
+        "type": "break",
+        "startedAt": 1740997620000,
+        "endedAt": 1740999240000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "572ce399-f79b-4249-a192-89d6625df05e",
+        "type": "break",
+        "startedAt": 1741007760000,
+        "endedAt": 1741008060000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "a6ac39d0-b65e-4f28-83f6-4e36b9a98f87",
+        "type": "work",
+        "startedAt": 1741067640000,
+        "endedAt": 1741098480000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "cd00bf60-c494-4239-a1b0-a59489e2a0d7",
+        "type": "break",
+        "startedAt": 1741071240000,
+        "endedAt": 1741071540000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "e4f5cd2f-d659-46f2-8c64-045bec867251",
+        "type": "break",
+        "startedAt": 1741078920000,
+        "endedAt": 1741080660000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "ba4edade-28b0-4271-b0e5-1b25b6dc05e8",
+        "type": "break",
+        "startedAt": 1741086120000,
+        "endedAt": 1741086360000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "f122c5c0-6d00-4c49-b1b1-77bf0451e0cf",
+        "type": "break",
+        "startedAt": 1741093860000,
+        "endedAt": 1741094160000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "08369194-a352-4c15-9296-983ef84aba9a",
+        "type": "work",
+        "startedAt": 1741240500000,
+        "endedAt": 1741269960000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "486f8d69-8f78-47d9-bb42-31997a60f858",
+        "type": "break",
+        "startedAt": 1741244520000,
+        "endedAt": 1741244760000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "8432b233-ccf6-4bfb-a259-12be7529b4dc",
+        "type": "break",
+        "startedAt": 1741257060000,
+        "endedAt": 1741258740000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "3e31f248-f8c2-44b9-98d0-222bae8f9c3b",
+        "type": "break",
+        "startedAt": 1741266960000,
+        "endedAt": 1741267260000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "034bc4e9-2597-4ef7-972b-111ebe2da77a",
+        "type": "work",
+        "startedAt": 1741326960000,
+        "endedAt": 1741363320000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "6b50e463-35f6-4c6a-9cec-77a5da435e4a",
+        "type": "break",
+        "startedAt": 1741330500000,
+        "endedAt": 1741330740000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "34ce9eaf-305a-40ac-9580-faf4d8b5b2db",
+        "type": "break",
+        "startedAt": 1741337880000,
+        "endedAt": 1741338540000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "4c17e2e2-9c67-472b-99f0-0c2f4c323a11",
+        "type": "break",
+        "startedAt": 1741348500000,
+        "endedAt": 1741350180000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "58cc866c-ccde-48f9-a112-83f43760015f",
+        "type": "break",
+        "startedAt": 1741357560000,
+        "endedAt": 1741358400000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "c82f2208-5d31-4819-b6d4-ed68bdbd007c",
+        "type": "work",
+        "startedAt": 1741413360000,
+        "endedAt": 1741449600000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "2736d1ef-a8bc-408f-a73b-9744e7778f94",
+        "type": "break",
+        "startedAt": 1741417440000,
+        "endedAt": 1741417800000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "04a53965-ad77-49b5-859b-736d07377d70",
+        "type": "break",
+        "startedAt": 1741425000000,
+        "endedAt": 1741425900000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "c62bb901-fcc1-4594-96cf-133aac446df6",
+        "type": "break",
+        "startedAt": 1741435380000,
+        "endedAt": 1741437120000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "0335050e-0a49-4209-921e-a13bca2fbae6",
+        "type": "break",
+        "startedAt": 1741444800000,
+        "endedAt": 1741445640000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "72d7e69f-f766-472d-803e-c4555d45394f",
+        "type": "work",
+        "startedAt": 1741605720000,
+        "endedAt": 1741636800000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "c6b31733-e6d9-4537-ade6-f09568b506ea",
+        "type": "break",
+        "startedAt": 1741615920000,
+        "endedAt": 1741616160000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "9b83ad54-783f-46bf-b03b-1821920f53fc",
+        "type": "break",
+        "startedAt": 1741623300000,
+        "endedAt": 1741625100000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "6b97ef69-4aaa-42f7-b310-a92ae99705c3",
+        "type": "break",
+        "startedAt": 1741631700000,
+        "endedAt": 1741632000000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "56334436-485c-423e-a5ae-e85e14bd0160",
+        "type": "work",
+        "startedAt": 1741692180000,
+        "endedAt": 1741723020000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "f3a75e96-ffbb-478b-a31f-ab5a3565fb51",
+        "type": "break",
+        "startedAt": 1741699020000,
+        "endedAt": 1741699320000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "c3ffd8b2-1e71-4560-afd4-94c44e6c7e74",
+        "type": "break",
+        "startedAt": 1741706100000,
+        "endedAt": 1741706340000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "e223293c-8e48-4f3d-8148-5ca263e1094f",
+        "type": "break",
+        "startedAt": 1741708800000,
+        "endedAt": 1741710360000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "12711dcc-4268-4397-a385-cd0fb39f590c",
+        "type": "break",
+        "startedAt": 1741715400000,
+        "endedAt": 1741715640000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "8b1c8d0f-6604-4121-b81f-9913509f06a4",
+        "type": "break",
+        "startedAt": 1741719120000,
+        "endedAt": 1741719600000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "7a5fe766-7593-4df3-9aec-04a3267c195e",
+        "type": "work",
+        "startedAt": 1741864920000,
+        "endedAt": 1741895820000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "33d1cb48-4775-4df6-ba15-5384d74d36ed",
+        "type": "break",
+        "startedAt": 1741872180000,
+        "endedAt": 1741872420000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "48128883-df2b-4d6f-a77d-90ba8c33ff42",
+        "type": "break",
+        "startedAt": 1741878300000,
+        "endedAt": 1741878540000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "e6dcf7ca-9414-4542-88c0-b23aab6bcd19",
+        "type": "break",
+        "startedAt": 1741882140000,
+        "endedAt": 1741883640000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "c8978830-de7f-4a1e-b3c3-cbf84ac2c069",
+        "type": "break",
+        "startedAt": 1741891860000,
+        "endedAt": 1741891860000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "3e6817e3-7628-41dd-b424-b3f73cfe1127",
+        "type": "work",
+        "startedAt": 1741951320000,
+        "endedAt": 1741982400000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "f1686abf-e3c6-49e7-9b3d-1a5e63be6f9b",
+        "type": "break",
+        "startedAt": 1741959600000,
+        "endedAt": 1741959840000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "0ef31bc4-5d9f-4178-bac3-d7e00979b81f",
+        "type": "break",
+        "startedAt": 1741964340000,
+        "endedAt": 1741964640000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "6b97aae2-c8cd-455d-b2c2-60704884f839",
+        "type": "break",
+        "startedAt": 1741966560000,
+        "endedAt": 1741968240000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "0b3d4155-0743-4ee5-a834-13fdac83fac4",
+        "type": "break",
+        "startedAt": 1741977120000,
+        "endedAt": 1741977360000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "b9737921-23e6-4c50-9482-45ff396a4114",
+        "type": "work",
+        "startedAt": 1742037660000,
+        "endedAt": 1742068800000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "4c5e39de-9f5c-42e9-9b7f-e68d987a02b1",
+        "type": "break",
+        "startedAt": 1742044560000,
+        "endedAt": 1742044800000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "24da0bfe-0148-4ed5-9024-eb9449d7c292",
+        "type": "break",
+        "startedAt": 1742052360000,
+        "endedAt": 1742053980000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "11262658-eb51-483b-97ee-0bbffabca261",
+        "type": "break",
+        "startedAt": 1742060280000,
+        "endedAt": 1742060520000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "8b15a092-478c-4c5d-a7b3-1c28195c35fd",
+        "type": "break",
+        "startedAt": 1742064480000,
+        "endedAt": 1742064780000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "fa9a34cd-2167-42b7-a37b-061f32b04a0c",
+        "type": "work",
+        "startedAt": 1742190600000,
+        "endedAt": 1742221680000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "427584db-5f88-4d7e-ac8a-84608acfce35",
+        "type": "break",
+        "startedAt": 1742195460000,
+        "endedAt": 1742195760000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "912a8951-be9e-4852-ba49-7cf24acd6fc0",
+        "type": "break",
+        "startedAt": 1742207640000,
+        "endedAt": 1742209200000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "b141872e-752c-45ad-a6aa-6fc832eb4315",
+        "type": "break",
+        "startedAt": 1742215920000,
+        "endedAt": 1742216220000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "33599992-04f3-4ff2-a148-9af871d5b19f",
+        "type": "work",
+        "startedAt": 1742277240000,
+        "endedAt": 1742308200000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "c865e944-edd2-4732-8d1c-c35bdce7b167",
+        "type": "break",
+        "startedAt": 1742282040000,
+        "endedAt": 1742282280000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "1016e713-fe15-467c-9946-f7ff5bb976ae",
+        "type": "break",
+        "startedAt": 1742292120000,
+        "endedAt": 1742292300000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "51cec52f-5996-4915-9167-760dc97c37bf",
+        "type": "break",
+        "startedAt": 1742295900000,
+        "endedAt": 1742297340000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "8be09adf-04c7-45ff-89e4-487a2fddb725",
+        "type": "break",
+        "startedAt": 1742304180000,
+        "endedAt": 1742304420000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "6f225f8b-ef2d-42b3-aa9a-9508ae44f8e9",
+        "type": "work",
+        "startedAt": 1742363520000,
+        "endedAt": 1742394600000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "21202b08-1bab-467b-addb-d566f04b86d8",
+        "type": "break",
+        "startedAt": 1742367600000,
+        "endedAt": 1742368260000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "a7a1e76a-d0a2-4515-a3ab-c74555920dfe",
+        "type": "break",
+        "startedAt": 1742377200000,
+        "endedAt": 1742377440000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "29b11e71-280e-4d55-b55a-f7ee90d2c434",
+        "type": "break",
+        "startedAt": 1742382000000,
+        "endedAt": 1742383500000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "4b62593f-f34e-4291-8f1e-89ccb77ffec4",
+        "type": "break",
+        "startedAt": 1742392380000,
+        "endedAt": 1742392800000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "f65cd601-64f6-43aa-bda4-dd86c82997c4",
+        "type": "work",
+        "startedAt": 1742449980000,
+        "endedAt": 1742481000000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "a94af31a-45a7-4367-8785-57629edfe106",
+        "type": "break",
+        "startedAt": 1742457060000,
+        "endedAt": 1742457360000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "450164b5-4e6f-4d20-a2f3-a7dcc088a88a",
+        "type": "break",
+        "startedAt": 1742463960000,
+        "endedAt": 1742464260000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "58a8e752-8e2f-419f-8e83-e21b056b3ff4",
+        "type": "break",
+        "startedAt": 1742468760000,
+        "endedAt": 1742470200000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "89ee8a0e-a694-4248-919c-5315e7593a85",
+        "type": "break",
+        "startedAt": 1742475840000,
+        "endedAt": 1742476080000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "cc0bf481-497e-4d3d-9e9c-9c9ab499aed2",
+        "type": "work",
+        "startedAt": 1742536440000,
+        "endedAt": 1742567400000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "4dc6a602-3ea3-4ae6-9b47-52ad5b80e6d9",
+        "type": "break",
+        "startedAt": 1742540280000,
+        "endedAt": 1742541000000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "dd7917bd-fdf5-4332-a451-561243b8a1ac",
+        "type": "break",
+        "startedAt": 1742546160000,
+        "endedAt": 1742546460000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "634f489e-598e-4ec8-827c-ab6ad798e36a",
+        "type": "break",
+        "startedAt": 1742553120000,
+        "endedAt": 1742554740000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "dc09c1da-4292-46f1-9f54-f37e40bba460",
+        "type": "break",
+        "startedAt": 1742562120000,
+        "endedAt": 1742562360000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "3525df4f-9aeb-409b-9e4b-82c7f37ebaa4",
+        "type": "work",
+        "startedAt": 1742815380000,
+        "endedAt": 1742846400000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "efe64e3c-8348-47b9-9167-29c650c6dca5",
+        "type": "break",
+        "startedAt": 1742820900000,
+        "endedAt": 1742831940000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "f72b9192-56eb-4359-a0c4-439c51044c5f",
+        "type": "break",
+        "startedAt": 1742827680000,
+        "endedAt": 1742827980000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "f4b21b16-abc8-4253-a5bb-ca03efa4e600",
+        "type": "break",
+        "startedAt": 1742832180000,
+        "endedAt": 1742833920000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "906462b0-3d48-4b7a-a2e2-db62648dfcca",
+        "type": "break",
+        "startedAt": 1742839200000,
+        "endedAt": 1742839500000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "2d02a3e9-7c62-4c15-b865-504d238a3945",
+        "type": "break",
+        "startedAt": 1742844060000,
+        "endedAt": 1742844300000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "2fe1d031-d7c0-4f6e-8a2c-891d21cb6367",
+        "type": "work",
+        "startedAt": 1742901960000,
+        "endedAt": 1742932800000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "552b2cc0-4fd8-4bea-a8e3-a6a57391237e",
+        "type": "break",
+        "startedAt": 1742907060000,
+        "endedAt": 1742907360000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "f1e41ac4-9e2c-45f0-be80-0634175afcfb",
+        "type": "break",
+        "startedAt": 1742914920000,
+        "endedAt": 1742915160000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "23f3c77b-f8dd-4771-b7d0-b17592915ddb",
+        "type": "break",
+        "startedAt": 1742916780000,
+        "endedAt": 1742918400000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "a0db170f-cc2e-4d68-a3a7-b169bd195eaf",
+        "type": "break",
+        "startedAt": 1742927160000,
+        "endedAt": 1742927400000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "d83593e2-d790-45c1-930d-49016bfac88d",
+        "type": "work",
+        "startedAt": 1743074640000,
+        "endedAt": 1743105600000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "e0fd125c-9282-4b6e-a82c-87bc9096b637",
+        "type": "break",
+        "startedAt": 1743080940000,
+        "endedAt": 1743081180000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "ebec1185-3792-4639-aac1-c59867abe192",
+        "type": "break",
+        "startedAt": 1743090180000,
+        "endedAt": 1743091740000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "c79151d6-7195-4e7e-af12-8ca8ee17bc72",
+        "type": "break",
+        "startedAt": 1743098460000,
+        "endedAt": 1743098700000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "66707897-bfa8-4554-9889-c85ef15535bd",
+        "type": "break",
+        "startedAt": 1743101940000,
+        "endedAt": 1743102180000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "5e444f12-d052-42e9-8e78-827c118fdc53",
+        "type": "work",
+        "startedAt": 1743161100000,
+        "endedAt": 1743192000000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "fd264082-10b1-4d1f-b990-39593b418541",
+        "type": "break",
+        "startedAt": 1743169200000,
+        "endedAt": 1743169500000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "97578a71-7d04-4b78-9d02-d096a2262b57",
+        "type": "break",
+        "startedAt": 1743175620000,
+        "endedAt": 1743177180000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "902938f0-5b41-44a5-96fb-0f33ee2cb20a",
+        "type": "break",
+        "startedAt": 1743183300000,
+        "endedAt": 1743183600000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "688cbe60-b3ea-4154-95b6-9ebacc315826",
+        "type": "break",
+        "startedAt": 1743188400000,
+        "endedAt": 1743188760000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "213a8b96-d720-44f7-b2d9-40850c0a7c03",
+        "type": "work",
+        "startedAt": 1743227640000,
+        "endedAt": 1743253260000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "69a8b17a-e8bf-4cbf-b4c5-ea97f23a7b83",
+        "type": "break",
+        "startedAt": 1743231360000,
+        "endedAt": 1743231600000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "fbf0eeb0-2544-4d95-8d6e-ab26cdde596e",
+        "type": "break",
+        "startedAt": 1743238620000,
+        "endedAt": 1743238920000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      },
+      {
+        "id": "8fd7a370-69d2-488d-a33f-8f4c2ab88c8b",
+        "type": "break",
+        "startedAt": 1743244200000,
+        "endedAt": 1743245640000,
+        "manual": true,
+        "address": "Wasserburger Str. 15a, 83119 Obing"
+      }
+    ],
+    "currentWorkBreaks": [],
+    "defaultAddress": "Wasserburger str 15a,83119,Obing",
+    "customAddress": null,
+    "extraAddresses": [],
+    "selectedAddressId": null,
+    "currentSessionId": null,
+    "pausedAt": null,
+    "totalPausedMs": 0,
+    "breakStartedAt": null,
+    "breakSessionId": null,
+    "totalBreakTimeMs": 0,
+    "sessionWorkMs": 0,
+    "sessionBreakMs": 0,
+    "sessionCigaretteMs": 0,
+    "dailyTargetHours": 8,
+    "overtimeGlobalOffsetMs": 0,
+    "overtimeAdjustments": {},
+    "overtimeTargetOverrides": {}
+  }
+}
