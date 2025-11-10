@@ -187,6 +187,9 @@ async function openNativeImport() {
 
 async function pickNativeFile(): Promise<File | null> {
   try {
+    if (!Capacitor.isPluginAvailable?.('FilePicker')) {
+      throw new Error('FilePicker indisponibil. Reinstalează aplicația sau rulează importul din browser.')
+    }
     const { FilePicker } = await import('@capawesome/capacitor-file-picker')
     const result = await FilePicker.pickFiles({
       types: [
