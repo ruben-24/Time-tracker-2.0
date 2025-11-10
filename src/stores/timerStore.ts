@@ -509,6 +509,122 @@ export const useTimerStore = defineStore('timer', {
       this.sessions.unshift(session)
       void this.persist()
     },
+      addImportedSessions(
+        sessionsData: Array<{
+          type: SessionType
+          startedAt: number
+          endedAt: number | null
+          note?: string
+          address?: string | null
+          manual?: boolean
+          breaks?: Array<
+            Partial<WorkBreak> & {
+              startedAt: number
+              endedAt: number
+              type?: 'break' | 'cigarette'
+            }
+          >
+        }>
+      ) {
+        if (!Array.isArray(sessionsData) || sessionsData.length === 0) {
+          return { inserted: 0, skipped: 0 }
+        }
+
+        const prepared: Session[] = []
+
+        for (const entry of sessionsData) {
+          if (!entry || typeof entry.startedAt !== 'number' || Number.isNaN(entry.startedAt)) {
+            continue
+          }
+
+          const startedAt = Math.trunc(entry.startedAt)
+          const rawEndedAt = entry.endedAt
+          const endedAt =
+            rawEndedAt === null || rawEndedAt === undefined
+              ? null
+              : Math.trunc(rawEndedAt)
+
+          if (endedAt !== null && endedAt <= startedAt) {
+            continue
+          }
+
+          const type: SessionType = entry.type ?? 'work'
+          const duplicateInExisting = this.sessions.some(
+            session =>
+              session.type === type &&
+              Math.abs(session.startedAt - startedAt) < 1000 &&
+              (session.endedAt === endedAt ||
+                (session.endedAt === null && endedAt === null))
+          )
+          const duplicateInPrepared = prepared.some(
+            session =>
+              session.type === type &&
+              Math.abs(session.startedAt - startedAt) < 1000 &&
+              (session.endedAt === endedAt ||
+                (session.endedAt === null && endedAt === null))
+          )
+
+          if (duplicateInExisting || duplicateInPrepared) {
+            continue
+          }
+
+          const note = entry.note
+            ? String(entry.note).trim()
+            : undefined
+
+          const address = entry.address
+            ? String(entry.address).trim()
+            : undefined
+
+          const breaks = Array.isArray(entry.breaks)
+            ? entry.breaks
+                .filter(
+                  b =>
+                    b &&
+                    typeof b.startedAt === 'number' &&
+                    typeof b.endedAt === 'number' &&
+                    !Number.isNaN(b.startedAt) &&
+                    !Number.isNaN(b.endedAt) &&
+                    b.endedAt > b.startedAt
+                )
+                .map<WorkBreak>(b => ({
+                  id: crypto.randomUUID(),
+                  type: b.type === 'cigarette' ? 'cigarette' : 'break',
+                  startedAt: Math.trunc(b.startedAt),
+                  endedAt: Math.trunc(b.endedAt),
+                  duration: Math.max(0, Math.trunc(b.endedAt) - Math.trunc(b.startedAt))
+                }))
+            : undefined
+
+          prepared.push({
+            id: crypto.randomUUID(),
+            type,
+            startedAt,
+            endedAt,
+            manual: entry.manual ?? true,
+            note,
+            address: address ?? this.currentAddress,
+            breaks
+          })
+        }
+
+        if (prepared.length === 0) {
+          return { inserted: 0, skipped: sessionsData.length }
+        }
+
+        prepared.sort((a, b) => a.startedAt - b.startedAt)
+
+        for (const session of prepared) {
+          this.sessions.unshift(session)
+        }
+
+        void this.persist()
+
+        return {
+          inserted: prepared.length,
+          skipped: sessionsData.length - prepared.length
+        }
+      },
     updateDefaultAddress(newAddress: string) {
       this.defaultAddress = newAddress
       void this.persist()
