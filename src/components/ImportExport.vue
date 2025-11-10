@@ -192,14 +192,8 @@ async function pickNativeFile(): Promise<File | null> {
     }
     const { FilePicker } = await import('@capawesome/capacitor-file-picker')
     const result = await FilePicker.pickFiles({
-      types: [
-        'public.json',
-        'public.text',
-        'public.data',
-        'public.comma-separated-values-text',
-        'org.openxmlformats.spreadsheetml.sheet',
-        'com.microsoft.excel.xls'
-      ],
+      // Leaving `types` undefined allows the user to pick any file they can see in Files.
+      // iOS still suggests relevant types automatically.
       readData: true,
       limit: 1
     })
