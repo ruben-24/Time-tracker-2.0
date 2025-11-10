@@ -181,7 +181,7 @@ async function importSpreadsheetFile(file: File) {
       <label class="mb-2 block text-sm font-medium">Importă din fișier (JSON / Excel / CSV)</label>
       <input
         type="file"
-        accept=".json,application/json,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xls,application/vnd.ms-excel,.csv,text/csv,application/csv"
+        accept=".json,application/json,.JSON,.xlsx,.XLSX,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xls,.XLS,application/vnd.ms-excel,.csv,.CSV,text/csv,application/csv,text/plain"
         @change="doImport"
       />
       <p class="mt-2 text-xs text-gray-500">
