@@ -234,7 +234,7 @@ export const useLanguageStore = defineStore('language', () => {
   }
   
   const t = (key: keyof typeof translations.ro): string => {
-    return translations[currentLanguage.value][key as keyof typeof translations[Language]] || key
+    return translations[currentLanguage.value][key] ?? String(key)
   }
   
   const locale = computed(() => {

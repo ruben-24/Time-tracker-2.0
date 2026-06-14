@@ -25,11 +25,11 @@ jobs:
 
       - name: Install deps (with fallback for npm optional deps bug)
         run: |
-          rm -rf node_modules package-lock.json
-          # Install with force to ensure optional dependencies are installed
-          npm install --force --include=optional
-          # Force reinstall rollup to ensure native binaries are present
-          npm install rollup --force --include=optional || npm install rollup --force
+          rm -rf node_modules
+          npm ci --include=optional || (
+            echo "npm ci failed; falling back to npm install (keep lockfile for patch-package)"
+            npm install --include=optional
+          )
 
       - name: Build app
         run: npm run build
