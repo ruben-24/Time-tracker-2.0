@@ -132,7 +132,7 @@ const saveOffset = () => {
     <!-- Totals -->
     <div class="grid grid-cols-3 gap-4 mb-6">
       <div class="card-glass p-4 text-center">
-        <div class="text-sm text-white/70">Țintă zilnică</div>
+        <div class="text-sm text-white/70">{{ language.t('dailyTarget') }}</div>
         <div class="text-xl font-bold text-white">{{ timer.dailyTargetHours }}h</div>
       </div>
       <div class="card-glass p-4 text-center">
@@ -153,7 +153,7 @@ const saveOffset = () => {
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm text-white/70 mb-1">Țintă zilnică (ore)</label>
+          <label class="block text-sm text-white/70 mb-1">{{ language.t('dailyTargetHours') }}</label>
           <div class="flex gap-2">
             <input type="number" min="0" max="16" v-model.number="targetInput" class="w-24 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" />
             <button class="btn btn-primary" @click="saveTarget">{{ language.t('settings') }}</button>
@@ -192,7 +192,7 @@ const saveOffset = () => {
 
         <!-- Target override -->
         <div class="card-glass p-4">
-          <div class="text-white font-semibold mb-3">Țintă personalizată pe zi</div>
+          <div class="text-white font-semibold mb-3">{{ language.t('customTarget') }}</div>
           <div class="flex flex-wrap items-center gap-2">
             <input type="date" v-model="targetOverrideDate" class="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" />
             <input type="number" min="0" v-model.number="targetOverrideHours" class="w-20 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="ore" />
@@ -215,7 +215,7 @@ const saveOffset = () => {
             <div class="text-xs text-white/60">
               Net lucru: {{ formatDuration(d.net) }} |
               Țintă: {{ formatDuration(d.target) }}
-              <span v-if="targetOverrides[d.date]" class="text-emerald-300 ml-1">(personalizată)</span>
+              <span v-if="targetOverrides[d.date]" class="text-emerald-300 ml-1">({{ language.t('customized') }})</span>
             </div>
           <div v-if="d.adjustment" class="text-xs text-white/60">Ajustare: {{ signed(d.adjustment) }}</div>
         </div>

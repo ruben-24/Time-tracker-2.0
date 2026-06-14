@@ -1846,27 +1846,27 @@ const forceUpdateTotals = () => {
             Export Date
           </h2>
           <p class="text-white/70 text-sm mb-6">
-            Toate datele tale (sesiuni, adrese, setări) vor fi descărcate ca fișier JSON.
+            {{ language.t('exportDescription') }}
           </p>
           <button
             @click="exportAllData"
             class="btn btn-emerald w-full"
           >
-            Exportă toate datele
+            {{ language.t('exportAll') }}
           </button>
           <button
             @click="exportToFilesIOS"
             class="btn btn-blue w-full mt-3"
             title="Salvează backup-ul în aplicația Files (iOS)"
           >
-            Salvează în Files (iOS)
+            {{ language.t('saveToFiles') }}
           </button>
           <button
             @click="exportChooseLocation"
             class="btn btn-purple w-full mt-3"
             title="Alege locația la salvare (iOS/Android)"
           >
-            Salvează ca fișier… (Alege locația)
+            {{ language.t('saveAsFile') }}
           </button>
         </div>
         
@@ -1877,7 +1877,7 @@ const forceUpdateTotals = () => {
             Import Date
           </h2>
           <p class="text-white/70 text-sm mb-4">
-            Lipește datele JSON aici pentru a încărca backup-ul.
+            {{ language.t('importDescription') }}
           </p>
           <textarea
             v-model="importData"
@@ -1890,7 +1890,7 @@ const forceUpdateTotals = () => {
             class="btn btn-blue w-full"
             :disabled="!importData.trim()"
           >
-            Importă date
+            {{ language.t('importData') }}
           </button>
           <div class="mt-3">
             <input
@@ -1904,10 +1904,10 @@ const forceUpdateTotals = () => {
               @click="triggerFilePicker"
               class="btn btn-amber w-full"
             >
-              Importă din fișier (Files)
+              {{ language.t('importFromFile') }}
             </button>
             <p class="text-xs text-white/50 mt-2">
-              Alege un fișier backup JSON din Files (iOS/Android) pentru restaurare.
+              {{ language.t('importFromFileDesc') }}
             </p>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { useTimerStore } from '../stores/timerStore'
 import { useFinancialStore } from '../stores/financialStore'
 import { useThemeStore } from '../stores/themeStore'
 import { useLanguageStore, type Language } from '../stores/languageStore'
-import { ArrowLeft, Settings, Clock, DollarSign, MapPin, Bell, Trash2, Palette, Brush, Sparkles, Eye, Zap } from 'lucide-vue-next'
+import { ArrowLeft, Settings, Clock, MapPin, Bell, Trash2, Palette, Brush, Sparkles, Eye, Zap } from 'lucide-vue-next'
 
 const emit = defineEmits<{
   navigate: [page: string]
@@ -214,13 +214,6 @@ watch(selectedLanguage, (newLang) => {
   language.setLanguage(newLang)
 })
 
-const updateFinancialSettings = () => {
-  financial.updateSettings({
-    hourlyRate: hourlyRate.value,
-    weeklyHours: weeklyHours.value,
-    taxClass: taxClass.value
-  })
-}
 
 const updateDefaultAddress = () => {
   timer.defaultAddress = defaultAddress.value
@@ -510,61 +503,7 @@ const resetTheme = () => {
         </div>
       </div>
 
-      <!-- Financial Settings -->
-      <div class="card-glass p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <DollarSign class="h-6 w-6 text-green-400" />
-          <h2 class="text-lg font-semibold text-white">{{ language.t('financial') }}</h2>
-        </div>
-        
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">
-              Tarif orar (€/h)
-            </label>
-            <input
-              v-model="hourlyRate"
-              @blur="updateFinancialSettings"
-              type="number"
-              step="0.1"
-              min="0"
-              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-green-400 focus:outline-none"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">
-              Ore pe săptămână
-            </label>
-            <input
-              v-model="weeklyHours"
-              @blur="updateFinancialSettings"
-              type="number"
-              min="1"
-              max="80"
-              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-green-400 focus:outline-none"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">
-              Clasa fiscală
-            </label>
-            <select
-              v-model="taxClass"
-              @change="updateFinancialSettings"
-              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-green-400 focus:outline-none"
-            >
-              <option value="1">Clasa 1</option>
-              <option value="2">Clasa 2</option>
-              <option value="3">Clasa 3</option>
-              <option value="4">Clasa 4</option>
-              <option value="5">Clasa 5</option>
-              <option value="6">Clasa 6</option>
-            </select>
-          </div>
-        </div>
-      </div>
+
 
       <!-- Address Settings -->
       <div class="card-glass p-6">
@@ -676,7 +615,7 @@ const resetTheme = () => {
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="card-glass p-6 max-w-sm w-full">
-        <h3 class="text-lg font-semibold text-white mb-4">Șterge Toate Datele</h3>
+        <h3 class="text-lg font-semibold text-white mb-4">{{ language.t('deleteAllData') }}</h3>
         <p class="text-white/70 text-sm mb-6">
           ⚠️ Această acțiune va șterge toate sesiunile, adresele și setările. Nu poate fi anulată!
         </p>
