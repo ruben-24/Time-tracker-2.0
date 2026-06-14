@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
 import { useFinancialStore } from '../stores/financialStore'
 import { useThemeStore } from '../stores/themeStore'
+import { useLanguageStore, type Language } from '../stores/languageStore'
 import { ArrowLeft, Settings, Clock, DollarSign, MapPin, Bell, Trash2, Palette, Brush, Sparkles, Eye, Zap } from 'lucide-vue-next'
 
 const emit = defineEmits<{
@@ -13,12 +14,13 @@ defineProps<{ appVersion: string }>()
 const timer = useTimerStore()
 const financial = useFinancialStore()
 const theme = useThemeStore()
+const language = useLanguageStore()
 
 // Settings state
 const showDeleteConfirm = ref(false)
 
-// Theme settings (for future use)
-// const isDarkMode = ref(true) // Default to dark mode
+// Language selection
+const selectedLanguage = ref<Language>('ro')
 
 // Notification settings
 const notificationsEnabled = ref(true)
@@ -66,8 +68,10 @@ const syncSelectedPresets = () => {
   selectedBtnPreset.value = bp ? bp.name : ''
 }
 
-onMounted(() => {
+onMounted(async () => {
   theme.load()
+  await language.loadLanguage()
+  selectedLanguage.value = language.currentLanguage
   syncSelectedPresets()
   
   // Load saved settings
@@ -205,6 +209,11 @@ watch(customButtonColor, (newValue) => {
   })
 })
 
+// Language watcher
+watch(selectedLanguage, (newLang) => {
+  language.setLanguage(newLang)
+})
+
 const updateFinancialSettings = () => {
   financial.updateSettings({
     hourlyRate: hourlyRate.value,
@@ -220,13 +229,13 @@ const updateDefaultAddress = () => {
 
 
 const deleteAllData = () => {
-  if (confirm('Sigur vrei să ștergi TOATE datele? Această acțiune nu poate fi anulată!')) {
+  if (confirm(language.t('warning') + ': ' + language.t('changelog'))) {
     timer.sessions = []
     timer.extraAddresses = []
     timer.selectedAddressId = null
     timer.persist()
     showDeleteConfirm.value = false
-    alert('Toate datele au fost șterse!')
+    alert(language.t('success'))
   }
 }
 
@@ -265,13 +274,6 @@ const resetTheme = () => {
   customBackgroundColor.value = theme.settings.backgroundColors.primary
   customButtonColor.value = theme.settings.buttonColors.primary
 }
-
-// const closeApp = () => {
-//   if (confirm('Sigur vrei să închizi aplicația?')) {
-//     // In a real app, this would close the app
-//     window.close()
-//   }
-// }
 </script>
 
 <template>
@@ -281,11 +283,34 @@ const resetTheme = () => {
       <button @click="emit('navigate', 'main')" class="btn btn-primary p-3 rounded-full">
         <ArrowLeft class="h-5 w-5" />
       </button>
-      <h1 class="text-2xl font-bold text-white">Setări</h1>
+      <h1 class="text-2xl font-bold text-white">{{ language.t('settings') }}</h1>
       <div></div>
     </div>
 
     <div class="space-y-6">
+      <!-- Language Selection -->
+      <div class="card-glass p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <Settings class="h-6 w-6 text-cyan-400" />
+          <h2 class="text-lg font-semibold text-white">{{ language.t('language') }}</h2>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-white/80 mb-2">{{ language.t('language') }}</label>
+            <select 
+              v-model="selectedLanguage"
+              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+            >
+              <option value="ro">{{ language.t('romanian') }}</option>
+              <option value="en">{{ language.t('english') }}</option>
+              <option value="de">{{ language.t('german') }}</option>
+            </select>
+            <p class="text-xs text-white/60 mt-2">Current: {{ language.currentLanguage.toUpperCase() }}</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Theme Customization -->
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
@@ -392,7 +417,7 @@ const resetTheme = () => {
                     type="checkbox"
                     class="sr-only peer"
                   />
-                  <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                  <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
               </div>
               
@@ -418,7 +443,7 @@ const resetTheme = () => {
                     type="checkbox"
                     class="sr-only peer"
                   />
-                  <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                  <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                 </label>
               </div>
             </div>
@@ -590,7 +615,7 @@ const resetTheme = () => {
                 type="checkbox"
                 class="sr-only peer"
               />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
             </label>
           </div>
           
@@ -602,7 +627,7 @@ const resetTheme = () => {
                 type="checkbox"
                 class="sr-only peer"
               />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
             </label>
           </div>
         </div>
@@ -626,229 +651,15 @@ const resetTheme = () => {
         </div>
       </div>
 
-
-      <!-- Essential Settings -->
-      <div class="card-glass p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <Settings class="h-6 w-6 text-indigo-400" />
-          <h2 class="text-lg font-semibold text-white">Setări Esențiale</h2>
-        </div>
-        
-        <div class="space-y-4">
-          <!-- Language -->
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">Limbă</label>
-            <select class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none">
-              <option value="ro">Română</option>
-              <option value="en">English</option>
-            </select>
-          </div>
-          
-          <!-- Time Format -->
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">Format Timp</label>
-            <select class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none">
-              <option value="24h">24 ore (HH:MM)</option>
-              <option value="12h">12 ore (AM/PM)</option>
-            </select>
-          </div>
-          
-          <!-- Date Format -->
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">Format Dată</label>
-            <select class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none">
-              <option value="dd/mm/yyyy">DD/MM/YYYY</option>
-              <option value="mm/dd/yyyy">MM/DD/YYYY</option>
-              <option value="yyyy-mm-dd">YYYY-MM-DD</option>
-            </select>
-          </div>
-          
-          <!-- Auto-save Interval -->
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">Interval Auto-save (secunde)</label>
-            <input 
-              type="number" 
-              min="5" 
-              max="300" 
-              value="30"
-              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Notification Settings -->
-      <div class="card-glass p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <Bell class="h-6 w-6 text-yellow-400" />
-          <h2 class="text-lg font-semibold text-white">Setări Notificări</h2>
-        </div>
-        
-        <div class="space-y-4">
-          <!-- Push Notifications -->
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-md font-medium text-white/80">Notificări Push</h3>
-              <p class="text-sm text-white/60">Primește notificări despre pauze</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" class="sr-only peer" checked />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
-            </label>
-          </div>
-          
-          <!-- Break Reminders -->
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-md font-medium text-white/80">Memento Pauze</h3>
-              <p class="text-sm text-white/60">Notificări pentru pauze regulate</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" class="sr-only peer" />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
-            </label>
-          </div>
-          
-          <!-- Sound Notifications -->
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-md font-medium text-white/80">Sunete Notificări</h3>
-              <p class="text-sm text-white/60">Activează sunete pentru notificări</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" class="sr-only peer" checked />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <!-- Advanced Settings -->
-      <div class="card-glass p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <Settings class="h-6 w-6 text-indigo-400" />
-          <h2 class="text-lg font-semibold text-white">Setări Avansate</h2>
-        </div>
-        
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">
-              Interval de actualizare (secunde)
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="60"
-              value="1"
-              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">
-              Limita de sesiuni în istoric
-            </label>
-            <input
-              type="number"
-              min="50"
-              max="1000"
-              value="500"
-              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-indigo-400 focus:outline-none"
-            />
-          </div>
-          
-          <div class="flex items-center justify-between">
-            <span class="text-white/80">Mod întunecat permanent</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked
-                class="sr-only peer"
-              />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-            </label>
-          </div>
-          
-          <div class="flex items-center justify-between">
-            <span class="text-white/80">Auto-save la fiecare minut</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked
-                class="sr-only peer"
-              />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-            </label>
-          </div>
-          
-          <div class="flex items-center justify-between">
-            <span class="text-white/80">Vibrații la notificări</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                class="sr-only peer"
-              />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <!-- Performance Settings -->
-      <div class="card-glass p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <Zap class="h-6 w-6 text-yellow-400" />
-          <h2 class="text-lg font-semibold text-white">Setări Performanță</h2>
-        </div>
-        
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">
-              Calitatea animațiilor
-            </label>
-            <select class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-yellow-400 focus:outline-none">
-              <option value="high">Înaltă (60fps)</option>
-              <option value="medium" selected>Medie (30fps)</option>
-              <option value="low">Scăzută (15fps)</option>
-            </select>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-white/80 mb-2">
-              Cache pentru date (MB)
-            </label>
-            <input
-              type="number"
-              min="10"
-              max="100"
-              value="50"
-              class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white focus:border-yellow-400 focus:outline-none"
-            />
-          </div>
-          
-          <div class="flex items-center justify-between">
-            <span class="text-white/80">Optimizare baterie</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked
-                class="sr-only peer"
-              />
-              <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-600"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
       <!-- App Info -->
       <div class="card-glass p-6">
         <div class="text-center">
           <h3 class="text-lg font-semibold text-white mb-2">ChronoFlux</h3>
-          <p class="text-white/70 text-sm">Versiunea {{ appVersion }}</p>
-          <p class="text-white/60 text-xs mt-2">Dezvoltat cu ❤️ pentru productivitate</p>
+          <p class="text-white/70 text-sm">{{ language.t('version') }}: {{ appVersion }}</p>
+          <p class="text-white/60 text-xs mt-2">{{ language.t('developedWith') }}</p>
           <div class="mt-4 flex justify-center gap-4">
             <button @click="emit('navigate', 'changelog')" class="btn btn-glass btn-rounded px-4 py-2 text-xs">
-              Changelog
+              {{ language.t('changelog') }}
             </button>
             <button class="btn btn-glass btn-rounded px-4 py-2 text-xs">
               Support
