@@ -307,7 +307,7 @@ const translations = {
 }
 
 export const useLanguageStore = defineStore('language', () => {
-  const currentLanguage = ref<Language>('ro')
+  const currentLanguage = ref<Language>('de')
   
   const loadLanguage = async () => {
     try {

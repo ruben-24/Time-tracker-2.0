@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Menu, X, MapPin, History, Download, Settings, DollarSign, Power, Plus, Clock } from 'lucide-vue-next'
+import { useLanguageStore } from '../stores/languageStore'
+import { Menu, X, MapPin, History, Download, Settings, Power, Plus, Clock } from 'lucide-vue-next'
 
 const emit = defineEmits<{
   navigate: [page: string]
@@ -9,6 +10,7 @@ const emit = defineEmits<{
 defineProps<{ appVersion: string }>()
 
 const isOpen = ref(false)
+const language = useLanguageStore()
 
 const toggleMenu = () => {
   isOpen.value = !isOpen.value
@@ -24,7 +26,7 @@ const navigateTo = (page: string) => {
 }
 
 const closeApp = () => {
-  if (confirm('Sigur vrei să închizi aplicația?')) {
+  if (confirm(language.t('warning') + ': ' + language.t('closeApp') + '?')) {
     // In a real app, this would close the app
     window.close()
   }
@@ -32,13 +34,12 @@ const closeApp = () => {
 }
 
 const menuItems = [
-  { icon: Plus, label: 'Adăugare Manuală', page: 'manual' },
-  { icon: History, label: 'Istoric Sesiuni', page: 'history' },
-  { icon: Clock, label: 'Ore Suplimentare', page: 'overtime' },
-  { icon: MapPin, label: 'Adrese Extra', page: 'addresses' },
-  { icon: DollarSign, label: 'Rapoarte Financiare', page: 'financial' },
-  { icon: Download, label: 'Import/Export', page: 'import-export' },
-  { icon: Settings, label: 'Setări', page: 'settings' },
+  { icon: Plus, label: language.t('manualEntry'), page: 'manual' },
+  { icon: History, label: language.t('history'), page: 'history' },
+  { icon: Clock, label: language.t('overtime'), page: 'overtime' },
+  { icon: MapPin, label: language.t('addresses'), page: 'addresses' },
+  { icon: Download, label: language.t('importExport'), page: 'import-export' },
+  { icon: Settings, label: language.t('settings'), page: 'settings' },
 ]
 </script>
 
@@ -68,7 +69,7 @@ const menuItems = [
       <div class="p-6">
         <!-- Header -->
         <div class="flex items-center justify-between mb-8">
-          <h2 class="text-xl font-bold text-white">Meniu</h2>
+          <h2 class="text-xl font-bold text-white">{{ language.t('settings') }}</h2>
           <button @click="closeMenu" class="text-white/70 hover:text-white">
             <X class="h-6 w-6" />
           </button>
@@ -94,7 +95,7 @@ const menuItems = [
             class="w-full flex items-center gap-4 p-4 rounded-xl bg-red-500/20 hover:bg-red-500/30 transition-all duration-200 text-red-400 border border-red-400/50"
           >
             <Power class="h-6 w-6" />
-            <span class="font-medium">Închide Aplicația</span>
+            <span class="font-medium">{{ language.t('closeApp') }}</span>
           </button>
           
           <p class="text-white/60 text-sm text-center mt-4">

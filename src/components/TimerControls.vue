@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useLanguageStore } from '../stores/languageStore'
 import { useTimerStore } from '../stores/timerStore'
 // import { useThemeStore } from '../stores/themeStore'
 import { Play, Pause, RotateCcw, Square } from 'lucide-vue-next'
 
 const timer = useTimerStore()
+const language = useLanguageStore()
 // const theme = useThemeStore()
 
 // State guards
@@ -25,7 +27,7 @@ const buttonBase = computed(() => {
 })
 
 function confirmEnd() {
-  const ok = confirm('Ești sigur că vrei să închei programul?')
+  const ok = confirm(language.t('warning') + ': ' + language.t('end') + '?')
   if (ok) timer.endCurrent()
 }
 </script>
@@ -40,7 +42,7 @@ function confirmEnd() {
       aria-label="Începe lucru"
     >
       <Play class="h-8 w-8" />
-      <span class="ml-2">Începe lucru</span>
+      <span class="ml-2">{{ language.t('start') }}</span>
     </button>
   </div>
 
@@ -53,7 +55,7 @@ function confirmEnd() {
       aria-label="Pauză"
     >
       <Pause class="h-8 w-8" />
-      <span class="ml-2">Pauză</span>
+      <span class="ml-2">{{ language.t('pause') }}</span>
     </button>
 
     <button
@@ -63,7 +65,7 @@ function confirmEnd() {
       aria-label="Încheie lucru"
     >
       <Square class="h-8 w-8" />
-      <span class="ml-2">Încheie lucru</span>
+      <span class="ml-2">{{ language.t('end') }}</span>
     </button>
   </div>
 
@@ -76,7 +78,7 @@ function confirmEnd() {
       aria-label="Reia"
     >
       <RotateCcw class="h-8 w-8" />
-      <span class="ml-2">Reia</span>
+      <span class="ml-2">{{ language.t('resume') }}</span>
     </button>
   </div>
 </template>

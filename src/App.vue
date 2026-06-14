@@ -6,7 +6,6 @@ import TimerControls from './components/TimerControls.vue'
 import BurgerMenu from './components/BurgerMenu.vue'
 import HistoryPage from './components/HistoryPage.vue'
 import AddressesPage from './components/AddressesPage.vue'
-import FinancialInfo from './components/FinancialInfo.vue'
 import OvertimePage from './components/OvertimePage.vue'
 import AddressSelector from './components/AddressSelector.vue'
 import SettingsPage from './components/SettingsPage.vue'
@@ -1290,17 +1289,6 @@ const forceUpdateTotals = () => {
     <!-- Addresses Page -->
     <AddressesPage v-else-if="currentPage === 'addresses'" @navigate="navigateTo" />
 
-    <!-- Financial Reports Page -->
-    <div v-else-if="currentPage === 'financial'" class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
-      <div class="flex items-center justify-between mb-6 pt-4">
-        <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
-          <ArrowLeft class="h-5 w-5" />
-        </button>
-        <h1 class="text-2xl font-bold text-white">{{ language.t('financialReportsTitle') }}</h1>
-        <div></div>
-      </div>
-      <FinancialInfo />
-    </div>
 
     <!-- Overtime Page -->
     <OvertimePage v-else-if="currentPage === 'overtime'" @navigate="navigateTo" />
