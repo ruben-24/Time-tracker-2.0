@@ -2,13 +2,14 @@
 import { computed } from 'vue'
 import { useFinancialStore } from '../stores/financialStore'
 import { useTimerStore } from '../stores/timerStore'
+import { useLanguageStore } from '../stores/languageStore'
 import { TrendingUp, Calendar, Clock } from 'lucide-vue-next'
 
 const financial = useFinancialStore()
 const timer = useTimerStore()
+const language = useLanguageStore()
 const breakdown = computed(() => financial.financialBreakdown)
 
-// Calculate actual earnings based on worked time (exclude embedded and standalone breaks)
 const actualEarnings = computed(() => {
   const hourlyRate = financial.hourlyRate
 
@@ -24,7 +25,6 @@ const actualEarnings = computed(() => {
       const embeddedBreakMs = session.breaks.reduce((acc: number, b: any) => acc + ((b.endedAt - b.startedAt) || b.duration || 0), 0)
       netMs = Math.max(0, netMs - embeddedBreakMs)
     } else {
-      // Legacy: subtract standalone breaks overlapping the session
       const overlappingBreaks = timer.sessions.filter(s =>
         (s.type === 'break' || s.type === 'cigarette') && s.endedAt && s.startedAt < sessionEnd && s.endedAt > sessionStart
       )
@@ -42,7 +42,6 @@ const actualEarnings = computed(() => {
   const workTimeHours = totalWorkTimeMs / 3600000
   const grossEarnings = workTimeHours * hourlyRate
 
-  // Taxes and net rate
   const yearlyGross = financial.hourlyRate * financial.weeklyHours * 52
   let incomeTax = 0
   if (yearlyGross > 10908) {
@@ -62,24 +61,19 @@ const actualEarnings = computed(() => {
   return { gross: grossEarnings, net: Math.max(0, netEarnings), workTimeHours }
 })
 
-// Helper: compute effective work ms in a time range [startMs, endMs]
 const computeWorkMsInRange = (startMs: number, endMs: number) => {
-  // Sum effective work time from completed work sessions overlapping the range
   const workSessions = timer.sessions.filter(s => s.type === 'work' && s.endedAt)
   let totalWorkMs = 0
 
   for (const rawSession of workSessions as any[]) {
     const sessionStart = rawSession.startedAt as number
     const sessionEnd = rawSession.endedAt as number
-    // Skip if no overlap with range
     const overlapStart = Math.max(sessionStart, startMs)
     const overlapEnd = Math.min(sessionEnd, endMs)
     if (overlapEnd <= overlapStart) continue
 
-    // Base duration inside the range window
     const overlappedDuration = overlapEnd - overlapStart
 
-    // If this session has embedded breaks, subtract only overlapping portions
     const embeddedBreaks: any[] = Array.isArray(rawSession.breaks) ? rawSession.breaks : []
     if (embeddedBreaks.length > 0) {
       const overlappedBreakMs = embeddedBreaks.reduce((acc, b) => {
@@ -92,7 +86,6 @@ const computeWorkMsInRange = (startMs: number, endMs: number) => {
       continue
     }
 
-    // Legacy sessions without embedded breaks: subtract standalone break/cigarette sessions that overlap
     const overlappingBreaks = timer.sessions.filter(s =>
       (s.type === 'break' || s.type === 'cigarette') && s.endedAt && s.startedAt < overlapEnd && s.endedAt > overlapStart
     )
@@ -107,7 +100,6 @@ const computeWorkMsInRange = (startMs: number, endMs: number) => {
   return totalWorkMs
 }
 
-// Calculate daily earnings (today's work)
 const dailyEarnings = computed(() => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -118,7 +110,6 @@ const dailyEarnings = computed(() => {
   const todayWorkHours = todayWorkMs / 3600000
   const hourlyRate = financial.hourlyRate
   
-  // Calculate net hourly rate using financial store logic
   const yearlyGross = financial.hourlyRate * financial.weeklyHours * 52
   let incomeTax = 0
   if (yearlyGross > 10908) {
@@ -140,7 +131,6 @@ const dailyEarnings = computed(() => {
   return { gross, net, workTimeHours: todayWorkHours }
 })
 
-// Calculate weekly earnings
 const weeklyEarnings = computed(() => {
   const now = new Date()
   const weekStart = new Date(now)
@@ -154,7 +144,6 @@ const weeklyEarnings = computed(() => {
   const weekWorkHours = weekWorkMs / 3600000
   const hourlyRate = financial.hourlyRate
   
-  // Calculate net hourly rate using financial store logic
   const yearlyGross = financial.hourlyRate * financial.weeklyHours * 52
   let incomeTax = 0
   if (yearlyGross > 10908) {
@@ -176,7 +165,6 @@ const weeklyEarnings = computed(() => {
   return { gross, net, workTimeHours: weekWorkHours }
 })
 
-// Calculate monthly earnings
 const monthlyEarnings = computed(() => {
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -187,7 +175,6 @@ const monthlyEarnings = computed(() => {
   const monthWorkHours = monthWorkMs / 3600000
   const hourlyRate = financial.hourlyRate
   
-  // Calculate net hourly rate using financial store logic
   const yearlyGross = financial.hourlyRate * financial.weeklyHours * 52
   let incomeTax = 0
   if (yearlyGross > 10908) {
@@ -217,135 +204,128 @@ const formatCurrency = (amount: number) => {
     maximumFractionDigits: 2
   }).format(amount)
 }
-
-// const formatPercentage = (value: number, total: number) => {
-//   return ((value / total) * 100).toFixed(1)
-// }
 </script>
 
 <template>
   <div class="space-y-4">
-    <!-- Current Session Earnings -->
     <div class="card-glass p-4">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-semibold text-white">Câștig Sesiune</h3>
+        <h3 class="text-lg font-semibold text-white">{{ language.t('sessionEarnings') }}</h3>
         <Clock class="h-5 w-5 text-blue-400" />
       </div>
       <div class="text-2xl font-bold text-white">
         {{ formatCurrency(actualEarnings.gross) }}
       </div>
       <div class="text-sm text-white/70">
-        Net: {{ formatCurrency(actualEarnings.net) }}
+        {{ language.t('net') }}: {{ formatCurrency(actualEarnings.net) }}
       </div>
       <div class="text-xs text-white/60 mt-1">
-        {{ actualEarnings.workTimeHours.toFixed(1) }}h lucrate
+        {{ actualEarnings.workTimeHours.toFixed(1) }}{{ language.t('hoursWorkedSuffix') }}
       </div>
     </div>
 
-    <!-- Daily Summary -->
     <div class="card-glass p-4">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-semibold text-white">Astăzi</h3>
+        <h3 class="text-lg font-semibold text-white">{{ language.t('today') }}</h3>
         <Calendar class="h-5 w-5 text-green-400" />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <div class="text-sm text-white/70">Brut</div>
+          <div class="text-sm text-white/70">{{ language.t('gross') }}</div>
           <div class="text-xl font-bold text-white">{{ formatCurrency(dailyEarnings.gross) }}</div>
         </div>
         <div>
-          <div class="text-sm text-white/70">Net</div>
+          <div class="text-sm text-white/70">{{ language.t('net') }}</div>
           <div class="text-xl font-bold text-green-400">{{ formatCurrency(dailyEarnings.net) }}</div>
         </div>
       </div>
       <div class="text-xs text-white/60 mt-2">
-        {{ dailyEarnings.workTimeHours.toFixed(1) }}h lucrate astăzi
+        {{ dailyEarnings.workTimeHours.toFixed(1) }}{{ language.t('hoursWorkedTodaySuffix') }}
       </div>
     </div>
 
-    <!-- Weekly Summary -->
     <div class="card-glass p-4">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-semibold text-white">Săptămâna</h3>
+        <h3 class="text-lg font-semibold text-white">{{ language.t('week') }}</h3>
         <TrendingUp class="h-5 w-5 text-purple-400" />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <div class="text-sm text-white/70">Brut</div>
+          <div class="text-sm text-white/70">{{ language.t('gross') }}</div>
           <div class="text-xl font-bold text-white">{{ formatCurrency(weeklyEarnings.gross) }}</div>
         </div>
         <div>
-          <div class="text-sm text-white/70">Net</div>
+          <div class="text-sm text-white/70">{{ language.t('net') }}</div>
           <div class="text-xl font-bold text-green-400">{{ formatCurrency(weeklyEarnings.net) }}</div>
         </div>
       </div>
       <div class="text-xs text-white/60 mt-2">
-        {{ weeklyEarnings.workTimeHours.toFixed(1) }}h lucrate săptămâna aceasta
+        {{ weeklyEarnings.workTimeHours.toFixed(1) }}{{ language.t('hoursWorkedWeekSuffix') }}
       </div>
     </div>
 
-    <!-- Monthly Summary -->
     <div class="card-glass p-4">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-semibold text-white">Luna</h3>
+        <h3 class="text-lg font-semibold text-white">{{ language.t('month') }}</h3>
         <Calendar class="h-5 w-5 text-orange-400" />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <div class="text-sm text-white/70">Brut</div>
+          <div class="text-sm text-white/70">{{ language.t('gross') }}</div>
           <div class="text-xl font-bold text-white">{{ formatCurrency(monthlyEarnings.gross) }}</div>
         </div>
         <div>
-          <div class="text-sm text-white/70">Net</div>
+          <div class="text-sm text-white/70">{{ language.t('net') }}</div>
           <div class="text-xl font-bold text-green-400">{{ formatCurrency(monthlyEarnings.net) }}</div>
         </div>
       </div>
       <div class="text-xs text-white/60 mt-2">
-        {{ monthlyEarnings.workTimeHours.toFixed(1) }}h lucrate luna aceasta
+        {{ monthlyEarnings.workTimeHours.toFixed(1) }}{{ language.t('hoursWorkedMonthSuffix') }}
       </div>
     </div>
 
-    <!-- Tax Breakdown -->
     <div class="card-glass p-4">
-      <h3 class="text-lg font-semibold text-white mb-3">Impozite (Anual)</h3>
+      <h3 class="text-lg font-semibold text-white mb-3">{{ language.t('taxesAnnual') }}</h3>
       <div class="space-y-2">
         <div class="flex justify-between text-sm">
-          <span class="text-white/70">Impozit pe venit</span>
+          <span class="text-white/70">{{ language.t('incomeTax') }}</span>
           <span class="text-white">{{ formatCurrency(breakdown.taxes.incomeTax) }}</span>
         </div>
         <div class="flex justify-between text-sm">
-          <span class="text-white/70">Contribuții sociale</span>
+          <span class="text-white/70">{{ language.t('socialContributions') }}</span>
           <span class="text-white">{{ formatCurrency(breakdown.taxes.socialContributions) }}</span>
         </div>
         <div class="flex justify-between text-sm">
-          <span class="text-white/70">Solidaritätszuschlag</span>
+          <span class="text-white/70">{{ language.t('solidaritySurcharge') }}</span>
           <span class="text-white">{{ formatCurrency(breakdown.taxes.solidaritySurcharge) }}</span>
         </div>
         <div class="border-t border-white/20 pt-2">
           <div class="flex justify-between font-semibold">
-            <span class="text-white">Total impozite</span>
+            <span class="text-white">{{ language.t('totalTaxes') }}</span>
             <span class="text-red-400">{{ formatCurrency(breakdown.taxes.totalTaxes) }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Rate Information -->
     <div class="card-glass p-4">
-      <h3 class="text-lg font-semibold text-white mb-3">Rate Orară</h3>
+      <h3 class="text-lg font-semibold text-white mb-3">{{ language.t('hourlyRate') }}</h3>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <div class="text-sm text-white/70">Brut</div>
+          <div class="text-sm text-white/70">{{ language.t('gross') }}</div>
           <div class="text-xl font-bold text-white">{{ formatCurrency(breakdown.grossHourly) }}</div>
         </div>
         <div>
-          <div class="text-sm text-white/70">Net</div>
+          <div class="text-sm text-white/70">{{ language.t('net') }}</div>
           <div class="text-xl font-bold text-green-400">{{ formatCurrency(breakdown.netHourly) }}</div>
         </div>
       </div>
       <div class="mt-3 text-xs text-white/60">
-        Clasa fiscală {{ financial.taxClass }} • {{ financial.weeklyHours }}h/săptămână
+        {{ language.t('taxClassLabel') }} {{ financial.taxClass }} • {{ financial.weeklyHours }}{{ language.t('hoursPerWeekSuffix') }}
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+</style>

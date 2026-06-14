@@ -27,7 +27,6 @@ const navigateTo = (page: string) => {
 
 const closeApp = () => {
   if (confirm(language.t('warning') + ': ' + language.t('closeApp') + '?')) {
-    // In a real app, this would close the app
     window.close()
   }
   closeMenu()
@@ -45,7 +44,6 @@ const menuItems = [
 
 <template>
   <div class="relative">
-    <!-- Burger Button -->
     <button 
       @click="toggleMenu"
       class="btn btn-primary p-3 rounded-full"
@@ -54,28 +52,24 @@ const menuItems = [
       <X v-else class="h-6 w-6" />
     </button>
 
-    <!-- Overlay -->
     <div 
       v-if="isOpen" 
       @click="closeMenu"
       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
     ></div>
 
-    <!-- Menu Panel -->
     <div 
       v-if="isOpen"
       class="fixed top-0 right-0 h-full w-80 bg-white/20 backdrop-blur-xl border-l border-white/30 z-50 transform transition-transform duration-300 ease-in-out"
     >
       <div class="p-6">
-        <!-- Header -->
         <div class="flex items-center justify-between mb-8">
-          <h2 class="text-xl font-bold text-white">{{ language.t('settings') }}</h2>
+          <h2 class="text-xl font-bold text-white">{{ language.t('menu') }}</h2>
           <button @click="closeMenu" class="text-white/70 hover:text-white">
             <X class="h-6 w-6" />
           </button>
         </div>
 
-        <!-- Menu Items -->
         <nav class="space-y-4">
           <button
             v-for="item in menuItems"
@@ -88,7 +82,6 @@ const menuItems = [
           </button>
         </nav>
 
-        <!-- Close App Button -->
         <div class="mt-8 pt-6 border-t border-white/20">
           <button
             @click="closeApp"
@@ -108,5 +101,4 @@ const menuItems = [
 </template>
 
 <style scoped>
-/* Additional styles if needed */
 </style>

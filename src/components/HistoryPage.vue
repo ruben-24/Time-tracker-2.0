@@ -57,7 +57,7 @@ const formatMonthLabel = (key: string): string => {
   const y = Number(yStr)
   const m = Number(mStr)
   const date = new Date(y, m - 1, 1)
-  return date.toLocaleDateString('ro-RO', { month: 'long', year: 'numeric' })
+  return date.toLocaleDateString(language.locale === 'ro' ? 'ro-RO' : 'de-DE', { month: 'long', year: 'numeric' })
 }
 
 const computeMonthTotals = (monthSessions: Session[]): MonthTotals => {
@@ -68,7 +68,6 @@ const computeMonthTotals = (monthSessions: Session[]): MonthTotals => {
   const workSessions = monthSessions.filter(s => s.type === 'work') as Session[]
   const standaloneBreaks = monthSessions.filter(s => s.type === 'break' || s.type === 'cigarette') as Session[]
 
-  // Work totals: sum net work time (subtract embedded breaks; fallback to overlapping standalone if no embedded)
   for (const s of workSessions) {
     if (!s.endedAt) continue
     const gross = s.endedAt - s.startedAt
@@ -76,19 +75,16 @@ const computeMonthTotals = (monthSessions: Session[]): MonthTotals => {
       const embedded = s.breaks.reduce((acc, b) => acc + (b.duration || Math.max(0, (b.endedAt || 0) - b.startedAt)), 0)
       workMs += Math.max(0, gross - embedded)
     } else {
-      // Legacy fallback: subtract overlapping standalone breaks in the same month
       const overlapping = standaloneBreaks.filter(b => b.endedAt && b.startedAt < s.endedAt! && b.endedAt! > s.startedAt)
       const overlapMs = overlapping.reduce((acc, b) => acc + Math.max(0, Math.min(b.endedAt!, s.endedAt!) - Math.max(b.startedAt, s.startedAt)), 0)
       workMs += Math.max(0, gross - overlapMs)
     }
   }
 
-  // Break totals: standalone break + in-session breaks
   const standaloneBreakMs = standaloneBreaks.reduce((acc, b) => acc + (b.endedAt ? Math.max(0, b.endedAt - b.startedAt) : 0), 0)
   const inSessionBreakMs = workSessions.reduce((acc, s) => acc + (s.breaks?.reduce((bAcc, b) => bAcc + (b.duration || Math.max(0, (b.endedAt || 0) - b.startedAt)), 0) || 0), 0)
   breakMs = standaloneBreakMs + inSessionBreakMs
 
-  // Cigarette totals: standalone cigarettes + in-session cigarette breaks
   const standaloneCigaretteMs = monthSessions
     .filter(s => s.type === 'cigarette')
     .reduce((acc, c) => acc + (c.endedAt ? Math.max(0, c.endedAt - c.startedAt) : 0), 0)
@@ -99,7 +95,6 @@ const computeMonthTotals = (monthSessions: Session[]): MonthTotals => {
 }
 
 const groupedMonths = computed<MonthGroup[]>(() => {
-  // Map of sessions to display (respects filter)
   const displayMap = new Map<string, Session[]>()
   for (const s of filteredSessions.value) {
     const key = getMonthKey(s.startedAt)
@@ -108,7 +103,6 @@ const groupedMonths = computed<MonthGroup[]>(() => {
     else displayMap.set(key, [s])
   }
 
-  // Map of all sessions (for accurate per-month totals regardless of filter)
   const allMap = new Map<string, Session[]>()
   for (const s of timer.sessions) {
     const key = getMonthKey(s.startedAt)
@@ -129,7 +123,6 @@ const groupedMonths = computed<MonthGroup[]>(() => {
     })
   }
 
-  // Sort groups by year-month descending
   groups.sort((a, b) => b.key.localeCompare(a.key))
   return groups
 })
@@ -150,29 +143,29 @@ watch(groupedMonths, groups => {
 }, { immediate: true })
 
 const deleteSession = (sessionId: string) => {
-  if (confirm('Sigur vrei să ștergi această sesiune?')) {
+  if (confirm(language.t('confirmDeleteSession'))) {
     timer.sessions = timer.sessions.filter(s => s.id !== sessionId)
     timer.persist()
   }
 }
 
 const cleanupOldData = () => {
-  if (confirm('Sigur vrei să elimini toate sesiunile vechi de pauză din istoric? Această acțiune nu poate fi anulată.')) {
+  if (confirm(language.t('confirmCleanupOldBreaks'))) {
     const beforeCount = timer.sessions.length
     timer.cleanupOldBreakSessions()
     const afterCount = timer.sessions.length
     const removedCount = beforeCount - afterCount
     
     if (removedCount > 0) {
-      alert(`Datele au fost curățate! Au fost eliminate ${removedCount} sesiuni duplicate.`)
+      alert(`${language.t('cleanupSuccess')} ${removedCount} ${language.t('sessionsRemoved')}`)
     } else {
-      alert('Nu au fost găsite sesiuni duplicate de eliminat.')
+      alert(language.t('cleanupNoSessions'))
     }
   }
 }
 
 const formatDate = (timestamp: number) => {
-  return new Date(timestamp).toLocaleDateString('ro-RO', {
+  return new Date(timestamp).toLocaleDateString(language.locale === 'ro' ? 'ro-RO' : 'de-DE', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -182,9 +175,8 @@ const formatDate = (timestamp: number) => {
 }
 
 const getSessionDuration = (session: any) => {
-  if (!session.endedAt) return 'În desfășurare'
+  if (!session.endedAt) return language.t('inProgress')
   const gross = session.endedAt - session.startedAt
-  // Subtract embedded breaks when present; else subtract overlapping standalone breaks
   if (Array.isArray(session.breaks) && session.breaks.length > 0) {
     const embedded = session.breaks.reduce((acc: number, b: any) => acc + ((b.endedAt - b.startedAt) || b.duration || 0), 0)
     return formatDuration(Math.max(0, gross - embedded))
@@ -193,8 +185,6 @@ const getSessionDuration = (session: any) => {
   const overlapMs = overlapping.reduce((acc, s) => acc + Math.max(0, Math.min(s.endedAt!, session.endedAt) - Math.max(s.startedAt, session.startedAt)), 0)
   return formatDuration(Math.max(0, gross - overlapMs))
 }
-
-// Global totals replaced by per-month totals; keeping helper if needed in future
 
 const toggleSessionDetails = (sessionId: string) => {
   if (expandedSessions.value.has(sessionId)) {
@@ -211,7 +201,6 @@ const getSessionDetails = (session: any) => {
   const dayEnd = new Date(sessionDate)
   dayEnd.setHours(23, 59, 59, 999)
   
-  // Get all sessions from the same day
   const daySessions = timer.sessions.filter(s => {
     const sDate = new Date(s.startedAt)
     return sDate >= dayStart && sDate <= dayEnd
@@ -226,22 +215,20 @@ const getSessionDetails = (session: any) => {
     const startTime = new Date(s.startedAt)
     const endTime = s.endedAt ? new Date(s.endedAt) : null
     
-      if (s.type === 'work') {
-      // Add work start
+    if (s.type === 'work') {
       timeline.push({
         type: 'work_start',
         time: startTime,
-        note: 'Lucru început'
+        note: language.t('workStarted')
       })
       
-      // Add breaks from this work session
       if (s.breaks && s.breaks.length > 0) {
         for (const breakItem of s.breaks) {
           const breakStartTime = new Date(breakItem.startedAt)
           const breakEndTime = new Date(breakItem.endedAt)
           const breakDuration = breakItem.duration
           
-          const breakType = breakItem.type === 'cigarette' ? 'Pauză țigară' : 'Pauză'
+          const breakType = breakItem.type === 'cigarette' ? language.t('cigaretteBreak') : language.t('break')
           
           if (breakItem.type === 'cigarette') {
             totalCigaretteTime += breakDuration
@@ -250,26 +237,23 @@ const getSessionDetails = (session: any) => {
             totalBreakTime += breakDuration
           }
           
-          // Add break start
           timeline.push({
             type: 'break_start',
             time: breakStartTime,
-            note: breakType + ' la ' + formatTime(breakStartTime),
+            note: breakType + ' ' + language.t('atTime') + ' ' + formatTime(breakStartTime),
             breakType: breakItem.type
           })
           
-          // Add break end
           timeline.push({
             type: 'break_end',
             time: breakEndTime,
             duration: breakDuration,
-            note: breakType + ' încheiată',
+            note: breakType + ' ' + language.t('ended'),
             breakType: breakItem.type
           })
         }
       }
       
-      // Add work end if exists
       if (endTime) {
         const sessionDuration = endTime.getTime() - startTime.getTime()
         let netMs = sessionDuration
@@ -282,46 +266,43 @@ const getSessionDetails = (session: any) => {
           type: 'work_end',
           time: endTime,
           duration: netMs,
-          note: 'Program încheiat'
+          note: language.t('workEnded')
         })
       }
     } else if (s.type === 'break' || s.type === 'cigarette') {
-      const breakType = s.type === 'cigarette' ? 'Pauză țigară' : 'Pauză'
+      const breakType = s.type === 'cigarette' ? language.t('cigaretteBreak') : language.t('break')
       const breakDuration = endTime ? endTime.getTime() - startTime.getTime() : 0
       
       if (s.type === 'cigarette') {
         totalCigaretteTime += breakDuration
-        totalBreakTime += breakDuration // Include cigarette breaks in total break time
+        totalBreakTime += breakDuration
       } else {
         totalBreakTime += breakDuration
       }
       
-      // Add break start
       timeline.push({
         type: 'break_start',
         time: startTime,
-        note: breakType + ' la ' + formatTime(startTime),
+        note: breakType + ' ' + language.t('atTime') + ' ' + formatTime(startTime),
         breakType: s.type
       })
       
-      // Add break end if exists
       if (endTime) {
         timeline.push({
           type: 'break_end',
           time: endTime,
           duration: endTime.getTime() - startTime.getTime(),
-          note: breakType + ' încheiată',
+          note: breakType + ' ' + language.t('ended'),
           breakType: s.type
         })
       }
     }
   }
   
-  // actual work time is the sum of net work across sessions (breaks already subtracted)
   const actualWorkTime = totalNetWorkTime
   
   return {
-    date: sessionDate.toLocaleDateString('ro-RO', {
+    date: sessionDate.toLocaleDateString(language.locale === 'ro' ? 'ro-RO' : 'de-DE', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -336,7 +317,7 @@ const getSessionDetails = (session: any) => {
 }
 
 const formatTime = (date: Date) => {
-  return date.toLocaleTimeString('ro-RO', {
+  return date.toLocaleTimeString(language.locale === 'ro' ? 'ro-RO' : 'de-DE', {
     hour: '2-digit',
     minute: '2-digit'
   })
@@ -410,7 +391,7 @@ const saveEdit = () => {
         type: b.type,
         startedAt: fromInputValue(b.startStr),
         endedAt: fromInputValue(b.endStr),
-        duration: 0 // will be normalized in store
+        duration: 0
       }))
       updates.breaks = breaks
     }
@@ -418,7 +399,7 @@ const saveEdit = () => {
     isEditOpen.value = false
     editingSession.value = null
   } catch (e) {
-    alert((e as Error).message || 'Eroare la salvare')
+    alert((e as Error).message || language.t('saveError'))
   }
 }
 
@@ -430,7 +411,6 @@ const cancelEdit = () => {
 
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
-    <!-- Header -->
     <div class="flex items-center justify-between mb-6 pt-4">
       <button @click="emit('navigate', 'main')" class="btn btn-primary p-3 rounded-full">
         <ArrowLeft class="h-5 w-5" />
@@ -444,7 +424,6 @@ const cancelEdit = () => {
       </button>
     </div>
 
-    <!-- Monthly Groups with dropdown -->
     <div v-for="group in groupedMonths" :key="group.key" class="mb-6">
       <button
         @click="toggleMonth(group.key)"
@@ -453,9 +432,9 @@ const cancelEdit = () => {
         <div class="text-left">
           <h2 class="text-lg font-semibold text-white">{{ group.label }}</h2>
           <div class="text-xs text-white/60 mt-1">
-            {{ group.sessions.length }} {{ group.sessions.length === 1 ? 'sesiune' : 'sesiuni' }}
-            • Lucru: {{ formatDuration(group.totals.workMs) }}
-            • Pauză: {{ formatDuration(group.totals.breakMs) }}
+            {{ group.sessions.length }} {{ group.sessions.length === 1 ? language.t('sessionCountSingle') : language.t('sessionCountPlural') }}
+            • {{ language.t('working') }}: {{ formatDuration(group.totals.workMs) }}
+            • {{ language.t('onBreak') }}: {{ formatDuration(group.totals.breakMs) }}
           </div>
         </div>
         <div class="text-white/70">
@@ -481,7 +460,6 @@ const cancelEdit = () => {
             </div>
           </div>
 
-          <!-- Sessions List for the month -->
           <div class="space-y-3">
             <div
               v-for="session in group.sessions"
@@ -499,11 +477,11 @@ const cancelEdit = () => {
                       ]"
                     ></div>
                     <span class="font-semibold text-white">
-                      {{ session.type === 'work' ? 'Lucru' :
-                         session.type === 'break' ? 'Pauză' : 'Pauză țigară' }}
+                      {{ session.type === 'work' ? language.t('work') :
+                         session.type === 'break' ? language.t('break') : language.t('cigaretteBreak') }}
                     </span>
                     <span class="text-white/60 text-sm">
-                      {{ session.manual ? '(Manual)' : '' }}
+                      {{ session.manual ? language.t('manualLabel') : '' }}
                     </span>
                   </div>
 
@@ -535,10 +513,9 @@ const cancelEdit = () => {
                   </div>
                   <button
                     @click="openEdit(session)"
-                    class="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                    title="Editează sesiunea"
+                    class="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors text-sm"
                   >
-                    Edit
+                    {{ language.t('edit') }}
                   </button>
                   <button
                     @click="toggleSessionDetails(session.id)"
@@ -569,7 +546,7 @@ const cancelEdit = () => {
 
                   <div class="flex items-center gap-2 mb-3">
                     <Clock class="h-4 w-4 text-blue-400" />
-                    <span class="font-semibold text-white">Cronologia zilei {{ getSessionDetails(session).date }}</span>
+                    <span class="font-semibold text-white">{{ language.t('dayTimeline') }} {{ getSessionDetails(session).date }}</span>
                   </div>
 
                   <div class="space-y-2">
@@ -589,7 +566,7 @@ const cancelEdit = () => {
                       <div class="flex-1">
                         <div class="text-sm text-white font-medium">{{ event.note }}</div>
                         <div v-if="event.duration" class="text-xs text-white/60">
-                          Durată: {{ formatDuration(event.duration) }}
+                          {{ language.t('duration') }}: {{ formatDuration(event.duration) }}
                         </div>
                       </div>
                     </div>
@@ -606,7 +583,6 @@ const cancelEdit = () => {
       </Transition>
     </div>
 
-    <!-- Cleanup Button -->
     <div class="card-glass p-4 mb-6">
       <div class="flex items-center justify-between">
         <div>
@@ -617,45 +593,41 @@ const cancelEdit = () => {
           @click="cleanupOldData"
           class="btn btn-danger"
         >
-          Curăță datele
+          {{ language.t('cleanupData') }}
         </button>
       </div>
     </div>
 
-    <!-- Filters -->
     <div v-if="showFilters" class="card-glass p-4 mb-6">
-      <h3 class="text-lg font-semibold text-white mb-4">{{ language.t('settings') }}</h3>
+      <h3 class="text-lg font-semibold text-white mb-4">{{ language.t('filters') }}</h3>
       <div class="flex gap-2">
         <button 
           @click="filterType = 'all'"
           :class="['btn', filterType === 'all' ? 'btn-primary' : 'btn-secondary']"
         >
-          Toate
+          {{ language.t('filterAll') }}
         </button>
         <button 
           @click="filterType = 'work'"
           :class="['btn', filterType === 'work' ? 'btn-primary' : 'btn-secondary']"
         >
-          Lucru
+          {{ language.t('work') }}
         </button>
         <button 
           @click="filterType = 'break'"
           :class="['btn', filterType === 'break' ? 'btn-primary' : 'btn-secondary']"
         >
-          Pauză
+          {{ language.t('break') }}
         </button>
         <button 
           @click="filterType = 'cigarette'"
           :class="['btn', filterType === 'cigarette' ? 'btn-primary' : 'btn-secondary']"
         >
-          Țigară
+          {{ language.t('cigaretteBreak') }}
         </button>
       </div>
     </div>
 
-    
-
-    <!-- Empty State -->
     <div v-if="groupedMonths.length === 0" class="text-center py-12">
       <div class="text-white/50 mb-4">
         <Calendar class="h-16 w-16 mx-auto mb-4" />
@@ -665,10 +637,9 @@ const cancelEdit = () => {
     </div>
   </div>
   
-  <!-- Edit Modal -->
   <div v-if="isEditOpen" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
     <div class="card-glass w-full max-w-lg p-5">
-      <h3 class="text-lg font-semibold text-white mb-4">{{ language.t('settings') }}</h3>
+      <h3 class="text-lg font-semibold text-white mb-4">{{ language.t('editSession') }}</h3>
       <div v-if="editingSession" class="space-y-3">
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -687,27 +658,27 @@ const cancelEdit = () => {
 
         <div v-if="editingSession.type === 'work'" class="pt-2">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm text-white/80 font-medium">{{ language.t('pause') }}</span>
-            <button class="btn btn-amber px-3 py-1 text-xs" @click="addEditBreak">{{ language.t('startBreak') }}</button>
+            <span class="text-sm text-white/80 font-medium">{{ language.t('breaks') }}</span>
+            <button class="btn btn-amber px-3 py-1 text-xs" @click="addEditBreak">{{ language.t('addBreak') }}</button>
           </div>
           <div v-if="editingSession.breaks && editingSession.breaks.length > 0" class="space-y-2 max-h-48 overflow-y-auto pr-1">
             <div v-for="(b, idx) in editingSession.breaks" :key="b.id" class="grid grid-cols-2 gap-2 items-end bg-white/5 rounded-lg p-2">
               <div>
-                <label class="block text-xs text-white/60 mb-1">{{ language.t('settings') }}</label>
+                <label class="block text-xs text-white/60 mb-1">{{ language.t('type') }}</label>
                 <select v-model="b.type" class="w-full rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white text-xs">
-                  <option value="break">Pauză</option>
-                  <option value="cigarette">Țigară</option>
+                  <option value="break">{{ language.t('break') }}</option>
+                  <option value="cigarette">{{ language.t('cigaretteBreak') }}</option>
                 </select>
               </div>
               <div class="text-right">
-                <button class="text-rose-400 text-xs" @click="removeEditBreak(idx)">Șterge</button>
+                <button class="text-rose-400 text-xs" @click="removeEditBreak(idx)">{{ language.t('delete') }}</button>
               </div>
               <div>
-                <label class="block text-xs text-white/60 mb-1">Start</label>
+                <label class="block text-xs text-white/60 mb-1">{{ language.t('startTimeLabel') }}</label>
                 <input type="datetime-local" v-model="b.startStr" class="w-full rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white text-xs" />
               </div>
               <div>
-                <label class="block text-xs text-white/60 mb-1">Stop</label>
+                <label class="block text-xs text-white/60 mb-1">{{ language.t('endTimeLabel') }}</label>
                 <input type="datetime-local" v-model="b.endStr" class="w-full rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white text-xs" />
               </div>
             </div>

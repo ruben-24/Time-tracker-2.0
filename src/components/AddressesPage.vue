@@ -25,7 +25,7 @@ const addAddress = () => {
 }
 
 const deleteAddress = (id: string) => {
-  if (confirm('Sigur vrei să ștergi această adresă?')) {
+  if (confirm(language.t('confirmDeleteAddress'))) {
     timer.deleteExtraAddress(id)
   }
 }
@@ -57,7 +57,6 @@ const cancelEdit = () => {
 
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
-    <!-- Header -->
     <div class="flex items-center justify-between mb-6 pt-4">
       <button @click="emit('navigate', 'main')" class="btn btn-primary p-3 rounded-full">
         <ArrowLeft class="h-5 w-5" />
@@ -71,30 +70,29 @@ const cancelEdit = () => {
       </button>
     </div>
 
-    <!-- Add/Edit Form -->
     <div v-if="showAddForm" class="card-glass p-6 mb-6">
       <h3 class="text-lg font-semibold text-white mb-4">
-        {{ editingAddress ? 'Editează Adresa' : 'Adaugă Adresă Nouă' }}
+        {{ editingAddress ? language.t('editAddress') : language.t('addNewAddress') }}
       </h3>
       
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-white/80 mb-2">
-            Numele adresei
+            {{ language.t('addressNameLabel') }}
           </label>
           <input
             v-model="newAddressName"
-            placeholder="ex: Client A - Birou"
+            :placeholder="language.t('addressNamePlaceholder')"
             class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-blue-400 focus:outline-none"
           />
         </div>
         <div>
           <label class="block text-sm font-medium text-white/80 mb-2">
-            Adresa
+            {{ language.t('addressLabel') }}
           </label>
           <textarea
             v-model="newAddress"
-            placeholder="Introduceți adresa completă..."
+            :placeholder="language.t('addressPlaceholder')"
             class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-blue-400 focus:outline-none resize-none"
             rows="3"
           ></textarea>
@@ -105,19 +103,18 @@ const cancelEdit = () => {
             @click="editingAddress ? saveEdit() : addAddress()"
             class="btn btn-primary flex-1"
           >
-            {{ editingAddress ? 'Salvează' : 'Adaugă' }}
+            {{ editingAddress ? language.t('save') : language.t('add') }}
           </button>
           <button 
             @click="cancelEdit"
             class="btn btn-rose flex-1"
           >
-            Anulează
+            {{ language.t('cancel') }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Addresses List -->
     <div class="space-y-4">
       <div 
         v-for="address in timer.extraAddresses" 
@@ -148,7 +145,6 @@ const cancelEdit = () => {
       </div>
     </div>
 
-    <!-- Empty State -->
     <div v-if="timer.extraAddresses.length === 0" class="text-center py-12">
       <div class="text-white/50 mb-4">
         <MapPin class="h-16 w-16 mx-auto mb-4" />
@@ -160,5 +156,4 @@ const cancelEdit = () => {
 </template>
 
 <style scoped>
-/* Additional styles if needed */
 </style>

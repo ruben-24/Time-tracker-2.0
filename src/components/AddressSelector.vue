@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
+import { useLanguageStore } from '../stores/languageStore'
 import { MapPin, ChevronDown } from 'lucide-vue-next'
 
 const timer = useTimerStore()
+const language = useLanguageStore()
 const isOpen = ref(false)
 const dropdownRef = ref<HTMLElement>()
 
 const allAddresses = computed(() => {
   const addresses = [
-    { id: 'default', name: 'Adresa Default', address: timer.defaultAddress }
+    { id: 'default', name: language.t('defaultAddress'), address: timer.defaultAddress }
   ]
   
   if (timer.customAddress) {
-    addresses.push({ id: 'custom', name: 'Adresa Personalizată', address: timer.customAddress })
+    addresses.push({ id: 'custom', name: language.t('customAddress'), address: timer.customAddress })
   }
   
   addresses.push(...timer.extraAddresses)
@@ -25,7 +27,7 @@ const selectedAddress = computed(() => {
   if (timer.selectedAddressId) {
     return allAddresses.value.find(addr => addr.id === timer.selectedAddressId)
   }
-  return allAddresses.value[0] // Default address
+  return allAddresses.value[0]
 })
 
 const selectAddress = (addressId: string | null) => {
@@ -60,8 +62,8 @@ onUnmounted(() => {
     >
       <MapPin class="h-4 w-4 text-blue-400 flex-shrink-0" />
       <div class="flex-1 min-w-0">
-        <div class="text-xs text-white/70 font-medium">Adresa curentă</div>
-        <div class="text-sm text-white truncate">{{ selectedAddress?.name || 'Adresa Default' }}</div>
+        <div class="text-xs text-white/70 font-medium">{{ language.t('currentAddress') }}</div>
+        <div class="text-sm text-white truncate">{{ selectedAddress?.id === 'default' ? language.t('defaultAddress') : (selectedAddress?.id === 'custom' ? language.t('customAddress') : selectedAddress?.name) }}</div>
         <div class="text-xs text-white/60 truncate">{{ selectedAddress?.address }}</div>
       </div>
       <ChevronDown 
@@ -69,7 +71,6 @@ onUnmounted(() => {
       />
     </div>
     
-    <!-- Dropdown -->
     <div 
       v-if="isOpen"
       class="absolute top-full left-0 right-0 mt-1 bg-white/95 backdrop-blur-sm rounded-lg shadow-xl border border-white/20 z-50 max-h-60 overflow-y-auto"
@@ -86,7 +87,7 @@ onUnmounted(() => {
               : 'hover:bg-white/20'
           ]"
         >
-          <div class="font-medium text-gray-800">{{ address.name }}</div>
+          <div class="font-medium text-gray-800">{{ address.id === 'default' ? language.t('defaultAddress') : (address.id === 'custom' ? language.t('customAddress') : address.name) }}</div>
           <div class="text-sm text-gray-600 truncate">{{ address.address }}</div>
         </div>
         
@@ -101,7 +102,7 @@ onUnmounted(() => {
               : 'hover:bg-white/20'
           ]"
         >
-          <div class="font-medium text-gray-800">Adresa Default</div>
+          <div class="font-medium text-gray-800">{{ language.t('defaultAddress') }}</div>
           <div class="text-sm text-gray-600">{{ timer.defaultAddress }}</div>
         </div>
       </div>
@@ -110,5 +111,4 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Additional styles if needed */
 </style>

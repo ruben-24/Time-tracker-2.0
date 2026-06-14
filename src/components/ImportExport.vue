@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
+import { useLanguageStore } from '../stores/languageStore'
 import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
 import { parseSpreadsheetRows } from '../utils/importSpreadsheet'
 
 const timer = useTimerStore()
+const language = useLanguageStore()
 const exportText = ref<string>('')
 const isNativeApp = Capacitor.isNativePlatform()
 
@@ -29,12 +31,10 @@ async function exportSaveAs() {
     const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`
     const filename = `time-tracker-export-${stamp}.json`
 
-    // Native iOS/Android: write to cache and open share sheet (Save to Files lets user choose folder)
     if (Capacitor.isNativePlatform()) {
       if (!Capacitor.isPluginAvailable('Share')) {
-        // Fallback: save in Files default folder
         await timer.saveToFile(timer.$state)
-        alert('Share indisponibil. Backup salvat în Files → On My iPhone → ChronoFlux → TimeTracker')
+        alert(`${language.t('shareUnavailableFallback')} Files → On My iPhone → ChronoFlux → TimeTracker`)
         return
       }
 
@@ -46,15 +46,14 @@ async function exportSaveAs() {
       })
       const { uri } = await Filesystem.getUri({ path: filename, directory: Directory.Cache })
       await Share.share({
-        title: 'Exportă date ChronoFlux',
-        text: 'Salvează fișierul JSON în Files',
+        title: language.t('exportTitle'),
+        text: language.t('exportShareText'),
         files: [uri],
-        dialogTitle: 'Exportă date'
+        dialogTitle: language.t('exportDialogTitle')
       })
       return
     }
 
-    // Web fallback: trigger download
     const blob = new Blob([data], { type: 'application/json;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -68,11 +67,11 @@ async function exportSaveAs() {
     try {
       if (Capacitor.isNativePlatform()) {
         await timer.saveToFile(timer.$state)
-        alert('Nu s-a putut deschide Share. Backup salvat în Files → On My iPhone → ChronoFlux → TimeTracker')
+        alert(`${language.t('shareErrorFallback')} Files → On My iPhone → ChronoFlux → TimeTracker`)
         return
       }
     } catch {}
-    alert('Exportul a eșuat. Încearcă din nou.')
+    alert(language.t('exportFailed'))
   }
 }
 
@@ -97,14 +96,14 @@ async function importFile(file: File) {
     if (isJson) {
       const text = await file.text()
       await timer.importData(text)
-      alert('Import reușit!')
+      alert(language.t('importSuccess'))
     } else if (isSpreadsheet) {
       await importSpreadsheetFile(file)
     } else {
-      alert('Format neacceptat. Folosește JSON exportat din aplicație sau un fișier Excel/CSV cu coloanele Date, Start, End, Type, Note.')
+      alert(language.t('unsupportedFormatError'))
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Importul a eșuat.'
+    const message = error instanceof Error ? error.message : language.t('importFailed')
     alert(message)
   }
 }
@@ -123,52 +122,52 @@ async function importSpreadsheetFile(file: File) {
     }
 
     if (!Array.isArray(workbook.SheetNames) || workbook.SheetNames.length === 0) {
-      throw new Error('Fișierul nu conține nicio foaie.')
+      throw new Error(language.t('emptySheetsError'))
     }
 
     const firstSheetName = workbook.SheetNames[0]
     if (!firstSheetName) {
-      throw new Error('Fișierul nu conține nicio foaie.')
+      throw new Error(language.t('emptySheetsError'))
     }
 
     const sheet = workbook.Sheets[firstSheetName]
     if (!sheet) {
-      throw new Error('Nu am putut citi prima foaie din document.')
+      throw new Error(language.t('readSheetError'))
     }
 
     const rows = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: null })
 
     if (!Array.isArray(rows) || rows.length === 0) {
-      throw new Error('Fișierul pare gol.')
+      throw new Error(language.t('emptyFileError'))
     }
 
     const { entries, errors, warnings } = parseSpreadsheetRows(rows)
 
     if (errors.length > 0) {
       const preview = errors.slice(0, 5).join('\n• ')
-      throw new Error(`Nu am putut importa toate rândurile:\n• ${preview}${errors.length > 5 ? '\n• …' : ''}`)
+      throw new Error(`${language.t('importRowsError')}\n• ${preview}${errors.length > 5 ? '\n• …' : ''}`)
     }
 
     if (entries.length === 0) {
-      throw new Error('Nu am găsit rânduri valide de importat.')
+      throw new Error(language.t('noValidRowsError'))
     }
 
     const { inserted, skipped } = timer.addImportedSessions(entries)
-    const info: string[] = [`Import reușit: ${inserted} rânduri adăugate.`]
+    const info: string[] = [`${language.t('importSuccessRows')} ${inserted} ${language.t('rowsAdded')}`]
 
     if (skipped > 0) {
-      info.push(`${skipped} rânduri au fost ignorate (duplicat sau date invalide).`)
+      info.push(`${skipped} ${language.t('rowsSkipped')}`)
     }
 
     if (warnings.length > 0) {
       const preview = warnings.slice(0, 5).join('\n• ')
-      info.push(`Atenție:\n• ${preview}${warnings.length > 5 ? '\n• …' : ''}`)
+      info.push(`${language.t('warningLabel')}\n• ${preview}${warnings.length > 5 ? '\n• …' : ''}`)
     }
 
     alert(info.join('\n\n'))
   } catch (error) {
     console.error('Spreadsheet import error:', error)
-    const message = error instanceof Error ? error.message : 'Importul fișierului Excel/CSV a eșuat.'
+    const message = error instanceof Error ? error.message : language.t('excelImportFailed')
     throw new Error(message)
   }
 }
@@ -180,7 +179,7 @@ async function openNativeImport() {
     await importFile(file)
   } catch (error) {
     if (isPickerCancelled(error)) return
-    const message = error instanceof Error ? error.message : 'Importul a eșuat.'
+    const message = error instanceof Error ? error.message : language.t('importFailed')
     alert(message)
   }
 }
@@ -188,12 +187,10 @@ async function openNativeImport() {
 async function pickNativeFile(): Promise<File | null> {
   try {
     if (!Capacitor.isPluginAvailable?.('FilePicker')) {
-      throw new Error('FilePicker indisponibil. Reinstalează aplicația sau rulează importul din browser.')
+      throw new Error(language.t('filePickerUnavailable'))
     }
     const { FilePicker } = await import('@capawesome/capacitor-file-picker')
     const result = await FilePicker.pickFiles({
-      // Leaving `types` undefined allows the user to pick any file they can see in Files.
-      // iOS still suggests relevant types automatically.
       readData: true,
       limit: 1
     })
@@ -208,7 +205,7 @@ async function pickNativeFile(): Promise<File | null> {
       } catch {}
     }
     if (!base64Data) {
-      throw new Error('Nu am putut citi conținutul fișierului selectat.')
+      throw new Error(language.t('readFileContentError'))
     }
 
     const mimeType = fileInfo.mimeType || guessMimeType(fileInfo.name)
@@ -233,7 +230,7 @@ function base64ToBlob(base64: string, mimeType: string): Blob {
     ? base64.split(',').pop()!.trim()
     : base64.trim()
   if (typeof atob !== 'function') {
-    throw new Error('Decodarea fișierului a eșuat: funcția base64 indisponibilă.')
+    throw new Error(language.t('base64DecodeError'))
   }
   const binaryString = atob(cleaned)
   const len = binaryString.length
@@ -272,20 +269,20 @@ function isPickerCancelled(error: unknown): boolean {
   <div class="space-y-4">
     <div>
       <div class="flex flex-wrap gap-2">
-        <button class="rounded-lg bg-gray-800 px-4 py-2 text-white hover:bg-gray-900" @click="doExport">Exportă (text)</button>
-        <button class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" @click="exportSaveAs">Salvează ca fișier…</button>
+        <button class="rounded-lg bg-gray-800 px-4 py-2 text-white hover:bg-gray-900" @click="doExport">{{ language.t('exportTextButton') }}</button>
+        <button class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" @click="exportSaveAs">{{ language.t('exportFileButton') }}</button>
       </div>
-      <textarea readonly class="mt-2 w-full rounded-lg border p-3 text-sm" rows="6" :value="exportText" placeholder="JSON exportat va apărea aici"></textarea>
+      <textarea readonly class="mt-2 w-full rounded-lg border p-3 text-sm" rows="6" :value="exportText" :placeholder="language.t('exportPlaceholder')"></textarea>
     </div>
     <div>
-      <label class="mb-2 block text-sm font-medium">Importă din fișier (JSON / Excel / CSV)</label>
+      <label class="mb-2 block text-sm font-medium">{{ language.t('importLabel') }}</label>
       <template v-if="isNativeApp">
         <button
           class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           type="button"
           @click="openNativeImport"
         >
-          Alege din Files…
+          {{ language.t('chooseFilesButton') }}
         </button>
       </template>
       <template v-else>
@@ -295,8 +292,7 @@ function isPickerCancelled(error: unknown): boolean {
         />
       </template>
       <p class="mt-2 text-xs text-gray-500">
-        Pentru Excel/CSV folosește coloanele: <strong>Date</strong>, <strong>Start</strong>, <strong>End</strong>,
-        opțional <strong>Type</strong> (work/break/cigarette), <strong>Note</strong>, <strong>Address</strong>.
+        {{ language.t('importHelpText') }}
       </p>
     </div>
   </div>

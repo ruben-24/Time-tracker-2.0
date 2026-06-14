@@ -16,40 +16,30 @@ const financial = useFinancialStore()
 const theme = useThemeStore()
 const language = useLanguageStore()
 
-// Settings state
 const showDeleteConfirm = ref(false)
-
-// Language selection
 const selectedLanguage = ref<Language>('ro')
 
-// Notification settings
 const notificationsEnabled = ref(true)
 const breakReminders = ref(true)
 const workReminders = ref(false)
 
-// Timer settings
 const autoStartBreak = ref(false)
-const breakDuration = ref(15) // minutes
-const workSessionGoal = ref(8) // hours
+const breakDuration = ref(15)
+const workSessionGoal = ref(8)
 
-// Financial settings
 const hourlyRate = ref(financial.hourlyRate)
 const weeklyHours = ref(financial.weeklyHours)
 const taxClass = ref(financial.taxClass)
 
-// Address settings
 const defaultAddress = ref(timer.defaultAddress)
 
-// Theme settings
 const customBackgroundColor = ref(theme.settings.backgroundColors.primary)
 const customButtonColor = ref(theme.settings.buttonColors.primary)
 
-// Preset selectors
 const selectedBgPreset = ref<string>('')
 const selectedBtnPreset = ref<string>('')
 
 const syncSelectedPresets = () => {
-  // Try to find matching background preset by colors
   const bg = theme.backgroundPresets.find(p =>
     p.colors.primary === theme.settings.backgroundColors.primary &&
     p.colors.secondary === theme.settings.backgroundColors.secondary &&
@@ -58,7 +48,6 @@ const syncSelectedPresets = () => {
   )
   selectedBgPreset.value = bg ? bg.name : ''
 
-  // Try to find matching button preset by colors
   const bp = theme.buttonPresets.find(p =>
     p.colors.primary === theme.settings.buttonColors.primary &&
     p.colors.secondary === theme.settings.buttonColors.secondary &&
@@ -74,7 +63,6 @@ onMounted(async () => {
   selectedLanguage.value = language.currentLanguage
   syncSelectedPresets()
   
-  // Load saved settings
   const savedNotifications = localStorage.getItem('notificationsEnabled')
   if (savedNotifications !== null) {
     notificationsEnabled.value = savedNotifications === 'true'
@@ -106,7 +94,6 @@ onMounted(async () => {
   }
 })
 
-// Auto-save watchers
 watch(notificationsEnabled, (newValue) => {
   localStorage.setItem('notificationsEnabled', newValue.toString())
 })
@@ -132,7 +119,6 @@ watch(workSessionGoal, (newValue) => {
 })
 
 watch(hourlyRate, (newValue) => {
-  // Validate hourly rate
   if (newValue < 0) {
     hourlyRate.value = 0
     return
@@ -150,7 +136,6 @@ watch(hourlyRate, (newValue) => {
 })
 
 watch(weeklyHours, (newValue) => {
-  // Validate weekly hours
   if (newValue < 1) {
     weeklyHours.value = 1
     return
@@ -168,7 +153,6 @@ watch(weeklyHours, (newValue) => {
 })
 
 watch(taxClass, (newValue) => {
-  // Validate tax class
   if (newValue < 1) {
     taxClass.value = 1
     return
@@ -209,17 +193,14 @@ watch(customButtonColor, (newValue) => {
   })
 })
 
-// Language watcher
 watch(selectedLanguage, (newLang) => {
   language.setLanguage(newLang)
 })
-
 
 const updateDefaultAddress = () => {
   timer.defaultAddress = defaultAddress.value
   timer.persist()
 }
-
 
 const deleteAllData = () => {
   if (confirm(language.t('warning') + ': ' + language.t('changelog'))) {
@@ -232,8 +213,6 @@ const deleteAllData = () => {
   }
 }
 
-
-// Theme functions
 const applyBackgroundPreset = (preset: any) => {
   theme.applyBackgroundPreset(preset)
   customBackgroundColor.value = preset.colors.primary
@@ -271,7 +250,6 @@ const resetTheme = () => {
 
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 p-4 safe-top">
-    <!-- Header -->
     <div class="flex items-center justify-between mb-6 pt-4">
       <button @click="emit('navigate', 'main')" class="btn btn-primary p-3 rounded-full">
         <ArrowLeft class="h-5 w-5" />
@@ -281,7 +259,6 @@ const resetTheme = () => {
     </div>
 
     <div class="space-y-6">
-      <!-- Language Selection -->
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <Settings class="h-6 w-6 text-cyan-400" />
@@ -299,12 +276,10 @@ const resetTheme = () => {
               <option value="en">{{ language.t('english') }}</option>
               <option value="de">{{ language.t('german') }}</option>
             </select>
-            <p class="text-xs text-white/60 mt-2">Current: {{ language.currentLanguage.toUpperCase() }}</p>
           </div>
         </div>
       </div>
 
-      <!-- Theme Customization -->
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <Palette class="h-6 w-6 text-pink-400" />
@@ -312,51 +287,48 @@ const resetTheme = () => {
         </div>
         
         <div class="space-y-6">
-          <!-- Background Presets Dropdown -->
           <div>
             <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
               <Eye class="h-4 w-4" />
-              Preset Background
+              {{ language.t('presetBackground') }}
             </h3>
             <select
               v-model="selectedBgPreset"
               @change="() => { const p = theme.backgroundPresets.find(x => x.name === selectedBgPreset); if (p) applyBackgroundPreset(p) }"
               class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-pink-400 focus:outline-none"
             >
-              <option value="" disabled>Selectează un preset</option>
+              <option value="" disabled>{{ language.t('selectPreset') }}</option>
               <option v-for="preset in theme.backgroundPresets" :key="preset.name" :value="preset.name">
                 {{ preset.name }}
               </option>
             </select>
           </div>
 
-          <!-- Button Presets Dropdown -->
           <div>
             <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
               <Brush class="h-4 w-4" />
-              Preset Butoane
+              {{ language.t('presetButtons') }}
             </h3>
             <select
               v-model="selectedBtnPreset"
               @change="() => { const p = theme.buttonPresets.find(x => x.name === selectedBtnPreset); if (p) applyButtonPreset(p) }"
               class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
             >
-              <option value="" disabled>Selectează un preset</option>
+              <option value="" disabled>{{ language.t('selectPreset') }}</option>
               <option v-for="preset in theme.buttonPresets" :key="preset.name" :value="preset.name">
                 {{ preset.name }}
               </option>
             </select>
           </div>
 
-          <!-- Custom Colors -->
           <div>
             <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
               <Sparkles class="h-4 w-4" />
-              Culori Personalizate
+              {{ language.t('customColors') }}
             </h3>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm text-white/70 mb-2">{{ language.t('theme') }}</label>
+                <label class="block text-sm text-white/70 mb-2">{{ language.t('backgroundColorLabel') }}</label>
                 <div class="flex gap-2">
                   <input
                     v-model="customBackgroundColor"
@@ -374,7 +346,7 @@ const resetTheme = () => {
                 </div>
               </div>
               <div>
-                <label class="block text-sm text-white/70 mb-2">{{ language.t('settings') }}</label>
+                <label class="block text-sm text-white/70 mb-2">{{ language.t('buttonColorLabel') }}</label>
                 <div class="flex gap-2">
                   <input
                     v-model="customButtonColor"
@@ -394,15 +366,14 @@ const resetTheme = () => {
             </div>
           </div>
 
-          <!-- Visual Effects -->
           <div>
             <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
               <Zap class="h-4 w-4" />
-              Efecte Vizuale
+              {{ language.t('visualEffects') }}
             </h3>
             <div class="space-y-3">
               <div class="flex items-center justify-between">
-                <span class="text-white/80">{{ language.t('settings') }}</span>
+                <span class="text-white/80">{{ language.t('animationsLabel') }}</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input
                     v-model="theme.settings.animations"
@@ -415,7 +386,7 @@ const resetTheme = () => {
               </div>
               
               <div class="flex items-center justify-between">
-                <span class="text-white/80">{{ language.t('settings') }}</span>
+                <span class="text-white/80">{{ language.t('particlesLabel') }}</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input
                     v-model="theme.settings.particles"
@@ -428,7 +399,7 @@ const resetTheme = () => {
               </div>
               
               <div class="flex items-center justify-between">
-                <span class="text-white/80">{{ language.t('settings') }}</span>
+                <span class="text-white/80">{{ language.t('glassEffectLabel') }}</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input
                     v-model="theme.settings.glassEffect"
@@ -442,7 +413,6 @@ const resetTheme = () => {
             </div>
           </div>
 
-          <!-- Reset Theme -->
           <div class="pt-4 border-t border-white/20">
             <button
               @click="resetTheme"
@@ -455,17 +425,16 @@ const resetTheme = () => {
         </div>
       </div>
 
-      <!-- Timer Settings -->
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <Clock class="h-6 w-6 text-blue-400" />
-          <h2 class="text-lg font-semibold text-white">{{ language.t('settings') }}</h2>
+          <h2 class="text-lg font-semibold text-white">{{ language.t('timerSettingsTitle') }}</h2>
         </div>
         
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-white/80 mb-2">
-              Durata pauzei (minute)
+              {{ language.t('breakDurationLabel') }}
             </label>
             <input
               v-model="breakDuration"
@@ -478,7 +447,7 @@ const resetTheme = () => {
           
           <div>
             <label class="block text-sm font-medium text-white/80 mb-2">
-              Obiectiv sesiune de lucru (ore)
+              {{ language.t('workSessionGoalLabel') }}
             </label>
             <input
               v-model="workSessionGoal"
@@ -503,9 +472,6 @@ const resetTheme = () => {
         </div>
       </div>
 
-
-
-      <!-- Address Settings -->
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <MapPin class="h-6 w-6 text-orange-400" />
@@ -514,19 +480,18 @@ const resetTheme = () => {
         
         <div>
           <label class="block text-sm font-medium text-white/80 mb-2">
-            Adresa implicită
+            {{ language.t('defaultAddressLabel') }}
           </label>
           <textarea
             v-model="defaultAddress"
             @blur="updateDefaultAddress"
-            placeholder="Introduceți adresa default..."
+            :placeholder="language.t('defaultAddressPlaceholder')"
             class="w-full rounded-lg border border-white/20 bg-white/20 px-4 py-3 text-white placeholder-white/50 focus:border-orange-400 focus:outline-none resize-none"
             rows="3"
           ></textarea>
         </div>
       </div>
 
-      <!-- Notifications -->
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <Bell class="h-6 w-6 text-purple-400" />
@@ -572,7 +537,6 @@ const resetTheme = () => {
         </div>
       </div>
 
-      <!-- Data Management -->
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <Settings class="h-6 w-6 text-gray-400" />
@@ -585,12 +549,11 @@ const resetTheme = () => {
             class="w-full flex items-center gap-3 p-3 rounded-lg bg-red-500/20 border border-red-400/50 text-red-400 hover:bg-red-500/30 transition-colors"
           >
             <Trash2 class="h-5 w-5" />
-            <span>Șterge toate datele</span>
+            <span>{{ language.t('deleteAllDataButton') }}</span>
           </button>
         </div>
       </div>
 
-      <!-- App Info -->
       <div class="card-glass p-6">
         <div class="text-center">
           <h3 class="text-lg font-semibold text-white mb-2">ChronoFlux</h3>
@@ -601,36 +564,34 @@ const resetTheme = () => {
               {{ language.t('changelog') }}
             </button>
             <button class="btn btn-glass btn-rounded px-4 py-2 text-xs">
-              Support
+              {{ language.t('supportButton') }}
             </button>
             <button class="btn btn-glass btn-rounded px-4 py-2 text-xs">
-              Rate App
+              {{ language.t('rateAppButton') }}
             </button>
           </div>
         </div>
       </div>
     </div>
 
-
-    <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="card-glass p-6 max-w-sm w-full">
         <h3 class="text-lg font-semibold text-white mb-4">{{ language.t('deleteAllData') }}</h3>
         <p class="text-white/70 text-sm mb-6">
-          ⚠️ Această acțiune va șterge toate sesiunile, adresele și setările. Nu poate fi anulată!
+          {{ language.t('deleteAllDataConfirmationText') }}
         </p>
         <div class="flex gap-3">
           <button
             @click="deleteAllData"
             class="btn btn-rose flex-1"
           >
-            Șterge Tot
+            {{ language.t('deleteEverythingButton') }}
           </button>
           <button
             @click="showDeleteConfirm = false"
             class="btn btn-primary flex-1"
           >
-            Anulează
+            {{ language.t('cancelButton') }}
           </button>
         </div>
       </div>
@@ -639,5 +600,4 @@ const resetTheme = () => {
 </template>
 
 <style scoped>
-/* Additional styles if needed */
 </style>
