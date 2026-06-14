@@ -611,7 +611,7 @@ const cancelEdit = () => {
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-lg font-semibold text-white">{{ language.t('settings') }}</h3>
-          <p class="text-sm text-white/70">Elimină sesiunile vechi de pauză din istoric</p>
+          <p class="text-sm text-white/70">{{ language.t('cleanOldBreaks') }}</p>
         </div>
         <button 
           @click="cleanupOldData"
@@ -660,7 +660,7 @@ const cancelEdit = () => {
       <div class="text-white/50 mb-4">
         <Calendar class="h-16 w-16 mx-auto mb-4" />
         <p class="text-lg">{{ language.t('noSessions') }}</p>
-        <p class="text-sm">Începe să lucrezi pentru a vedea istoricul</p>
+        <p class="text-sm">{{ language.t('startWorking') }}</p>
       </div>
     </div>
   </div>
@@ -715,8 +715,8 @@ const cancelEdit = () => {
         </div>
 
         <div class="flex gap-2 pt-2">
-          <button class="btn btn-primary flex-1" @click="saveEdit">Salvează</button>
-          <button class="btn btn-glass flex-1" @click="cancelEdit">Anulează</button>
+          <button class="btn btn-primary flex-1" @click="saveEdit">{{ language.t('save') }}</button>
+          <button class="btn btn-glass flex-1" @click="cancelEdit">{{ language.t('cancel') }}</button>
         </div>
       </div>
     </div>

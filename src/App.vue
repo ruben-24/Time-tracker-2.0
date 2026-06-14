@@ -1309,7 +1309,7 @@ const forceUpdateTotals = () => {
             <div class="card-glass p-6">
               <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Clock class="h-5 w-5 text-blue-400" />
-              Sesiune de Lucru cu Pauze
+              {{ language.t('workSessionWithBreaks') }}
             </h2>
 
               <div class="grid gap-3 sm:grid-cols-2">
@@ -1351,7 +1351,7 @@ const forceUpdateTotals = () => {
                   class="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium transition"
                   :class="manualWorkMode === 'end' ? 'bg-blue-500/20 border-blue-400/60 text-white shadow-lg' : 'bg-white/10 text-white/70 hover:bg-white/15'"
                 >
-                  Sfârșit specific
+                  {{ language.t('specificEnd') }}
                 </button>
               </div>
             </div>
@@ -1554,7 +1554,7 @@ const forceUpdateTotals = () => {
                 class="btn btn-amber mt-4 w-full"
                 :disabled="!canAddSessionBreak"
               >
-                Adaugă pauză la sesiune
+                {{ language.t('addBreakToSession') }}
               </button>
             </div>
 
@@ -1598,14 +1598,14 @@ const forceUpdateTotals = () => {
                 class="btn btn-primary flex-1"
                 :disabled="!canCreateIntegratedSession"
               >
-                Adaugă sesiune completă
+                {{ language.t('addCompleteSession') }}
               </button>
               <button
                 @click="addOngoingWorkSession"
                 class="btn btn-glass flex-1"
                 :disabled="!canCreateOngoingSession"
               >
-                Adaugă sesiune în curs
+                {{ language.t('addOngoingSession') }}
               </button>
             </div>
           </div>
@@ -1614,7 +1614,7 @@ const forceUpdateTotals = () => {
           <div class="card-glass p-6">
           <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <Pause class="h-5 w-5 text-rose-400" />
-            Pauză Individuală
+            {{ language.t('individualBreak') }}
           </h2>
           <p class="text-sm text-white/60 mb-4">
             Pentru pauze care nu fac parte dintr-o sesiune de lucru
@@ -1714,7 +1714,7 @@ const forceUpdateTotals = () => {
             class="btn btn-rose mt-4 w-full"
             :disabled="!canAddStandaloneBreakEntry"
           >
-            Adaugă pauză individuală
+            {{ language.t('addIndividualBreak') }}
           </button>
         </div>
 
@@ -1722,7 +1722,7 @@ const forceUpdateTotals = () => {
         <div class="card-glass p-6">
           <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             <Settings class="h-5 w-5 text-purple-400" />
-            Acțiuni Rapide
+            {{ language.t('quickActions') }}
           </h2>
           
           <div class="grid grid-cols-2 gap-4">
@@ -1744,14 +1744,14 @@ const forceUpdateTotals = () => {
 
           <div class="mt-4">
             <button @click="addVacationTemplate" class="btn btn-emerald w-full p-4">
-              Adaugă Șablon: Concediu (8h)
+              {{ language.t('addVacationTemplate') }}
             </button>
           </div>
 
             <div class="mt-6 border-t border-white/20 pt-4">
               <h3 class="text-md font-medium text-white/80 mb-3 flex items-center gap-2">
                 <Clock class="h-4 w-4 text-emerald-400" />
-                Ajustare Ore în Minus
+                {{ language.t('minusAdjustment') }}
               </h3>
               <p class="text-xs text-white/60 mb-3">
                 Scade ore din calculele de ore suplimentare pentru o anumită zi (ex: plecări mai devreme).
@@ -1821,7 +1821,7 @@ const forceUpdateTotals = () => {
               :disabled="!vacationStart || !vacationEnd"
               @click="addVacationRange"
             >
-              Adaugă Concediu (8h/zi) pentru interval
+              {{ language.t('addVacationRange') }}
             </button>
           </div>
         </div>

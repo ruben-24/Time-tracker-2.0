@@ -153,7 +153,7 @@ const cancelEdit = () => {
       <div class="text-white/50 mb-4">
         <MapPin class="h-16 w-16 mx-auto mb-4" />
         <p class="text-lg">{{ language.t('noSessions') }}</p>
-        <p class="text-sm">Adaugă adrese pentru a le folosi în sesiuni</p>
+        <p class="text-sm">{{ language.t('addresses') }}</p>
       </div>
     </div>
   </div>

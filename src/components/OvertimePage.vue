@@ -230,7 +230,7 @@ const saveOffset = () => {
             </button>
           </div>
       </div>
-      <div v-if="dailyOvertime.length === 0" class="text-center text-white/60 py-8">Nu există încă zile calculate.</div>
+      <div v-if="dailyOvertime.length === 0" class="text-center text-white/60 py-8">{{ language.t('noSessions') }}</div>
     </div>
   </div>
 </template>
