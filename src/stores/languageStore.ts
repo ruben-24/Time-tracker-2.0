@@ -5,22 +5,17 @@ export type Language = 'ro' | 'en' | 'de'
 
 const translations = {
   ro: {
-    // Main page
     chronoFlux: 'ChronoFlux',
     subtitle: 'Simplu. Rapid. Precis.',
     working: 'Lucru',
     onBreak: 'Pauză',
     paused: 'Pauză',
     inactive: 'Inactiv',
-    
-    // Buttons
     start: 'Pornit',
     pause: 'Pauză',
     resume: 'Reluare',
     end: 'Sfârşit',
     startBreak: 'Pauză',
-    
-    // Menu items
     manualEntry: 'Adăugare Manuală',
     history: 'Istoric Sesiuni',
     addresses: 'Adrese Extra',
@@ -29,8 +24,6 @@ const translations = {
     importExport: 'Import/Export',
     settings: 'Setări',
     closeApp: 'Închide Aplicația',
-    
-    // Settings
     language: 'Limbă',
     romanian: 'Română',
     english: 'Engleză',
@@ -46,8 +39,6 @@ const translations = {
     appInfo: 'Informații aplicație',
     version: 'Versiune',
     developedWith: 'Dezvoltat cu ❤️ pentru productivitate',
-    
-    // Manual entry
     manualWork: 'Adăugare manuală - Sesiune de lucru',
     manualBreak: 'Adăugare manuală - Pauză',
     workDate: 'Data sesiunii',
@@ -59,55 +50,37 @@ const translations = {
     note: 'Notă (opțional)',
     addManualWork: 'Adăugare sesiune de lucru',
     addManualBreak: 'Adăugare pauză',
-    
-    // Messages
     successAdded: 'Sesiune adăugată cu succes!',
     invalidDate: 'Te rog selectează o dată validă!',
     invalidTime: 'Te rog selectează o oră validă!',
     selectStartTime: 'Te rog selectează ora de început!',
     selectEndTime: 'Te rog selectează ora de sfârşit!',
-    
-    // Financial
     financialReports: 'Rapoarte Financiare',
     totalEarned: 'Total câştigat',
     hourlyRate: 'Tarif orar',
-    
-    // Overtime
     overtimeHours: 'Ore suplimentare',
     overtimeRate: 'Tarif ore suplimentare',
-    
-    // History
     sessionHistory: 'Istoric sesiuni',
     noSessions: 'Nu sunt sesiuni',
-    
-    // Changelog
     changelog: 'Changelog',
-    version: 'Versiune',
     date: 'Dată',
     changes: 'Modificări',
-    
-    // Errors
     error: 'Eroare',
     success: 'Succes',
     warning: 'Avertizare'
   },
   en: {
-    // Main page
     chronoFlux: 'ChronoFlux',
     subtitle: 'Simple. Fast. Accurate.',
     working: 'Working',
     onBreak: 'Break',
     paused: 'Paused',
     inactive: 'Inactive',
-    
-    // Buttons
     start: 'Start',
     pause: 'Pause',
     resume: 'Resume',
     end: 'End',
     startBreak: 'Break',
-    
-    // Menu items
     manualEntry: 'Manual Entry',
     history: 'Session History',
     addresses: 'Extra Addresses',
@@ -116,8 +89,6 @@ const translations = {
     importExport: 'Import/Export',
     settings: 'Settings',
     closeApp: 'Close App',
-    
-    // Settings
     language: 'Language',
     romanian: 'Romanian',
     english: 'English',
@@ -133,8 +104,6 @@ const translations = {
     appInfo: 'App Information',
     version: 'Version',
     developedWith: 'Developed with ❤️ for productivity',
-    
-    // Manual entry
     manualWork: 'Manual Entry - Work Session',
     manualBreak: 'Manual Entry - Break',
     workDate: 'Session Date',
@@ -146,55 +115,37 @@ const translations = {
     note: 'Note (optional)',
     addManualWork: 'Add Work Session',
     addManualBreak: 'Add Break',
-    
-    // Messages
     successAdded: 'Session added successfully!',
     invalidDate: 'Please select a valid date!',
     invalidTime: 'Please select a valid time!',
     selectStartTime: 'Please select a start time!',
     selectEndTime: 'Please select an end time!',
-    
-    // Financial
     financialReports: 'Financial Reports',
     totalEarned: 'Total Earned',
     hourlyRate: 'Hourly Rate',
-    
-    // Overtime
     overtimeHours: 'Overtime Hours',
     overtimeRate: 'Overtime Rate',
-    
-    // History
     sessionHistory: 'Session History',
     noSessions: 'No sessions',
-    
-    // Changelog
     changelog: 'Changelog',
-    version: 'Version',
     date: 'Date',
     changes: 'Changes',
-    
-    // Errors
     error: 'Error',
     success: 'Success',
     warning: 'Warning'
   },
   de: {
-    // Main page
     chronoFlux: 'ChronoFlux',
     subtitle: 'Einfach. Schnell. Präzise.',
     working: 'Arbeitet',
     onBreak: 'Pause',
     paused: 'Pausiert',
     inactive: 'Inaktiv',
-    
-    // Buttons
     start: 'Starten',
     pause: 'Pause',
     resume: 'Fortsetzen',
     end: 'Beenden',
     startBreak: 'Pause',
-    
-    // Menu items
     manualEntry: 'Manuelle Eingabe',
     history: 'Sitzungsverlauf',
     addresses: 'Zusätzliche Adressen',
@@ -203,8 +154,6 @@ const translations = {
     importExport: 'Import/Export',
     settings: 'Einstellungen',
     closeApp: 'App beenden',
-    
-    // Settings
     language: 'Sprache',
     romanian: 'Rumänisch',
     english: 'Englisch',
@@ -220,8 +169,6 @@ const translations = {
     appInfo: 'App-Informationen',
     version: 'Version',
     developedWith: 'Entwickelt mit ❤️ für Produktivität',
-    
-    // Manual entry
     manualWork: 'Manuelle Eingabe - Arbeitssitzung',
     manualBreak: 'Manuelle Eingabe - Pause',
     workDate: 'Sitzungsdatum',
@@ -233,34 +180,21 @@ const translations = {
     note: 'Notiz (optional)',
     addManualWork: 'Arbeitssitzung hinzufügen',
     addManualBreak: 'Pause hinzufügen',
-    
-    // Messages
     successAdded: 'Sitzung erfolgreich hinzugefügt!',
     invalidDate: 'Bitte wählen Sie ein gültiges Datum!',
     invalidTime: 'Bitte wählen Sie eine gültige Zeit!',
     selectStartTime: 'Bitte wählen Sie eine Startzeit!',
     selectEndTime: 'Bitte wählen Sie eine Endzeit!',
-    
-    // Financial
     financialReports: 'Finanzberichte',
     totalEarned: 'Gesamteinkommen',
     hourlyRate: 'Stundensatz',
-    
-    // Overtime
     overtimeHours: 'Überstunden',
     overtimeRate: 'Überstundensatz',
-    
-    // History
     sessionHistory: 'Sitzungsverlauf',
     noSessions: 'Keine Sitzungen',
-    
-    // Changelog
     changelog: 'Changelog',
-    version: 'Version',
     date: 'Datum',
     changes: 'Änderungen',
-    
-    // Errors
     error: 'Fehler',
     success: 'Erfolg',
     warning: 'Warnung'
@@ -278,7 +212,6 @@ export const useLanguageStore = defineStore('language', () => {
         currentLanguage.value = result.value as Language
       }
     } catch {
-      // Fallback to localStorage
       const saved = localStorage.getItem('language')
       if (saved && (saved === 'ro' || saved === 'en' || saved === 'de')) {
         currentLanguage.value = saved as Language
@@ -292,7 +225,6 @@ export const useLanguageStore = defineStore('language', () => {
       const { Preferences } = await import('@capacitor/preferences')
       await Preferences.set({ key: 'language', value: lang })
     } catch {
-      // Fallback to localStorage
       localStorage.setItem('language', lang)
     }
   }
