@@ -402,6 +402,9 @@ const translations = {
   }
 }
 
+type TranslationMap = Record<string, string>
+const translationMap = translations as Record<Language, TranslationMap>
+
 export const useLanguageStore = defineStore('language', () => {
   const currentLanguage = ref<Language>('de')
   
@@ -434,8 +437,8 @@ export const useLanguageStore = defineStore('language', () => {
     saveLanguage(lang)
   }
   
-  const t = (key: keyof typeof translations.ro): string => {
-    return translations[currentLanguage.value][key] ?? String(key)
+  const t = (key: string): string => {
+    return translationMap[currentLanguage.value][key] ?? key
   }
   
   const locale = computed(() => {
