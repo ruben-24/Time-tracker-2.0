@@ -18,6 +18,9 @@ import { Preferences } from '@capacitor/preferences'
 import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
+import { useLanguageStore } from './stores/languageStore'
+const language = useLanguageStore()
+
 import { ArrowLeft, Clock, Pause, Settings, X, Download, Upload, FolderOpen, RefreshCw, Save, RotateCcw } from 'lucide-vue-next'
 
 const timer = useTimerStore()
@@ -495,10 +498,10 @@ watch(() => ({ activeType: timer.activeType, pausedAt: timer.pausedAt, breakStar
 }, { deep: true })
 
 const stateLabel = computed(() => {
-  if (!timer.activeType) return 'Inactiv'
-  if (timer.isOnBreak) return 'Pauză'
-  if (timer.isPaused) return 'Pauză'
-  return timer.activeType === 'work' ? 'Lucru' : 'Pauză'
+  if (!timer.activeType) return language.t('inactive')
+  if (timer.isOnBreak) return language.t('onBreak')
+  if (timer.isPaused) return language.t('paused')
+  return timer.activeType === 'work' ? language.t('working') : language.t('onBreak')
 })
 
 const breakElapsed = computed(() => {
@@ -1172,15 +1175,15 @@ const forceUpdateTotals = () => {
       <header class="mb-8 flex items-center justify-between">
         <div class="flex-1">
           <h1 class="text-3xl font-bold tracking-tight mb-1" :class="theme.settings.textStyle === 'rainbow' ? 'text-gradient-rainbow' : theme.settings.textStyle === 'glow' ? 'text-gradient-glow' : 'text-gradient'">ChronoFlux</h1>
-          <p class="text-sm text-white/80 font-medium">Simplu. Rapid. Precis. v{{ appVersion }}</p>
+          <p class="text-sm text-white/80 font-medium">{{ language.t('subtitle') }} v{{ appVersion }}</p>
           <div class="flex items-center gap-2 mt-2">
             <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span class="text-xs text-white/60">Sistem activ</span>
+            <span class="text-xs text-white/60">{{ language.t('start') }}</span>
           </div>
         </div>
         <div class="flex items-center gap-3">
           <div class="text-right">
-            <div class="text-xs text-white/60">Status</div>
+            <div class="text-xs text-white/60">{{ language.t('statusLabel') }}</div>
             <div class="text-sm font-semibold text-white">{{ stateLabel }}</div>
           </div>
           <BurgerMenu @navigate="navigateTo" :appVersion="appVersion" />
@@ -1205,25 +1208,25 @@ const forceUpdateTotals = () => {
         <div class="mb-8">
           <div class="text-center mb-6">
             <div class="text-xs text-white/70 font-medium uppercase tracking-wide mb-2">
-              {{ isOnBreak ? 'Cronometru Pauză' : 'Cronometru Principal' }}
+              {{ isOnBreak ? language.t('onBreak') : language.t('working') }}
             </div>
             <div class="text-7xl font-bold tabular-nums tracking-tight timer-display text-white" 
                  :class="isOnBreak ? 'neon-glow-green' : 'neon-glow-blue'">
               {{ formatDuration(isOnBreak ? breakElapsed : elapsed) }}
             </div>
             <div class="text-sm text-white/60 mt-2">
-              {{ isOnBreak ? 'Timpul curent de pauză' : 'Timpul curent de lucru' }}
+              {{ isOnBreak ? language.t('onBreak') : language.t('working') }}
             </div>
           </div>
           
           <div class="flex items-center justify-center gap-4">
             <div class="text-center">
-              <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Stare</div>
+              <div class="text-xs text-white/70 font-medium uppercase tracking-wide">{{ language.t('start') }}</div>
               <div class="text-lg font-bold text-white">{{ stateLabel }}</div>
             </div>
             <div class="w-px h-8 bg-white/20"></div>
             <div class="text-center">
-              <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Sesiune</div>
+              <div class="text-xs text-white/70 font-medium uppercase tracking-wide">{{ language.t('history') }}</div>
               <div class="text-lg font-bold text-white">{{ timer.sessions.length + 1 }}</div>
             </div>
           </div>
@@ -1237,17 +1240,17 @@ const forceUpdateTotals = () => {
         <!-- Stats Grid -->
         <div class="grid gap-4 sm:grid-cols-3">
           <div class="rounded-2xl glass-enhanced p-6 card-hover" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
-            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Total lucru</div>
+            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">{{ language.t('working') }}</div>
             <div class="text-2xl font-bold text-white">{{ formatDuration(timer.totalWorkMs) }}</div>
             <div class="text-xs text-white/50 mt-1">Sesiuni: {{ timer.sessions.filter(s => s.type === 'work').length }}</div>
           </div>
           <div class="rounded-2xl glass-enhanced p-6 card-hover" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
-            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Total pauză</div>
+            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">{{ language.t('onBreak') }}</div>
             <div class="text-2xl font-bold text-white">{{ formatDuration(timer.totalBreakMs) }}</div>
             <div class="text-xs text-white/50 mt-1">Pauze: {{ totalBreakCount }}</div>
           </div>
           <div class="rounded-2xl glass-enhanced p-6 card-hover" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
-            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Pauze țigară</div>
+            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">{{ language.t('cigaretteBreaks') }}</div>
             <div class="text-2xl font-bold text-orange-400">{{ formatDuration(timer.totalCigaretteMs) }}</div>
             <div class="text-xs text-white/50 mt-1">Sesiuni: {{ timer.sessions.filter(s => s.type === 'cigarette').length }}</div>
           </div>
@@ -1256,18 +1259,18 @@ const forceUpdateTotals = () => {
         <!-- Advanced Stats -->
         <div class="mt-6 grid gap-4 sm:grid-cols-2">
           <div class="rounded-2xl glass-enhanced p-6 card-hover" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
-            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Eficiență</div>
+            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">{{ language.t('efficiency') }}</div>
             <div class="text-3xl font-bold text-green-400">
               {{ Math.round((timer.totalWorkMs / (timer.totalWorkMs + timer.totalBreakMs)) * 100) || 0 }}%
             </div>
-            <div class="text-xs text-white/50 mt-1">Raport lucru/pauză</div>
+            <div class="text-xs text-white/50 mt-1">{{ language.t('workBreakRatio') }}</div>
           </div>
           <div class="rounded-2xl glass-enhanced p-6 card-hover" :class="{ 'glass-enhanced': theme.settings.glassEffect }">
-            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">Sesiune medie</div>
+            <div class="text-xs text-white/70 font-medium uppercase tracking-wide">{{ language.t('averageSession') }}</div>
             <div class="text-3xl font-bold text-blue-400">
               {{ formatDuration(timer.sessions.length > 0 ? timer.sessions.reduce((acc, s) => acc + (s.endedAt ? s.endedAt - s.startedAt : 0), 0) / timer.sessions.length : 0) }}
             </div>
-            <div class="text-xs text-white/50 mt-1">Durată medie</div>
+            <div class="text-xs text-white/50 mt-1">{{ language.t('averageDuration') }}</div>
           </div>
         </div>
 
@@ -1293,7 +1296,7 @@ const forceUpdateTotals = () => {
         <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
           <ArrowLeft class="h-5 w-5" />
         </button>
-        <h1 class="text-2xl font-bold text-white">Rapoarte Financiare</h1>
+        <h1 class="text-2xl font-bold text-white">{{ language.t('financialReportsTitle') }}</h1>
         <div></div>
       </div>
       <FinancialInfo />
@@ -1309,7 +1312,7 @@ const forceUpdateTotals = () => {
         <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
           <ArrowLeft class="h-5 w-5" />
         </button>
-        <h1 class="text-2xl font-bold text-white">Adăugare Manuală</h1>
+        <h1 class="text-2xl font-bold text-white">{{ language.t('manualEntryTitle') }}</h1>
         <div></div>
       </div>
       
@@ -1323,7 +1326,7 @@ const forceUpdateTotals = () => {
 
               <div class="grid gap-3 sm:grid-cols-2">
               <div>
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data sesiune</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('sessionDate') }}</label>
                 <input
                   v-model="manualWorkDate"
                   type="date"
@@ -1331,7 +1334,7 @@ const forceUpdateTotals = () => {
                 />
               </div>
               <div>
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora început</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('startTimeLabel') }}</label>
                 <input
                   v-model="manualWorkStartTime"
                     type="text"
@@ -1344,7 +1347,7 @@ const forceUpdateTotals = () => {
             </div>
 
             <div class="mt-4">
-                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Completare timp</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('fillTime') }}</label>
               <div class="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -1367,7 +1370,7 @@ const forceUpdateTotals = () => {
 
               <div v-if="manualWorkMode === 'duration'" class="mt-4 grid gap-3 sm:grid-cols-2">
               <div>
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Durată (ore)</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('durationHours') }}</label>
                 <input
                   v-model.number="manualWorkDurationHours"
                   type="number"
@@ -1376,7 +1379,7 @@ const forceUpdateTotals = () => {
                 />
               </div>
               <div>
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Durată (minute)</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('durationMinutes') }}</label>
                 <input
                   v-model.number="manualWorkDurationMinutes"
                   type="number"
@@ -1420,7 +1423,7 @@ const forceUpdateTotals = () => {
 
               <div v-else class="mt-4 grid gap-3 sm:grid-cols-2">
               <div>
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data sfârșit</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('endDateLabel') }}</label>
                 <input
                   v-model="manualWorkEndDate"
                   type="date"
@@ -1428,7 +1431,7 @@ const forceUpdateTotals = () => {
                 />
               </div>
               <div>
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora sfârșit</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('endTimeLabel') }}</label>
                 <input
                   v-model="manualWorkEndTime"
                     type="text"
@@ -1442,14 +1445,14 @@ const forceUpdateTotals = () => {
 
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
                 <div class="rounded-lg bg-white/10 p-4 text-xs text-white/70 space-y-1">
-                  <div class="text-sm font-semibold text-white">Rezumat sesiune</div>
+                  <div class="text-sm font-semibold text-white">{{ language.t('sessionSummary') }}</div>
                 <div>Început: <span class="text-white/90">{{ manualWorkSummary.startLabel }}</span></div>
                 <div>Sfârșit: <span class="text-white/90">{{ manualWorkSummary.endLabel }}</span></div>
                 <div>Durată lucru: <span class="text-white/90">{{ manualWorkSummary.durationLabel }}</span></div>
                 <div>Pauze atașate: <span class="text-white/90">{{ manualBreaks.length }} ({{ manualWorkSummary.breaksLabel }})</span></div>
               </div>
               <div>
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Observații sesiune</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('sessionNotes') }}</label>
                 <textarea
                   v-model="manualWorkNote"
                   placeholder="Adaugă observații despre sesiunea de lucru..."
@@ -1468,7 +1471,7 @@ const forceUpdateTotals = () => {
 
                 <div class="grid gap-3 sm:grid-cols-2">
                 <div>
-                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data pauză</label>
+                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('breakDate') }}</label>
                   <input
                     v-model="sessionBreakDate"
                     type="date"
@@ -1476,7 +1479,7 @@ const forceUpdateTotals = () => {
                   />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora început</label>
+                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('startTimeLabel') }}</label>
                   <input
                     v-model="sessionBreakStartTime"
                       type="text"
@@ -1489,7 +1492,7 @@ const forceUpdateTotals = () => {
               </div>
 
               <div class="mt-3">
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Durată sau sfârșit</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('durationOrEnd') }}</label>
                 <div class="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -1511,7 +1514,7 @@ const forceUpdateTotals = () => {
               </div>
 
               <div v-if="sessionBreakMode === 'duration'" class="mt-3">
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Durată pauză (minute)</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('breakDurationMin') }}</label>
                 <div class="flex items-center gap-3">
                   <input
                     v-model.number="sessionBreakDurationMinutes"
@@ -1528,7 +1531,7 @@ const forceUpdateTotals = () => {
               </div>
                 <div v-else class="mt-3 grid gap-3 sm:grid-cols-2">
                 <div>
-                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data sfârșit pauză</label>
+                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('endBreakDate') }}</label>
                   <input
                     v-model="sessionBreakEndDate"
                     type="date"
@@ -1536,7 +1539,7 @@ const forceUpdateTotals = () => {
                   />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora sfârșit pauză</label>
+                    <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('endBreakTime') }}</label>
                   <input
                     v-model="sessionBreakEndTime"
                       type="text"
@@ -1549,7 +1552,7 @@ const forceUpdateTotals = () => {
               </div>
 
               <div class="mt-3">
-                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Observații pauză</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('breakNotes') }}</label>
                 <textarea
                   v-model="sessionBreakNote"
                   placeholder="Ex: Pauză masă sau pauză scurtă"
@@ -1569,7 +1572,7 @@ const forceUpdateTotals = () => {
 
             <!-- Breaks List -->
             <div v-if="manualBreaks.length > 0" class="mt-5 space-y-2">
-              <h3 class="text-md font-medium text-white/80 mb-2">Pauze adăugate</h3>
+              <h3 class="text-md font-medium text-white/80 mb-2">{{ language.t('breaksAdded') }}</h3>
               <div
                 v-for="breakItem in manualBreaks"
                 :key="breakItem.id"
@@ -1631,7 +1634,7 @@ const forceUpdateTotals = () => {
 
             <div class="grid gap-3 sm:grid-cols-2">
             <div>
-                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data pauză</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('breakDate') }}</label>
               <input
                 v-model="standaloneBreakDate"
                 type="date"
@@ -1639,7 +1642,7 @@ const forceUpdateTotals = () => {
               />
             </div>
             <div>
-                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora început</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('startTimeLabel') }}</label>
               <input
                 v-model="standaloneBreakStartTime"
                   type="text"
@@ -1652,7 +1655,7 @@ const forceUpdateTotals = () => {
           </div>
 
           <div class="mt-3">
-            <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Durată sau sfârșit</label>
+            <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('durationOrEnd') }}</label>
             <div class="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -1688,7 +1691,7 @@ const forceUpdateTotals = () => {
           </div>
             <div v-else class="mt-3 grid gap-3 sm:grid-cols-2">
             <div>
-                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data sfârșit</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('endDateLabel') }}</label>
               <input
                 v-model="standaloneBreakEndDate"
                 type="date"
@@ -1696,7 +1699,7 @@ const forceUpdateTotals = () => {
               />
             </div>
             <div>
-                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ora sfârșit</label>
+                <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('endTimeLabel') }}</label>
               <input
                 v-model="standaloneBreakEndTime"
                   type="text"
@@ -1709,7 +1712,7 @@ const forceUpdateTotals = () => {
           </div>
 
           <div class="mt-4">
-              <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Observații pauză</label>
+              <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('breakNotes') }}</label>
             <textarea
               v-model="standaloneBreakNote"
               placeholder="Adaugă observații despre pauză..."
@@ -1740,14 +1743,14 @@ const forceUpdateTotals = () => {
               class="btn btn-glass flex-col p-4"
             >
               <Clock class="h-6 w-6 mb-2" />
-              <span class="text-sm">Folosește ora curentă pentru lucru</span>
+              <span class="text-sm">{{ language.t('useCurrentTimeWork') }}</span>
             </button>
             <button
               @click="setCurrentTime('break')"
               class="btn btn-glass flex-col p-4"
             >
               <Pause class="h-6 w-6 mb-2" />
-              <span class="text-sm">Folosește ora curentă pentru pauză</span>
+              <span class="text-sm">{{ language.t('useCurrentTimeBreak') }}</span>
             </button>
           </div>
 
@@ -1767,7 +1770,7 @@ const forceUpdateTotals = () => {
               </p>
               <div class="grid gap-3 sm:grid-cols-3">
                 <div>
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Data</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('dateLabel') }}</label>
                   <input
                     v-model="minusAdjustmentDate"
                     type="date"
@@ -1775,7 +1778,7 @@ const forceUpdateTotals = () => {
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Ore</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('hoursLabel') }}</label>
                   <input
                     v-model.number="minusAdjustmentHours"
                     type="number"
@@ -1785,7 +1788,7 @@ const forceUpdateTotals = () => {
                   />
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">Minute</label>
+                  <label class="block text-xs font-semibold text-white/70 mb-2 uppercase tracking-wide">{{ language.t('minutesLabel') }}</label>
                   <input
                     v-model.number="minusAdjustmentMinutes"
                     type="number"
@@ -1809,7 +1812,7 @@ const forceUpdateTotals = () => {
           <div class="mt-4">
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-sm text-white/80 mb-2">Concediu de la</label>
+                <label class="block text-sm text-white/80 mb-2">{{ language.t('vacationFrom') }}</label>
                 <input
                   v-model="vacationStart"
                   type="date"
@@ -1817,7 +1820,7 @@ const forceUpdateTotals = () => {
                 />
               </div>
               <div>
-                <label class="block text-sm text-white/80 mb-2">până la</label>
+                <label class="block text-sm text-white/80 mb-2">{{ language.t('vacationTo') }}</label>
                 <input
                   v-model="vacationEnd"
                   type="date"
@@ -1843,7 +1846,7 @@ const forceUpdateTotals = () => {
         <button @click="navigateTo('main')" class="btn btn-primary p-3 rounded-full">
           <ArrowLeft class="h-5 w-5" />
         </button>
-        <h1 class="text-2xl font-bold text-white">Import/Export</h1>
+        <h1 class="text-2xl font-bold text-white">{{ language.t('importExportTitle') }}</h1>
         <div></div>
       </div>
       
@@ -1931,7 +1934,7 @@ const forceUpdateTotals = () => {
           <div class="space-y-4">
             <!-- Backup Folder Selection -->
             <div>
-              <label class="block text-sm font-medium text-white/80 mb-2">Folder Backup</label>
+              <label class="block text-sm font-medium text-white/80 mb-2">{{ language.t('backupFolder') }}</label>
               <div class="flex gap-2">
                 <input
                   v-model="backupFolder"
@@ -1971,7 +1974,7 @@ const forceUpdateTotals = () => {
             
             <!-- Backup Files List -->
             <div v-if="backupFiles.length > 0" class="space-y-2">
-              <h3 class="text-md font-medium text-white/80">Backup-uri disponibile:</h3>
+              <h3 class="text-md font-medium text-white/80">{{ language.t('availableBackups') }}:</h3>
               <div class="max-h-40 overflow-y-auto space-y-2">
                 <div 
                   v-for="file in backupFiles" 
@@ -2017,7 +2020,7 @@ const forceUpdateTotals = () => {
         <button @click="navigateTo('settings')" class="btn btn-primary p-3 rounded-full">
           <ArrowLeft class="h-5 w-5" />
         </button>
-        <h1 class="text-2xl font-bold text-white">Changelog</h1>
+        <h1 class="text-2xl font-bold text-white">{{ language.t('changelogTitle') }}</h1>
         <div class="text-sm text-white/60">v{{ appVersion }}</div>
       </div>
       
