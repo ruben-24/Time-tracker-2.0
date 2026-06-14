@@ -24,9 +24,9 @@ export const useThemeStore = defineStore('theme', () => {
   const settings = ref<ThemeSettings>({
     backgroundStyle: 'solid',
     backgroundColors: {
-      primary: '#ff0000',
-      secondary: '#ff0000',
-      accent: '#ff0000'
+      primary: '#000000',
+      secondary: '#000000',
+      accent: '#000000'
     },
     buttonStyle: 'rounded',
     buttonColors: {
