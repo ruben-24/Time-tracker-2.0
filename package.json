@@ -12,6 +12,7 @@
     "precommit": "npm run version:patch"
   },
   "dependencies": {
+    "@capacitor/android": "^7.6.6",
     "@capacitor/app": "^7.1.0",
     "@capacitor/browser": "^7.0.2",
     "@capacitor/cli": "^7.4.3",
