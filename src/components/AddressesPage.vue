@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useLanguageStore } from '../stores/languageStore'
+const language = useLanguageStore()
 import { ref } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
 import { ArrowLeft, Plus, Trash2, Edit3, MapPin } from 'lucide-vue-next'
@@ -60,7 +62,7 @@ const cancelEdit = () => {
       <button @click="emit('navigate', 'main')" class="btn btn-primary p-3 rounded-full">
         <ArrowLeft class="h-5 w-5" />
       </button>
-      <h1 class="text-2xl font-bold text-white">Adrese Extra</h1>
+      <h1 class="text-2xl font-bold text-white">{{ language.t('addresses') }}</h1>
       <button 
         @click="showAddForm = true"
         class="btn btn-emerald p-3 rounded-full"
@@ -150,7 +152,7 @@ const cancelEdit = () => {
     <div v-if="timer.extraAddresses.length === 0" class="text-center py-12">
       <div class="text-white/50 mb-4">
         <MapPin class="h-16 w-16 mx-auto mb-4" />
-        <p class="text-lg">Nu ai adrese extra</p>
+        <p class="text-lg">{{ language.t('noSessions') }}</p>
         <p class="text-sm">Adaugă adrese pentru a le folosi în sesiuni</p>
       </div>
     </div>

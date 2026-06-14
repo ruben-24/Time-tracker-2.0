@@ -315,7 +315,7 @@ const resetTheme = () => {
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <Palette class="h-6 w-6 text-pink-400" />
-          <h2 class="text-lg font-semibold text-white">Personalizare Temă</h2>
+          <h2 class="text-lg font-semibold text-white">{{ language.t('theme') }}</h2>
         </div>
         
         <div class="space-y-6">
@@ -363,7 +363,7 @@ const resetTheme = () => {
             </h3>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm text-white/70 mb-2">Background Principal</label>
+                <label class="block text-sm text-white/70 mb-2">{{ language.t('theme') }}</label>
                 <div class="flex gap-2">
                   <input
                     v-model="customBackgroundColor"
@@ -381,7 +381,7 @@ const resetTheme = () => {
                 </div>
               </div>
               <div>
-                <label class="block text-sm text-white/70 mb-2">Butoane Principale</label>
+                <label class="block text-sm text-white/70 mb-2">{{ language.t('settings') }}</label>
                 <div class="flex gap-2">
                   <input
                     v-model="customButtonColor"
@@ -409,7 +409,7 @@ const resetTheme = () => {
             </h3>
             <div class="space-y-3">
               <div class="flex items-center justify-between">
-                <span class="text-white/80">Animații</span>
+                <span class="text-white/80">{{ language.t('settings') }}</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input
                     v-model="theme.settings.animations"
@@ -422,7 +422,7 @@ const resetTheme = () => {
               </div>
               
               <div class="flex items-center justify-between">
-                <span class="text-white/80">Particule flotante</span>
+                <span class="text-white/80">{{ language.t('settings') }}</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input
                     v-model="theme.settings.particles"
@@ -435,7 +435,7 @@ const resetTheme = () => {
               </div>
               
               <div class="flex items-center justify-between">
-                <span class="text-white/80">Efect glass</span>
+                <span class="text-white/80">{{ language.t('settings') }}</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input
                     v-model="theme.settings.glassEffect"
@@ -456,7 +456,7 @@ const resetTheme = () => {
               class="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-red-500/20 border border-red-400/50 text-red-400 hover:bg-red-500/30 transition-colors"
             >
               <Settings class="h-4 w-4" />
-              <span>Resetează la setările implicite</span>
+              <span>{{ language.t('resetToDefaults') }}</span>
             </button>
           </div>
         </div>
@@ -466,7 +466,7 @@ const resetTheme = () => {
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <Clock class="h-6 w-6 text-blue-400" />
-          <h2 class="text-lg font-semibold text-white">Setări Timer</h2>
+          <h2 class="text-lg font-semibold text-white">{{ language.t('settings') }}</h2>
         </div>
         
         <div class="space-y-4">
@@ -497,7 +497,7 @@ const resetTheme = () => {
           </div>
           
           <div class="flex items-center justify-between">
-            <span class="text-white/80">Pornire automată pauză</span>
+            <span class="text-white/80">{{ language.t('autoStartBreak') }}</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input
                 v-model="autoStartBreak"
@@ -514,7 +514,7 @@ const resetTheme = () => {
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <DollarSign class="h-6 w-6 text-green-400" />
-          <h2 class="text-lg font-semibold text-white">Setări Financiare</h2>
+          <h2 class="text-lg font-semibold text-white">{{ language.t('financial') }}</h2>
         </div>
         
         <div class="space-y-4">
@@ -570,7 +570,7 @@ const resetTheme = () => {
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <MapPin class="h-6 w-6 text-orange-400" />
-          <h2 class="text-lg font-semibold text-white">Adresa Default</h2>
+          <h2 class="text-lg font-semibold text-white">{{ language.t('addresses') }}</h2>
         </div>
         
         <div>
@@ -591,12 +591,12 @@ const resetTheme = () => {
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <Bell class="h-6 w-6 text-purple-400" />
-          <h2 class="text-lg font-semibold text-white">Notificări</h2>
+          <h2 class="text-lg font-semibold text-white">{{ language.t('notifications') }}</h2>
         </div>
         
         <div class="space-y-4">
           <div class="flex items-center justify-between">
-            <span class="text-white/80">Notificări active</span>
+            <span class="text-white/80">{{ language.t('notifications') }}</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input
                 v-model="notificationsEnabled"
@@ -608,7 +608,7 @@ const resetTheme = () => {
           </div>
           
           <div class="flex items-center justify-between">
-            <span class="text-white/80">Memento pauză</span>
+            <span class="text-white/80">{{ language.t('breakReminders') }}</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input
                 v-model="breakReminders"
@@ -620,7 +620,7 @@ const resetTheme = () => {
           </div>
           
           <div class="flex items-center justify-between">
-            <span class="text-white/80">Memento lucru</span>
+            <span class="text-white/80">{{ language.t('workReminders') }}</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input
                 v-model="workReminders"
@@ -637,7 +637,7 @@ const resetTheme = () => {
       <div class="card-glass p-6">
         <div class="flex items-center gap-3 mb-4">
           <Settings class="h-6 w-6 text-gray-400" />
-          <h2 class="text-lg font-semibold text-white">Gestionare Date</h2>
+          <h2 class="text-lg font-semibold text-white">{{ language.t('importExport') }}</h2>
         </div>
         
         <div class="space-y-3">

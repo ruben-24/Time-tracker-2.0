@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useLanguageStore } from '../stores/languageStore'
+const language = useLanguageStore()
 import { computed, ref } from 'vue'
 import { useTimerStore } from '../stores/timerStore'
 import { ArrowLeft, Plus, Settings } from 'lucide-vue-next'
@@ -123,7 +125,7 @@ const saveOffset = () => {
       <button @click="emit('navigate', 'main')" class="btn btn-primary p-3 rounded-full">
         <ArrowLeft class="h-5 w-5" />
       </button>
-      <h1 class="text-2xl font-bold text-white">Ore Suplimentare</h1>
+      <h1 class="text-2xl font-bold text-white">{{ language.t('overtime') }}</h1>
       <div></div>
     </div>
 
@@ -134,11 +136,11 @@ const saveOffset = () => {
         <div class="text-xl font-bold text-white">{{ timer.dailyTargetHours }}h</div>
       </div>
       <div class="card-glass p-4 text-center">
-        <div class="text-sm text-white/70">Offset global</div>
+        <div class="text-sm text-white/70">{{ language.t('settings') }}</div>
         <div class="text-xl font-bold" :class="totalOvertimeMs >= 0 ? 'text-emerald-400' : 'text-rose-400'">{{ signed(timer.overtimeGlobalOffsetMs) }}</div>
       </div>
       <div class="card-glass p-4 text-center">
-        <div class="text-sm text-white/70">Total</div>
+        <div class="text-sm text-white/70">{{ language.t('duration') }}</div>
         <div class="text-xl font-bold" :class="totalOvertimeMs >= 0 ? 'text-emerald-400' : 'text-rose-400'">{{ signed(totalOvertimeMs) }}</div>
       </div>
     </div>
@@ -147,18 +149,18 @@ const saveOffset = () => {
     <div class="card-glass p-4 mb-6">
       <div class="flex items-center gap-2 mb-3">
         <Settings class="h-4 w-4 text-white/70" />
-        <span class="text-white font-semibold">Setări</span>
+        <span class="text-white font-semibold">{{ language.t('settings') }}</span>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm text-white/70 mb-1">Țintă zilnică (ore)</label>
           <div class="flex gap-2">
             <input type="number" min="0" max="16" v-model.number="targetInput" class="w-24 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" />
-            <button class="btn btn-primary" @click="saveTarget">Salvează</button>
+            <button class="btn btn-primary" @click="saveTarget">{{ language.t('settings') }}</button>
           </div>
         </div>
         <div>
-          <label class="block text-sm text-white/70 mb-1">Offset global</label>
+          <label class="block text-sm text-white/70 mb-1">{{ language.t('settings') }}</label>
           <div class="flex items-center gap-2">
             <select v-model="offsetSign" class="rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white">
               <option value="+">+</option>
@@ -166,7 +168,7 @@ const saveOffset = () => {
             </select>
             <input type="number" min="0" v-model.number="offsetHours" class="w-20 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="ore" />
             <input type="number" min="0" max="59" v-model.number="offsetMinutes" class="w-24 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="minute" />
-            <button class="btn btn-amber" @click="saveOffset">Aplică</button>
+            <button class="btn btn-amber" @click="saveOffset">{{ language.t('settings') }}</button>
           </div>
         </div>
       </div>
@@ -175,7 +177,7 @@ const saveOffset = () => {
       <div class="grid gap-4 mb-6 md:grid-cols-2">
         <!-- Add manual adjustment -->
         <div class="card-glass p-4">
-          <div class="text-white font-semibold mb-3">Adaugă ajustare manuală</div>
+          <div class="text-white font-semibold mb-3">{{ language.t('manualEntry') }}</div>
           <div class="flex flex-wrap items-center gap-2">
             <input type="date" v-model="adjDate" class="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" />
             <select v-model="adjSign" class="rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white">
@@ -184,7 +186,7 @@ const saveOffset = () => {
             </select>
             <input type="number" min="0" v-model.number="adjHours" class="w-20 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="ore" />
             <input type="number" min="0" max="59" v-model.number="adjMinutes" class="w-24 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white" placeholder="minute" />
-            <button class="btn btn-emerald" @click="addAdjustment"><Plus class="h-4 w-4" />Adaugă</button>
+            <button class="btn btn-emerald" @click="addAdjustment"><Plus class="h-4 w-4" />{{ language.t('manualEntry') }}</button>
           </div>
         </div>
 

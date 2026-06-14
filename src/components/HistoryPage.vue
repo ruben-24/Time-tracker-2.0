@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useLanguageStore } from '../stores/languageStore'
+const language = useLanguageStore()
 import { ref, computed, watch } from 'vue'
 import { useTimerStore, type Session } from '../stores/timerStore'
 import { ArrowLeft, Trash2, Filter, Calendar, ChevronDown, ChevronUp, Clock } from 'lucide-vue-next'
@@ -433,7 +435,7 @@ const cancelEdit = () => {
       <button @click="emit('navigate', 'main')" class="btn btn-primary p-3 rounded-full">
         <ArrowLeft class="h-5 w-5" />
       </button>
-      <h1 class="text-2xl font-bold text-white">Istoric Sesiuni</h1>
+      <h1 class="text-2xl font-bold text-white">{{ language.t('history') }}</h1>
       <button 
         @click="showFilters = !showFilters"
         class="btn btn-amber p-3 rounded-full"
@@ -467,15 +469,15 @@ const cancelEdit = () => {
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="card-glass p-4 text-center">
               <div class="text-xl font-bold text-white">{{ formatDuration(group.totals.workMs) }}</div>
-              <div class="text-sm text-white/70">Total Lucru</div>
+              <div class="text-sm text-white/70">{{ language.t('working') }}</div>
             </div>
             <div class="card-glass p-4 text-center">
               <div class="text-xl font-bold text-white">{{ formatDuration(group.totals.breakMs) }}</div>
-              <div class="text-sm text-white/70">Total Pauză</div>
+              <div class="text-sm text-white/70">{{ language.t('onBreak') }}</div>
             </div>
             <div class="card-glass p-4 text-center">
               <div class="text-xl font-bold text-white">{{ formatDuration(group.totals.cigaretteMs) }}</div>
-              <div class="text-sm text-white/70">Pauze Țigară</div>
+              <div class="text-sm text-white/70">{{ language.t('cigaretteBreaks') }}</div>
             </div>
           </div>
 
@@ -553,15 +555,15 @@ const cancelEdit = () => {
                   <div class="grid grid-cols-3 gap-3 mb-4">
                     <div class="card-glass p-3 text-center">
                       <div class="text-lg font-bold text-white">{{ getSessionDetails(session).totals.workTime }}</div>
-                      <div class="text-xs text-white/70">Total Lucru</div>
+                      <div class="text-xs text-white/70">{{ language.t('working') }}</div>
                     </div>
                     <div class="card-glass p-3 text-center">
                       <div class="text-lg font-bold text-white">{{ getSessionDetails(session).totals.breakTime }}</div>
-                      <div class="text-xs text-white/70">Total Pauză</div>
+                      <div class="text-xs text-white/70">{{ language.t('onBreak') }}</div>
                     </div>
                     <div class="card-glass p-3 text-center">
                       <div class="text-lg font-bold text-white">{{ getSessionDetails(session).totals.cigaretteTime }}</div>
-                      <div class="text-xs text-white/70">Pauze Țigară</div>
+                      <div class="text-xs text-white/70">{{ language.t('cigaretteBreaks') }}</div>
                     </div>
                   </div>
 
@@ -594,7 +596,7 @@ const cancelEdit = () => {
                   </div>
 
                   <div v-if="getSessionDetails(session).timeline.length === 0" class="text-center py-4">
-                    <div class="text-white/50 text-sm">Nu există evenimente pentru această zi</div>
+                    <div class="text-white/50 text-sm">{{ language.t('noSessions') }}</div>
                   </div>
                 </div>
               </div>
@@ -608,7 +610,7 @@ const cancelEdit = () => {
     <div class="card-glass p-4 mb-6">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-lg font-semibold text-white">Curățare date</h3>
+          <h3 class="text-lg font-semibold text-white">{{ language.t('settings') }}</h3>
           <p class="text-sm text-white/70">Elimină sesiunile vechi de pauză din istoric</p>
         </div>
         <button 
@@ -622,7 +624,7 @@ const cancelEdit = () => {
 
     <!-- Filters -->
     <div v-if="showFilters" class="card-glass p-4 mb-6">
-      <h3 class="text-lg font-semibold text-white mb-4">Filtrează</h3>
+      <h3 class="text-lg font-semibold text-white mb-4">{{ language.t('settings') }}</h3>
       <div class="flex gap-2">
         <button 
           @click="filterType = 'all'"
@@ -657,7 +659,7 @@ const cancelEdit = () => {
     <div v-if="groupedMonths.length === 0" class="text-center py-12">
       <div class="text-white/50 mb-4">
         <Calendar class="h-16 w-16 mx-auto mb-4" />
-        <p class="text-lg">Nu ai sesiuni</p>
+        <p class="text-lg">{{ language.t('noSessions') }}</p>
         <p class="text-sm">Începe să lucrezi pentru a vedea istoricul</p>
       </div>
     </div>
@@ -666,32 +668,32 @@ const cancelEdit = () => {
   <!-- Edit Modal -->
   <div v-if="isEditOpen" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
     <div class="card-glass w-full max-w-lg p-5">
-      <h3 class="text-lg font-semibold text-white mb-4">Editează sesiunea</h3>
+      <h3 class="text-lg font-semibold text-white mb-4">{{ language.t('settings') }}</h3>
       <div v-if="editingSession" class="space-y-3">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-sm text-white/70 mb-1">Început</label>
+            <label class="block text-sm text-white/70 mb-1">{{ language.t('startTimeLabel') }}</label>
             <input type="datetime-local" v-model="editingSession.startedAtStr" class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white text-sm" />
           </div>
           <div>
-            <label class="block text-sm text-white/70 mb-1">Sfârșit</label>
+            <label class="block text-sm text-white/70 mb-1">{{ language.t('endTimeLabel') }}</label>
             <input type="datetime-local" v-model="editingSession.endedAtStr" class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white text-sm" />
           </div>
         </div>
         <div>
-          <label class="block text-sm text-white/70 mb-1">Notițe</label>
+          <label class="block text-sm text-white/70 mb-1">{{ language.t('note') }}</label>
           <textarea v-model="editingSession.note" rows="2" class="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white text-sm"></textarea>
         </div>
 
         <div v-if="editingSession.type === 'work'" class="pt-2">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm text-white/80 font-medium">Pauze în sesiune</span>
-            <button class="btn btn-amber px-3 py-1 text-xs" @click="addEditBreak">Adaugă pauză</button>
+            <span class="text-sm text-white/80 font-medium">{{ language.t('pause') }}</span>
+            <button class="btn btn-amber px-3 py-1 text-xs" @click="addEditBreak">{{ language.t('startBreak') }}</button>
           </div>
           <div v-if="editingSession.breaks && editingSession.breaks.length > 0" class="space-y-2 max-h-48 overflow-y-auto pr-1">
             <div v-for="(b, idx) in editingSession.breaks" :key="b.id" class="grid grid-cols-2 gap-2 items-end bg-white/5 rounded-lg p-2">
               <div>
-                <label class="block text-xs text-white/60 mb-1">Tip</label>
+                <label class="block text-xs text-white/60 mb-1">{{ language.t('settings') }}</label>
                 <select v-model="b.type" class="w-full rounded-lg border border-white/20 bg-white/10 px-2 py-2 text-white text-xs">
                   <option value="break">Pauză</option>
                   <option value="cigarette">Țigară</option>
